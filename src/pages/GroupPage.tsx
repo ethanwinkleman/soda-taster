@@ -100,7 +100,7 @@ export function GroupPage() {
             }`}
           >
             {t === 'sodas' ? <CupSoda size={15} /> : <Package size={15} />}
-            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'sodas' ? 'Sodas' : 'Fridge'}
           </button>
         ))}
       </div>

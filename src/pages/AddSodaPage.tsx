@@ -166,7 +166,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
     });
     if (inventoryId && onLink) onLink(inventoryId, newId);
     setSaving(false);
-    navigate(inventoryId ? '/inventory' : '/sodas');
+    navigate(inventoryId ? '/fridges' : '/sodas');
   }
 
   return (

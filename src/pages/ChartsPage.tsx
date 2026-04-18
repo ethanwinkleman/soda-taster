@@ -15,6 +15,7 @@ import { ScoreBadge } from '../components/ScoreBadge';
 
 interface Props {
   sodas: SodaEntry[];
+  groupId?: string | null;
 }
 
 function getBarColor(score: number) {
@@ -95,7 +96,7 @@ export function ChartsPage({ sodas }: Props) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Charts & Stats</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Insights</h1>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

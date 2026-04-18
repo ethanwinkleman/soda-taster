@@ -14,10 +14,11 @@ interface Props {
   onRemove: (id: string) => void;
   onLink: (inventoryId: string, sodaId: string) => void;
   onUnlink: (inventoryId: string) => void;
+  groupId?: string | null;
 }
 
 export function InventoryPage({
-  items, sodas, loading, onAdd, onSetQuantity, onRemove, onLink, onUnlink,
+  items, sodas, loading, onAdd, onSetQuantity, onRemove, onLink, onUnlink, groupId = null,
 }: Props) {
   const navigate = useNavigate();
   const [inputName, setInputName] = useState('');
@@ -52,7 +53,7 @@ export function InventoryPage({
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Inventory</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{groupId ? 'Fridge' : 'My Fridge'}</h1>
 
       {/* Stats */}
       {items.length > 0 && (
@@ -130,7 +131,7 @@ export function InventoryPage({
       ) : items.length === 0 ? (
         <div className="text-center py-20">
           <Package size={64} className="text-sky-300/50 mb-4 mx-auto" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No inventory yet</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Fridge is empty</h2>
           <p className="text-gray-500 dark:text-gray-400">
             Type a soda name above to start tracking what's in the house.
           </p>

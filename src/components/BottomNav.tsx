@@ -4,7 +4,7 @@ import { List, Heart, Package, Users, Plus } from 'lucide-react';
 const tabs = [
   { to: '/', icon: Users, label: 'Groups', end: true },
   { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
-  { to: '/inventory', icon: Package, label: 'Inventory', end: false },
+  { to: '/fridges', icon: Package, label: 'Fridge', end: false },
   { to: '/sodas', icon: List, label: 'My Sodas', end: false },
 ];
 

@@ -1,58 +1,204 @@
-import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, PlusCircle, Package, LogOut, Share2, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { NavLink, useMatch } from 'react-router-dom';
+import {
+  Heart, BarChart2, PlusCircle, Package, LogOut, Share2,
+  Users, ChevronDown, ChevronRight, List,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useGroups } from '../hooks/useGroups';
 import { Logo } from './Logo';
 import { ShareModal } from './ShareModal';
 import { useProfile } from '../hooks/useProfile';
 
-const links = [
-  { to: '/', icon: Users, label: 'Groups', end: true },
-  { to: '/sodas', icon: List, label: 'My Sodas', end: false },
-  { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
-  { to: '/inventory', icon: Package, label: 'Inventory', end: false },
-  { to: '/charts', icon: BarChart2, label: 'Charts', end: false },
+// ── Sub-page definitions (shared between My Sodas + each group) ─────────────
+const SUB_PAGES: { suffix: string; icon: LucideIcon; label: string }[] = [
+  { suffix: 'favorites', icon: Heart,    label: 'Favorites' },
+  { suffix: 'fridges',   icon: Package,  label: 'Fridge'    },
+  { suffix: 'insights',  icon: BarChart2, label: 'Insights' },
 ];
 
+// ── Reusable nav link ────────────────────────────────────────────────────────
+function NavItem({
+  to,
+  icon: Icon,
+  label,
+  indent = 1,
+}: {
+  to: string;
+  icon: LucideIcon;
+  label: string;
+  indent?: 1 | 2;
+}) {
+  const pl = indent === 1 ? 'pl-7' : 'pl-10';
+  return (
+    <NavLink
+      to={to}
+      end
+      className={({ isActive }) =>
+        `flex items-center gap-2.5 ${pl} pr-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+          isActive
+            ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400'
+            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+        }`
+      }
+    >
+      <Icon size={15} />
+      {label}
+    </NavLink>
+  );
+}
+
+// ── Collapsible section header ───────────────────────────────────────────────
+function SectionHeader({
+  icon: Icon,
+  label,
+  open,
+  onToggle,
+}: {
+  icon: LucideIcon;
+  label: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+    >
+      <Icon size={14} />
+      <span className="flex-1 text-left">{label}</span>
+      {open
+        ? <ChevronDown size={13} className="shrink-0" />
+        : <ChevronRight size={13} className="shrink-0" />}
+    </button>
+  );
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 export function Sidebar() {
   const { user, signOut } = useAuth();
-  const [shareOpen, setShareOpen] = useState(false);
+  const { groups } = useGroups(user?.id);
   const { profile, saveProfile } = useProfile(user);
+
+  const [shareOpen,      setShareOpen]      = useState(false);
+  const [mySodasOpen,    setMySodasOpen]    = useState(true);
+  const [sharedOpen,     setSharedOpen]     = useState(true);
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
-  const name = (user?.user_metadata?.full_name ?? user?.email ?? 'User') as string;
-  const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+  const name      = (user?.user_metadata?.full_name ?? user?.email ?? 'User') as string;
+  const initials  = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
+
+  // Auto-expand the group whose shared route is currently active
+  const sharedMatch  = useMatch('/shared/:groupId/*');
+  const activeGroupId = sharedMatch?.params?.groupId ?? null;
+
+  useEffect(() => {
+    if (activeGroupId) {
+      setExpandedGroups((prev) =>
+        prev.includes(activeGroupId) ? prev : [...prev, activeGroupId]
+      );
+    }
+  }, [activeGroupId]);
+
+  function toggleGroup(id: string) {
+    setExpandedGroups((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
 
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40">
+
       {/* Logo */}
       <div className="px-5 h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0">
-        <NavLink to="/">
-          <Logo size="md" />
-        </NavLink>
+        <NavLink to="/"><Logo size="md" /></NavLink>
       </div>
 
-      {/* Nav links */}
+      {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {links.map(({ to, icon: Icon, label, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-              }`
-            }
-          >
-            <Icon size={20} />
-            {label}
-          </NavLink>
-        ))}
+
+        {/* ── My Sodas ─────────────────────────────────────── */}
+        <SectionHeader
+          icon={List}
+          label="My Sodas"
+          open={mySodasOpen}
+          onToggle={() => setMySodasOpen((v) => !v)}
+        />
+        {mySodasOpen && (
+          <div className="space-y-0.5">
+            {SUB_PAGES.map(({ suffix, icon, label }) => (
+              <NavItem key={suffix} to={`/${suffix}`} icon={icon} label={label} indent={1} />
+            ))}
+          </div>
+        )}
+
+        {/* Divider */}
+        <div className="!mt-3 !mb-2 border-t border-gray-100 dark:border-gray-800" />
+
+        {/* ── Shared Sodas ──────────────────────────────────── */}
+        <SectionHeader
+          icon={Users}
+          label="Shared Sodas"
+          open={sharedOpen}
+          onToggle={() => setSharedOpen((v) => !v)}
+        />
+        {sharedOpen && (
+          <div className="space-y-0.5">
+            {groups.length === 0 ? (
+              <p className="pl-7 py-1.5 text-xs text-gray-400 dark:text-gray-500 italic">
+                No groups yet
+              </p>
+            ) : (
+              groups.map((group) => {
+                const isExpanded = expandedGroups.includes(group.id);
+                const isActive   = activeGroupId === group.id;
+                return (
+                  <div key={group.id}>
+                    {/* Group row */}
+                    <button
+                      type="button"
+                      onClick={() => toggleGroup(group.id)}
+                      className={`w-full flex items-center gap-2.5 pl-5 pr-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                        {group.name[0].toUpperCase()}
+                      </span>
+                      <span className="flex-1 text-left truncate">{group.name}</span>
+                      {isExpanded
+                        ? <ChevronDown size={13} className="shrink-0" />
+                        : <ChevronRight size={13} className="shrink-0" />}
+                    </button>
+
+                    {/* Group sub-pages */}
+                    {isExpanded && (
+                      <div className="space-y-0.5 mt-0.5">
+                        {SUB_PAGES.map(({ suffix, icon, label }) => (
+                          <NavItem
+                            key={suffix}
+                            to={`/shared/${group.id}/${suffix}`}
+                            icon={icon}
+                            label={label}
+                            indent={2}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
       </nav>
 
-      {/* Add Soda CTA */}
+      {/* Rate a Soda CTA */}
       <div className="px-3 pb-4 shrink-0">
         <NavLink
           to="/add"

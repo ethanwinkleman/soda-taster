@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useParams, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
@@ -21,6 +21,30 @@ import { GroupSodaDetailPage } from './pages/GroupSodaDetailPage';
 import { GroupAddSodaPage } from './pages/GroupAddSodaPage';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
 import type { SodaEntry } from './types/soda';
+
+// ── Shared-scope route wrappers ─────────────────────────────────────────────
+// These thread groupId from the URL into the page component.
+// Data-scoping is handled in a follow-up; for now the pages receive groupId
+// and render the personal data set as a stub.
+
+function SharedFavoritesWrapper({ sodas, onToggleFavorite }: { sodas: SodaEntry[]; onToggleFavorite: (id: string) => void }) {
+  const { groupId } = useParams<{ groupId: string }>();
+  return <FavoritesPage sodas={sodas} onToggleFavorite={onToggleFavorite} groupId={groupId} />;
+}
+
+function SharedFridgesWrapper() {
+  const { groupId } = useParams<{ groupId: string }>();
+  // Stub: data-scoping implemented in follow-up
+  return <InventoryPage groupId={groupId} items={[]} sodas={[]} loading={false}
+    onAdd={() => {}} onSetQuantity={() => {}} onRemove={() => {}} onLink={() => {}} onUnlink={() => {}} />;
+}
+
+function SharedInsightsWrapper({ sodas }: { sodas: SodaEntry[] }) {
+  const { groupId } = useParams<{ groupId: string }>();
+  return <ChartsPage sodas={sodas} groupId={groupId} />;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 function EditSodaWrapper({
   sodas,
@@ -62,19 +86,28 @@ function AppRoutes() {
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
             <Routes location={location}>
+              {/* ── Home ───────────────────────────────────── */}
               <Route path="/" element={<GroupsPage />} />
               <Route path="/sodas" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
               <Route path="/add" element={<AddSodaPage onAdd={add} onLink={invLink} />} />
               <Route path="/edit/:id" element={<EditSodaWrapper sodas={sodas} onUpdate={update} />} />
-              <Route
-                path="/soda/:id"
-                element={
-                  <SodaDetailPage sodas={sodas} onToggleFavorite={toggleFavorite} onDelete={remove} />
-                }
-              />
+              <Route path="/soda/:id" element={<SodaDetailPage sodas={sodas} onToggleFavorite={toggleFavorite} onDelete={remove} />} />
+
+              {/* ── Personal scope ─────────────────────────── */}
               <Route path="/favorites" element={<FavoritesPage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
-              <Route path="/inventory" element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
-              <Route path="/charts" element={<ChartsPage sodas={sodas} />} />
+              <Route path="/fridges"   element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
+              <Route path="/insights"  element={<ChartsPage sodas={sodas} />} />
+
+              {/* ── Redirects from old URLs ─────────────────── */}
+              <Route path="/inventory" element={<Navigate to="/fridges"  replace />} />
+              <Route path="/charts"    element={<Navigate to="/insights" replace />} />
+
+              {/* ── Shared (group) scope ────────────────────── */}
+              <Route path="/shared/:groupId/favorites" element={<SharedFavoritesWrapper sodas={sodas} onToggleFavorite={toggleFavorite} />} />
+              <Route path="/shared/:groupId/fridges"   element={<SharedFridgesWrapper />} />
+              <Route path="/shared/:groupId/insights"  element={<SharedInsightsWrapper sodas={sodas} />} />
+
+              {/* ── Group detail ────────────────────────────── */}
               <Route path="/groups/:id" element={<GroupPage />} />
               <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
               <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />

@@ -6,6 +6,7 @@ import { SodaCard } from '../components/SodaCard';
 interface Props {
   sodas: SodaEntry[];
   onToggleFavorite: (id: string) => void;
+  groupId?: string | null;
 }
 
 export function FavoritesPage({ sodas, onToggleFavorite }: Props) {
