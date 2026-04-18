@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Copy, Check, Users, Package, CupSoda, Minus, Trash2 } from 'lucide-react';
+import { ChevronLeft, Plus, Copy, Check, Users, Package, CupSoda, Minus, Trash2, Link } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useGroups } from '../hooks/useGroups';
 import { useGroupSodas } from '../hooks/useGroupSodas';
@@ -28,6 +28,7 @@ export function GroupPage() {
 
   const [tab, setTab] = useState<'sodas' | 'inventory'>('sodas');
   const [codeCopied, setCodeCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [invInput, setInvInput] = useState('');
 
   const group = groups.find((g) => g.id === id);
@@ -37,6 +38,14 @@ export function GroupPage() {
 
   function copyCode() {
     if (group) { navigator.clipboard.writeText(group.join_code); setCodeCopied(true); setTimeout(() => setCodeCopied(false), 2000); }
+  }
+
+  function copyLink() {
+    if (group) {
+      navigator.clipboard.writeText(`${window.location.origin}/join/${group.join_code}`);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    }
   }
 
   function handleInvAdd() {
@@ -55,10 +64,16 @@ export function GroupPage() {
 
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">{group?.name}</h1>
-        <button type="button" onClick={copyCode} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-mono font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shrink-0 ml-2">
-          {group?.join_code}
-          {codeCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-        </button>
+        <div className="flex items-center gap-2 ml-2 shrink-0">
+          <button type="button" onClick={copyCode} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-mono font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" title="Copy join code">
+            {group?.join_code}
+            {codeCopied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+          </button>
+          <button type="button" onClick={copyLink} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors" title="Copy invite link">
+            {linkCopied ? <Check size={12} className="text-emerald-500" /> : <Link size={12} />}
+            {linkCopied ? 'Copied!' : 'Invite'}
+          </button>
+        </div>
       </div>
 
       {/* Members */}

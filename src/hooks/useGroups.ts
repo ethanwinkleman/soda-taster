@@ -48,25 +48,29 @@ export function useGroups(userId: string | undefined) {
     return { group, error: null };
   }
 
-  async function joinGroup(code: string): Promise<string | null> {
-    if (!userId) return 'Not logged in';
+  async function joinGroup(code: string): Promise<{ groupId: string | null; error: string | null }> {
+    if (!userId) return { groupId: null, error: 'Not logged in' };
     const { data: group } = await supabase
       .from('groups')
       .select('*')
       .eq('join_code', code.toUpperCase().trim())
       .single();
 
-    if (!group) return 'Invalid code — no group found.';
+    if (!group) return { groupId: null, error: 'Invalid code — no group found.' };
 
     const { error } = await supabase
       .from('group_members')
       .insert({ group_id: group.id, user_id: userId });
 
-    if (error?.code === '23505') return 'You\'re already in this group.';
-    if (error) return error.message;
+    if (error?.code === '23505') {
+      // Already a member — still return the group ID so we can navigate there
+      setGroups((prev) => prev.find((g) => g.id === group.id) ? prev : [...prev, group]);
+      return { groupId: group.id, error: null };
+    }
+    if (error) return { groupId: null, error: error.message };
 
     setGroups((prev) => [...prev, group]);
-    return null;
+    return { groupId: group.id, error: null };
   }
 
   async function leaveGroup(groupId: string) {

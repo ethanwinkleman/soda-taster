@@ -13,10 +13,12 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { ChartsPage } from './pages/ChartsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { PublicProfilePage } from './pages/PublicProfilePage';
+import { JoinGroupPage } from './pages/JoinGroupPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { GroupPage } from './pages/GroupPage';
 import { GroupSodaDetailPage } from './pages/GroupSodaDetailPage';
 import { GroupAddSodaPage } from './pages/GroupAddSodaPage';
+import { PendingJoinHandler } from './components/PendingJoinHandler';
 import type { SodaEntry } from './types/soda';
 
 function EditSodaWrapper({
@@ -39,6 +41,7 @@ function AppRoutes() {
 
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
+      <PendingJoinHandler />
       <Sidebar />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
         <MobileHeader />
@@ -82,6 +85,7 @@ export default function App() {
         <Routes>
           {/* Public — no auth required */}
           <Route path="/u/:username" element={<PublicProfilePage />} />
+          <Route path="/join/:code" element={<JoinGroupPage />} />
           {/* Everything else requires sign-in */}
           <Route path="/*" element={
             <AuthGate>

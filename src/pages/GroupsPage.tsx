@@ -54,11 +54,12 @@ export function GroupsPage() {
   async function handleJoin() {
     if (!joinCode.trim()) return;
     setSaving(true); setError(null);
-    const err = await joinGroup(joinCode.trim());
+    const { groupId, error: err } = await joinGroup(joinCode.trim());
     setSaving(false);
     if (err) { setError(err); return; }
     setJoinCode('');
     setShowJoin(false);
+    if (groupId) navigate(`/groups/${groupId}`);
   }
 
   return (
