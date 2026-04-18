@@ -1,4 +1,3 @@
-import { CupSoda } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
@@ -8,9 +7,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-gray-400">
-          <CupSoda size={40} className="animate-pulse text-sky-400" />
-          <p className="text-sm">Loading…</p>
+        <div className="animate-pulse opacity-60">
+          <Logo size="md" />
         </div>
       </div>
     );
@@ -21,12 +19,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="flex justify-center mb-8">
-            <div className="flex flex-col items-center gap-4">
-              <div className="w-24 h-24 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl shadow-sky-500/25">
-                <CupSoda size={48} className="text-white" />
-              </div>
-              <Logo size="lg" />
-            </div>
+            <Logo size="lg" />
           </div>
           <p className="text-gray-500 dark:text-gray-400 mb-8">
             Rate and track every soda you try. Sign in to save your ratings to the cloud.

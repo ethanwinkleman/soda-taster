@@ -18,9 +18,9 @@ export function Logo({ size = 'md' }: Props) {
       <div className={`bg-gradient-to-br from-sky-400 to-indigo-500 ${pad} ${radius} shadow-md shrink-0`}>
         <CupSoda size={icon} className="text-white" />
       </div>
-      <span className={`font-black ${text} tracking-tight leading-none`}>
-        <span className="text-sky-500">Soda</span>
-        <span className="text-gray-900 dark:text-white"> Taster</span>
+      <span className={`${text} leading-none flex items-baseline gap-1.5`}>
+        <span className="font-black tracking-tight text-sky-500">Soda</span>
+        <span className="font-cursive text-gray-900 dark:text-white">Taster</span>
       </span>
     </div>
   );
