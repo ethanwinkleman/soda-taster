@@ -57,6 +57,7 @@ export function SodaDetailPage({ sodas, onToggleFavorite, onDelete }: Props) {
       .from('group_sodas')
       .insert({
         group_id: groupId,
+        created_by: user.id,
         name: soda.name,
         brand: soda.brand,
         flavor: soda.flavor,
