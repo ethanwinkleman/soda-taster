@@ -53,9 +53,10 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="flex min-h-full items-center justify-center p-6">
       <div
-        className="w-full max-w-sm max-h-[85vh] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden"
+        className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -70,7 +71,7 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
           </button>
         </div>
 
-        <div className="px-5 py-5 space-y-5 overflow-y-auto min-h-0 flex-1">
+        <div className="px-5 py-5 space-y-5">
           {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -158,6 +159,7 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
