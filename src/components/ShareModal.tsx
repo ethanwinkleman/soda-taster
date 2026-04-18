@@ -139,15 +139,24 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
-          {/* Save */}
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !usernameValid}
-            className="w-full py-3 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !usernameValid}
+              className="flex-1 py-3 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
