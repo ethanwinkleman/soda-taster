@@ -59,7 +59,7 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <h2 className="font-bold text-gray-900 dark:text-white">Share Profile</h2>
           <button
             type="button"
@@ -70,7 +70,7 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
           </button>
         </div>
 
-        <div className="px-5 py-5 space-y-5 overflow-y-auto">
+        <div className="px-5 py-5 space-y-5 overflow-y-auto min-h-0 flex-1">
           {/* Username */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
