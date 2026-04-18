@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { CupSoda, Heart } from 'lucide-react';
+import { CupSoda, Heart, Refrigerator } from 'lucide-react';
 import type { GroupSodaWithData, MemberProfile } from '../types/group';
 import { ScoreBadge } from './ScoreBadge';
 import { getTagLabel, SIZE_LABELS, SUGAR_LABELS } from '../utils/labels';
@@ -10,6 +10,7 @@ interface Props {
   userId: string;
   groupId: string;
   onToggleFavorite: (sodaId: string) => void;
+  onAddToFridge: (sodaId: string, sodaName: string) => void;
 }
 
 function MemberAvatar({ member, size = 6 }: { member: MemberProfile; size?: number }) {
@@ -24,7 +25,7 @@ function MemberAvatar({ member, size = 6 }: { member: MemberProfile; size?: numb
   );
 }
 
-export function GroupSodaCard({ soda, members, userId, groupId, onToggleFavorite }: Props) {
+export function GroupSodaCard({ soda, members, userId, groupId, onToggleFavorite, onAddToFridge }: Props) {
   const navigate = useNavigate();
   const isFavoritedByMe = soda.favoritedBy.includes(userId);
   const favMembers = members.filter((m) => soda.favoritedBy.includes(m.user_id));
@@ -52,6 +53,15 @@ export function GroupSodaCard({ soda, members, userId, groupId, onToggleFavorite
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onAddToFridge(soda.id, soda.name); }}
+                className="text-gray-300 dark:text-gray-600 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
+                aria-label="Add to fridge"
+                title="Add to fridge"
+              >
+                <Refrigerator size={17} />
+              </button>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onToggleFavorite(soda.id); }}

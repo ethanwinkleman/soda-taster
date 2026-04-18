@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Trash2, Minus, Package, ClipboardList, X, ShoppingCart, Heart } from 'lucide-react';
+import { Plus, Trash2, Minus, Refrigerator, ClipboardList, X, ShoppingCart, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { SodaEntry } from '../types/soda';
 import type { InventoryEntry } from '../types/inventory';
@@ -130,7 +130,7 @@ export function InventoryPage({
         <div className="text-center py-12 text-gray-400 dark:text-gray-500 text-sm">Loading…</div>
       ) : items.length === 0 ? (
         <div className="text-center py-20">
-          <Package size={64} className="text-sky-300/50 mb-4 mx-auto" />
+          <Refrigerator size={64} className="text-sky-300/50 mb-4 mx-auto" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Fridge is empty</h2>
           <p className="text-gray-500 dark:text-gray-400">
             Type a soda name above to start tracking what's in the house.

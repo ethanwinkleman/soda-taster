@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Copy, Check, Users, Package, CupSoda, Minus, Trash2, Link } from 'lucide-react';
+import { ChevronLeft, Plus, Copy, Check, Users, Refrigerator, CupSoda, Minus, Trash2, Link } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useGroups } from '../hooks/useGroups';
 import { useGroupSodas } from '../hooks/useGroupSodas';
@@ -99,7 +99,7 @@ export function GroupPage() {
               tab === t ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400'
             }`}
           >
-            {t === 'sodas' ? <CupSoda size={15} /> : <Package size={15} />}
+            {t === 'sodas' ? <CupSoda size={15} /> : <Refrigerator size={15} />}
             {t === 'sodas' ? 'Sodas' : 'Fridge'}
           </button>
         ))}
@@ -133,6 +133,7 @@ export function GroupPage() {
                   userId={user?.id ?? ''}
                   groupId={id ?? ''}
                   onToggleFavorite={toggleFavorite}
+                  onAddToFridge={(_, name) => addItem(name, soda.id)}
                 />
               ))}
             </div>
@@ -165,7 +166,7 @@ export function GroupPage() {
             <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>
           ) : items.length === 0 ? (
             <div className="text-center py-16">
-              <Package size={48} className="text-sky-300/50 mx-auto mb-3" />
+              <Refrigerator size={48} className="text-sky-300/50 mx-auto mb-3" />
               <p className="text-gray-500 dark:text-gray-400">No inventory yet.</p>
             </div>
           ) : (

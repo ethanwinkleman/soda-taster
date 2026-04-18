@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, PlusCircle, CupSoda, Package } from 'lucide-react';
+import { List, Heart, BarChart2, PlusCircle, CupSoda, Refrigerator } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 
 const links = [
   { to: '/', icon: <List size={20} />, label: 'All Sodas' },
   { to: '/favorites', icon: <Heart size={20} />, label: 'Favorites' },
-  { to: '/inventory', icon: <Package size={20} />, label: 'Inventory' },
+  { to: '/inventory', icon: <Refrigerator size={20} />, label: 'Inventory' },
   { to: '/charts', icon: <BarChart2 size={20} />, label: 'Charts' },
 ];
 

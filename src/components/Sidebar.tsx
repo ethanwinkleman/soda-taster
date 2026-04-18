@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useMatch } from 'react-router-dom';
+import { NavLink, useMatch, useNavigate } from 'react-router-dom';
 import {
-  Heart, BarChart2, PlusCircle, Package, LogOut, Share2,
+  Heart, BarChart2, PlusCircle, Refrigerator, LogOut, Share2,
   Users, ChevronDown, ChevronRight, List,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -14,7 +14,7 @@ import { useProfile } from '../hooks/useProfile';
 // ── Sub-page definitions (shared between My Sodas + each group) ─────────────
 const SUB_PAGES: { suffix: string; icon: LucideIcon; label: string }[] = [
   { suffix: 'favorites', icon: Heart,    label: 'Favorites' },
-  { suffix: 'fridges',   icon: Package,  label: 'Fridge'    },
+  { suffix: 'fridges',   icon: Refrigerator,  label: 'Fridge'    },
   { suffix: 'insights',  icon: BarChart2, label: 'Insights' },
 ];
 
@@ -55,24 +55,35 @@ function SectionHeader({
   label,
   open,
   onToggle,
+  to,
 }: {
   icon: LucideIcon;
   label: string;
   open: boolean;
   onToggle: () => void;
+  to?: string;
 }) {
+  const navigate = useNavigate();
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-    >
-      <Icon size={14} />
-      <span className="flex-1 text-left">{label}</span>
-      {open
-        ? <ChevronDown size={13} className="shrink-0" />
-        : <ChevronRight size={13} className="shrink-0" />}
-    </button>
+    <div className="flex items-center gap-0.5">
+      <button
+        type="button"
+        onClick={() => { if (to) navigate(to); if (!open) onToggle(); }}
+        className="flex-1 flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      >
+        <Icon size={14} />
+        <span className="flex-1 text-left">{label}</span>
+      </button>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+      >
+        {open
+          ? <ChevronDown size={13} />
+          : <ChevronRight size={13} />}
+      </button>
+    </div>
   );
 }
 
@@ -82,6 +93,7 @@ export function Sidebar() {
   const { groups } = useGroups(user?.id);
   const { profile, saveProfile } = useProfile(user);
 
+  const navigate = useNavigate();
   const [shareOpen,      setShareOpen]      = useState(false);
   const [mySodasOpen,    setMySodasOpen]    = useState(true);
   const [sharedOpen,     setSharedOpen]     = useState(true);
@@ -126,6 +138,7 @@ export function Sidebar() {
           label="My Sodas"
           open={mySodasOpen}
           onToggle={() => setMySodasOpen((v) => !v)}
+          to="/sodas"
         />
         {mySodasOpen && (
           <div className="space-y-0.5">
@@ -158,23 +171,35 @@ export function Sidebar() {
                 return (
                   <div key={group.id}>
                     {/* Group row */}
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(group.id)}
-                      className={`w-full flex items-center gap-2.5 pl-5 pr-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                        isActive
-                          ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400'
-                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                      }`}
-                    >
-                      <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                        {group.name[0].toUpperCase()}
-                      </span>
-                      <span className="flex-1 text-left truncate">{group.name}</span>
-                      {isExpanded
-                        ? <ChevronDown size={13} className="shrink-0" />
-                        : <ChevronRight size={13} className="shrink-0" />}
-                    </button>
+                    <div className={`flex items-center gap-0.5 rounded-xl ${isActive ? 'bg-sky-50 dark:bg-sky-900/40' : ''}`}>
+                      <button
+                        type="button"
+                        onClick={() => { navigate(`/groups/${group.id}`); if (!isExpanded) toggleGroup(group.id); }}
+                        className={`flex-1 flex items-center gap-2.5 pl-5 pr-2 py-2 rounded-xl text-sm font-medium transition-colors ${
+                          isActive
+                            ? 'text-sky-600 dark:text-sky-400'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                        }`}
+                      >
+                        <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                          {group.name[0].toUpperCase()}
+                        </span>
+                        <span className="flex-1 text-left truncate">{group.name}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(group.id)}
+                        className={`p-2 rounded-xl transition-colors ${
+                          isActive
+                            ? 'text-sky-600 dark:text-sky-400'
+                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        {isExpanded
+                          ? <ChevronDown size={13} />
+                          : <ChevronRight size={13} />}
+                      </button>
+                    </div>
 
                     {/* Group sub-pages */}
                     {isExpanded && (
