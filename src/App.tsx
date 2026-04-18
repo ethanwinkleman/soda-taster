@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
 import { useSodas } from './hooks/useSodas';
@@ -19,7 +20,6 @@ import { GroupPage } from './pages/GroupPage';
 import { GroupSodaDetailPage } from './pages/GroupSodaDetailPage';
 import { GroupAddSodaPage } from './pages/GroupAddSodaPage';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
-import { PageTransition } from './components/PageTransition';
 import type { SodaEntry } from './types/soda';
 
 function EditSodaWrapper({
@@ -37,6 +37,7 @@ function EditSodaWrapper({
 
 function AppRoutes() {
   const { user } = useAuth();
+  const location = useLocation();
   const { sodas, error, add, update, remove, toggleFavorite } = useSodas(user?.id);
   const { items, loading: invLoading, add: invAdd, setQuantity: invSetQty, remove: invRemove, link: invLink, unlink: invUnlink } = useInventory(user?.id);
 
@@ -53,27 +54,35 @@ function AppRoutes() {
             </div>
           </div>
         )}
-        <main className="flex-1 pb-20 md:pb-0 flex flex-col">
-          <PageTransition>
-          <Routes>
-            <Route path="/" element={<GroupsPage />} />
-            <Route path="/sodas" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
-            <Route path="/add" element={<AddSodaPage onAdd={add} onLink={invLink} />} />
-            <Route path="/edit/:id" element={<EditSodaWrapper sodas={sodas} onUpdate={update} />} />
-            <Route
-              path="/soda/:id"
-              element={
-                <SodaDetailPage sodas={sodas} onToggleFavorite={toggleFavorite} onDelete={remove} />
-              }
-            />
-            <Route path="/favorites" element={<FavoritesPage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
-            <Route path="/inventory" element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
-            <Route path="/charts" element={<ChartsPage sodas={sodas} />} />
-            <Route path="/groups/:id" element={<GroupPage />} />
-            <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
-            <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />
-          </Routes>
-          </PageTransition>
+        <main className="flex-1 pb-20 md:pb-0 overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <Routes location={location}>
+                <Route path="/" element={<GroupsPage />} />
+                <Route path="/sodas" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
+                <Route path="/add" element={<AddSodaPage onAdd={add} onLink={invLink} />} />
+                <Route path="/edit/:id" element={<EditSodaWrapper sodas={sodas} onUpdate={update} />} />
+                <Route
+                  path="/soda/:id"
+                  element={
+                    <SodaDetailPage sodas={sodas} onToggleFavorite={toggleFavorite} onDelete={remove} />
+                  }
+                />
+                <Route path="/favorites" element={<FavoritesPage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
+                <Route path="/inventory" element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
+                <Route path="/charts" element={<ChartsPage sodas={sodas} />} />
+                <Route path="/groups/:id" element={<GroupPage />} />
+                <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
+                <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
       <BottomNav />
