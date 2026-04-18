@@ -59,7 +59,7 @@ export function GroupPage() {
     <div className="max-w-2xl mx-auto px-4 py-6">
       {/* Header */}
       <button type="button" onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4 transition-colors">
-        <ChevronLeft size={16} /> Home
+        <ChevronLeft size={16} /> Stashes
       </button>
 
       <div className="flex items-center justify-between mb-2">

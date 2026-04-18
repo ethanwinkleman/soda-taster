@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { List, Users, Plus } from 'lucide-react';
+import { Lock, Layers, Plus } from 'lucide-react';
 
 export function BottomNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-100 dark:border-gray-800">
       <div className="flex items-center h-16 pb-safe">
 
-        {/* My Sodas */}
+        {/* My Stash */}
         <NavLink
           to="/sodas"
           className={({ isActive }) =>
@@ -19,8 +19,8 @@ export function BottomNav() {
         >
           {({ isActive }) => (
             <>
-              <List size={22} strokeWidth={isActive ? 2.5 : 1.75} />
-              <span>My Sodas</span>
+              <Lock size={22} strokeWidth={isActive ? 2.5 : 1.75} />
+              <span>My Stash</span>
             </>
           )}
         </NavLink>
@@ -36,7 +36,7 @@ export function BottomNav() {
           </NavLink>
         </div>
 
-        {/* Groups */}
+        {/* Stashes */}
         <NavLink
           to="/"
           end
@@ -50,8 +50,8 @@ export function BottomNav() {
         >
           {({ isActive }) => (
             <>
-              <Users size={22} strokeWidth={isActive ? 2.5 : 1.75} />
-              <span>Groups</span>
+              <Layers size={22} strokeWidth={isActive ? 2.5 : 1.75} />
+              <span>Stashes</span>
             </>
           )}
         </NavLink>

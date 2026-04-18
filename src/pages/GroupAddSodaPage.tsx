@@ -68,9 +68,9 @@ export function GroupAddSodaPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <button type="button" onClick={() => navigate(`/groups/${groupId}`)} className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4 transition-colors">
-        <ChevronLeft size={16} /> Back
+        <ChevronLeft size={16} /> Stash
       </button>
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Group Soda</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add to Stash</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Photo */}

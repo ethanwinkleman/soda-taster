@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useMatch, useNavigate } from 'react-router-dom';
+import { NavLink, useMatch, useNavigate, useLocation } from 'react-router-dom';
 import {
   Heart, BarChart2, PlusCircle, Refrigerator, LogOut, Share2,
-  Users, ChevronDown, ChevronRight, List,
+  Users, ChevronDown, ChevronRight, Lock,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,12 +11,14 @@ import { Logo } from './Logo';
 import { ShareModal } from './ShareModal';
 import { useProfile } from '../hooks/useProfile';
 
-// ── Sub-page definitions (shared between My Sodas + each group) ─────────────
+// ── Sub-page definitions ─────────────────────────────────────────────────────
 const SUB_PAGES: { suffix: string; icon: LucideIcon; label: string }[] = [
-  { suffix: 'favorites', icon: Heart,    label: 'Favorites' },
-  { suffix: 'fridges',   icon: Refrigerator,  label: 'Fridge'    },
-  { suffix: 'insights',  icon: BarChart2, label: 'Insights' },
+  { suffix: 'favorites', icon: Heart,        label: 'Favorites' },
+  { suffix: 'fridges',   icon: Refrigerator, label: 'Fridge'    },
+  { suffix: 'insights',  icon: BarChart2,    label: 'Insights'  },
 ];
+
+const MY_STASH_ROUTES = ['/sodas', '/favorites', '/fridges', '/insights'];
 
 // ── Reusable nav link ────────────────────────────────────────────────────────
 function NavItem({
@@ -49,63 +51,31 @@ function NavItem({
   );
 }
 
-// ── Collapsible section header ───────────────────────────────────────────────
-function SectionHeader({
-  icon: Icon,
-  label,
-  open,
-  onToggle,
-  to,
-}: {
-  icon: LucideIcon;
-  label: string;
-  open: boolean;
-  onToggle: () => void;
-  to?: string;
-}) {
-  const navigate = useNavigate();
-  return (
-    <div className="flex items-center gap-0.5">
-      <button
-        type="button"
-        onClick={() => { if (to) navigate(to); if (!open) onToggle(); }}
-        className="flex-1 flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-      >
-        <Icon size={14} />
-        <span className="flex-1 text-left">{label}</span>
-      </button>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="p-2 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-      >
-        {open
-          ? <ChevronDown size={13} />
-          : <ChevronRight size={13} />}
-      </button>
-    </div>
-  );
-}
-
 // ── Main component ───────────────────────────────────────────────────────────
 export function Sidebar() {
   const { user, signOut } = useAuth();
   const { groups } = useGroups(user?.id);
   const { profile, saveProfile } = useProfile(user);
-
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [shareOpen,      setShareOpen]      = useState(false);
-  const [mySodasOpen,    setMySodasOpen]    = useState(true);
-  const [sharedOpen,     setSharedOpen]     = useState(true);
+  const [myStashOpen,    setMyStashOpen]    = useState(true);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
   const name      = (user?.user_metadata?.full_name ?? user?.email ?? 'User') as string;
   const initials  = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
+  const isPersonalRoute = MY_STASH_ROUTES.some((r) => location.pathname === r);
+
   // Auto-expand the group whose shared route is currently active
-  const sharedMatch  = useMatch('/shared/:groupId/*');
+  const sharedMatch   = useMatch('/shared/:groupId/*');
   const activeGroupId = sharedMatch?.params?.groupId ?? null;
+
+  useEffect(() => {
+    if (isPersonalRoute) setMyStashOpen(true);
+  }, [isPersonalRoute]);
 
   useEffect(() => {
     if (activeGroupId) {
@@ -130,97 +100,116 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
 
-        {/* ── My Sodas ─────────────────────────────────────── */}
-        <SectionHeader
-          icon={List}
-          label="My Sodas"
-          open={mySodasOpen}
-          onToggle={() => setMySodasOpen((v) => !v)}
-          to="/sodas"
-        />
-        {mySodasOpen && (
-          <div className="space-y-0.5">
-            {SUB_PAGES.map(({ suffix, icon, label }) => (
-              <NavItem key={suffix} to={`/${suffix}`} icon={icon} label={label} indent={1} />
-            ))}
-          </div>
-        )}
+        {/* Section label */}
+        <p className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          Stashes
+        </p>
 
-        {/* Divider */}
-        <div className="!mt-3 !mb-2 border-t border-gray-100 dark:border-gray-800" />
+        <div className="space-y-0.5">
 
-        {/* ── Shared Sodas ──────────────────────────────────── */}
-        <SectionHeader
-          icon={Users}
-          label="Shared Sodas"
-          open={sharedOpen}
-          onToggle={() => setSharedOpen((v) => !v)}
-        />
-        {sharedOpen && (
-          <div className="space-y-0.5">
-            {groups.length === 0 ? (
-              <p className="pl-7 py-1.5 text-xs text-gray-400 dark:text-gray-500 italic">
-                No groups yet
-              </p>
-            ) : (
-              groups.map((group) => {
-                const isExpanded = expandedGroups.includes(group.id);
-                const isActive   = activeGroupId === group.id;
-                return (
-                  <div key={group.id}>
-                    {/* Group row */}
-                    <div className={`flex items-center gap-0.5 rounded-xl ${isActive ? 'bg-sky-50 dark:bg-sky-900/40' : ''}`}>
-                      <button
-                        type="button"
-                        onClick={() => { navigate(`/groups/${group.id}`); if (!isExpanded) toggleGroup(group.id); }}
-                        className={`flex-1 flex items-center gap-2.5 pl-5 pr-2 py-2 rounded-xl text-sm font-medium transition-colors ${
-                          isActive
-                            ? 'text-sky-600 dark:text-sky-400'
-                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                        }`}
-                      >
-                        <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                          {group.name[0].toUpperCase()}
-                        </span>
-                        <span className="flex-1 text-left truncate">{group.name}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleGroup(group.id)}
-                        className={`p-2 rounded-xl transition-colors ${
-                          isActive
-                            ? 'text-sky-600 dark:text-sky-400'
-                            : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        {isExpanded
-                          ? <ChevronDown size={13} />
-                          : <ChevronRight size={13} />}
-                      </button>
-                    </div>
-
-                    {/* Group sub-pages */}
-                    {isExpanded && (
-                      <div className="space-y-0.5 mt-0.5">
-                        {SUB_PAGES.map(({ suffix, icon, label }) => (
-                          <NavItem
-                            key={suffix}
-                            to={`/shared/${group.id}/${suffix}`}
-                            icon={icon}
-                            label={label}
-                            indent={2}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+          {/* ── My Stash (personal / private) ──────────────── */}
+          <div>
+            <div className={`flex items-center gap-0.5 rounded-xl ${isPersonalRoute ? 'bg-sky-50 dark:bg-sky-900/40' : ''}`}>
+              <button
+                type="button"
+                onClick={() => { navigate('/sodas'); setMyStashOpen(true); }}
+                className={`flex-1 flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  isPersonalRoute
+                    ? 'text-sky-600 dark:text-sky-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+              >
+                <span className="w-5 h-5 rounded-md bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center shrink-0">
+                  <Lock size={10} className="text-white" />
+                </span>
+                <span className="flex-1 text-left">My Stash</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMyStashOpen((v) => !v)}
+                className={`p-2 rounded-xl transition-colors ${
+                  isPersonalRoute
+                    ? 'text-sky-600 dark:text-sky-400'
+                    : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                }`}
+              >
+                {myStashOpen ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+              </button>
+            </div>
+            {myStashOpen && (
+              <div className="space-y-0.5 mt-0.5">
+                {SUB_PAGES.map(({ suffix, icon, label }) => (
+                  <NavItem key={suffix} to={`/${suffix}`} icon={icon} label={label} indent={2} />
+                ))}
+              </div>
             )}
           </div>
-        )}
+
+          {/* ── Shared stashes (groups) ─────────────────────── */}
+          {groups.map((group) => {
+            const isExpanded = expandedGroups.includes(group.id);
+            const isActive   = activeGroupId === group.id;
+            return (
+              <div key={group.id}>
+                <div className={`flex items-center gap-0.5 rounded-xl ${isActive ? 'bg-sky-50 dark:bg-sky-900/40' : ''}`}>
+                  <button
+                    type="button"
+                    onClick={() => { navigate(`/groups/${group.id}`); if (!isExpanded) toggleGroup(group.id); }}
+                    className={`flex-1 flex items-center gap-2.5 pl-3 pr-2 py-2 rounded-xl text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                      {group.name[0].toUpperCase()}
+                    </span>
+                    <span className="flex-1 text-left truncate">{group.name}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.id)}
+                    className={`p-2 rounded-xl transition-colors ${
+                      isActive
+                        ? 'text-sky-600 dark:text-sky-400'
+                        : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                  </button>
+                </div>
+                {isExpanded && (
+                  <div className="space-y-0.5 mt-0.5">
+                    {SUB_PAGES.map(({ suffix, icon, label }) => (
+                      <NavItem
+                        key={suffix}
+                        to={`/shared/${group.id}/${suffix}`}
+                        icon={icon}
+                        label={label}
+                        indent={2}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* New shared stash shortcut */}
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="w-full flex items-center gap-2.5 pl-3 pr-3 py-2 rounded-xl text-sm font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            <span className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
+              <Users size={10} />
+            </span>
+            <span>New shared stash…</span>
+          </button>
+
+        </div>
       </nav>
 
       {/* Rate a Soda CTA */}
