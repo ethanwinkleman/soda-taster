@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, PlusCircle, Package, LogOut } from 'lucide-react';
+import { List, Heart, BarChart2, PlusCircle, Package, LogOut, Share2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
+import { ShareModal } from './ShareModal';
+import { useProfile } from '../hooks/useProfile';
 
 const links = [
   { to: '/', icon: List, label: 'All Sodas', end: true },
@@ -12,6 +15,8 @@ const links = [
 
 export function Sidebar() {
   const { user, signOut } = useAuth();
+  const [shareOpen, setShareOpen] = useState(false);
+  const { profile, saveProfile } = useProfile(user);
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
   const name = (user?.user_metadata?.full_name ?? user?.email ?? 'User') as string;
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
@@ -73,6 +78,15 @@ export function Sidebar() {
           </div>
           <button
             type="button"
+            onClick={() => setShareOpen(true)}
+            className="p-2 text-gray-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors shrink-0"
+            aria-label="Share profile"
+            title="Share profile"
+          >
+            <Share2 size={16} />
+          </button>
+          <button
+            type="button"
             onClick={signOut}
             className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
             aria-label="Sign out"
@@ -81,6 +95,15 @@ export function Sidebar() {
             <LogOut size={16} />
           </button>
         </div>
+      )}
+
+      {shareOpen && user && (
+        <ShareModal
+          user={user}
+          profile={profile}
+          onSave={saveProfile}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </aside>
   );

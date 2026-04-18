@@ -12,6 +12,7 @@ import { SodaDetailPage } from './pages/SodaDetailPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { ChartsPage } from './pages/ChartsPage';
 import { InventoryPage } from './pages/InventoryPage';
+import { PublicProfilePage } from './pages/PublicProfilePage';
 import type { SodaEntry } from './types/soda';
 
 function EditSodaWrapper({
@@ -70,9 +71,16 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AuthGate>
-          <AppRoutes />
-        </AuthGate>
+        <Routes>
+          {/* Public — no auth required */}
+          <Route path="/u/:username" element={<PublicProfilePage />} />
+          {/* Everything else requires sign-in */}
+          <Route path="/*" element={
+            <AuthGate>
+              <AppRoutes />
+            </AuthGate>
+          } />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -7,9 +7,10 @@ import { getTagLabel, SIZE_LABELS, SUGAR_LABELS } from '../utils/labels';
 interface Props {
   soda: SodaEntry;
   onToggleFavorite: (id: string) => void;
+  readOnly?: boolean;
 }
 
-export function SodaCard({ soda, onToggleFavorite }: Props) {
+export function SodaCard({ soda, onToggleFavorite, readOnly = false }: Props) {
   const navigate = useNavigate();
 
   const image = soda.photo ? (
@@ -36,14 +37,16 @@ export function SodaCard({ soda, onToggleFavorite }: Props) {
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); onToggleFavorite(soda.id); }}
-                className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                aria-label={soda.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                <Heart size={18} className={soda.isFavorite ? 'fill-red-500 text-red-500' : ''} />
-              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); onToggleFavorite(soda.id); }}
+                  className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                  aria-label={soda.isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                  <Heart size={18} className={soda.isFavorite ? 'fill-red-500 text-red-500' : ''} />
+                </button>
+              )}
               <ScoreBadge score={soda.overallScore} size="sm" />
             </div>
           </div>

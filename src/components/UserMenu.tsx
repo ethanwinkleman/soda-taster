@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown, Share2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { ShareModal } from './ShareModal';
+import { useProfile } from '../hooks/useProfile';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { profile, saveProfile } = useProfile(user);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -49,6 +53,14 @@ export function UserMenu() {
           </div>
           <button
             type="button"
+            onClick={() => { setOpen(false); setShareOpen(true); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+          >
+            <Share2 size={15} />
+            Share Profile
+          </button>
+          <button
+            type="button"
             onClick={() => { setOpen(false); signOut(); }}
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
           >
@@ -56,6 +68,15 @@ export function UserMenu() {
             Sign out
           </button>
         </div>
+      )}
+
+      {shareOpen && (
+        <ShareModal
+          user={user}
+          profile={profile}
+          onSave={saveProfile}
+          onClose={() => setShareOpen(false)}
+        />
       )}
     </div>
   );
