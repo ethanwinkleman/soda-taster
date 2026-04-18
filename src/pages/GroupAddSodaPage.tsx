@@ -76,12 +76,12 @@ export function GroupAddSodaPage() {
         {/* Photo */}
         <div className="flex flex-col items-center">
           {photo ? (
-            <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <div className="relative w-1/2 aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
               <img src={photo} alt="Soda" className="w-full h-full object-cover" />
               <button type="button" onClick={() => setPhoto(null)} className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70 transition-colors"><X size={16} /></button>
             </div>
           ) : (
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full aspect-[3/4] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-sky-400 hover:text-sky-400 transition-colors">
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="w-1/2 aspect-[3/4] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-sky-400 hover:text-sky-400 transition-colors">
               <Upload size={24} /><span className="text-sm font-medium">Upload photo</span>
             </button>
           )}

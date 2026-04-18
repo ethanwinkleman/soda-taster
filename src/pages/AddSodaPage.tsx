@@ -222,7 +222,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
         {/* Photo upload */}
         <div className="flex flex-col items-center">
           {photo ? (
-            <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
+            <div className="relative w-1/2 aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">
               <img src={photo} alt="Soda" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -236,7 +236,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full aspect-[3/4] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-sky-400 hover:text-sky-400 transition-colors"
+              className="w-1/2 aspect-[3/4] border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-sky-400 hover:text-sky-400 transition-colors"
             >
               <Upload size={24} />
               <span className="text-sm font-medium">Upload photo</span>
