@@ -14,16 +14,14 @@ export function JoinGroupPage() {
   const [groupName, setGroupName] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
 
-  // Look up the group name so we can show a preview
+  // Look up the group name via a public RPC (bypasses RLS for unauthenticated users)
   useEffect(() => {
     if (!code) return;
     supabase
-      .from('groups')
-      .select('name')
-      .eq('join_code', code.toUpperCase())
-      .single()
+      .rpc('lookup_group_by_code', { code: code.toUpperCase() })
       .then(({ data }) => {
-        if (data) setGroupName(data.name);
+        const group = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (group) setGroupName(group.name);
         else setInvalid(true);
       });
   }, [code]);
