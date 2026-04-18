@@ -1,5 +1,6 @@
 import { CupSoda } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from './Logo';
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -19,12 +20,14 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-sky-100 dark:bg-sky-900/40 rounded-3xl flex items-center justify-center">
-              <CupSoda size={40} className="text-sky-500" />
+          <div className="flex justify-center mb-8">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-24 h-24 bg-gradient-to-br from-sky-400 to-indigo-500 rounded-3xl flex items-center justify-center shadow-xl shadow-sky-500/25">
+                <CupSoda size={48} className="text-white" />
+              </div>
+              <Logo size="lg" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Soda Taster</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-8">
             Rate and track every soda you try. Sign in to save your ratings to the cloud.
           </p>

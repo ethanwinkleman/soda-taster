@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, PlusCircle, CupSoda, Package, LogOut } from 'lucide-react';
+import { List, Heart, BarChart2, PlusCircle, Package, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { Logo } from './Logo';
 
 const links = [
   { to: '/', icon: List, label: 'All Sodas', end: true },
@@ -18,9 +19,10 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40">
       {/* Logo */}
-      <div className="px-6 h-16 flex items-center gap-3 border-b border-gray-100 dark:border-gray-800 shrink-0">
-        <CupSoda size={26} className="text-sky-400 shrink-0" />
-        <span className="font-bold text-lg text-gray-900 dark:text-white">Soda Taster</span>
+      <div className="px-5 h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0">
+        <NavLink to="/">
+          <Logo size="md" />
+        </NavLink>
       </div>
 
       {/* Nav links */}
