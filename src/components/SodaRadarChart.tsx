@@ -37,7 +37,7 @@ export function SodaRadarChart({ ratings }: Props) {
           strokeWidth={2}
         />
         <Tooltip
-          formatter={(val) => [`${val}/10`, '']}
+          formatter={(val) => [`${val}/5`, '']}
           contentStyle={{
             background: '#1e293b',
             border: 'none',

@@ -6,7 +6,7 @@ interface Props {
   readOnly?: boolean;
 }
 
-export function StarRating({ value, onChange, max = 10, size = 'md', readOnly = false }: Props) {
+export function StarRating({ value, onChange, max = 5, size = 'md', readOnly = false }: Props) {
   const sizeClass = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-3xl' : 'text-2xl';
 
   return (

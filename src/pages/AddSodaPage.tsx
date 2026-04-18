@@ -15,11 +15,11 @@ interface Props {
 const ALL_TAGS = Object.keys(TAG_LABELS) as FlavorTag[];
 
 const defaultRatings: CategoryRatings = {
-  taste: 5,
-  sweetness: 5,
-  carbonation: 5,
-  aftertaste: 5,
-  packaging: 5,
+  taste: 3,
+  sweetness: 3,
+  carbonation: 3,
+  aftertaste: 3,
+  packaging: 3,
 };
 
 export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
@@ -339,7 +339,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
               Overall Score
             </span>
             <span className="text-lg font-bold text-sky-500">
-              {computeOverallScore(ratings).toFixed(1)}/10
+              {computeOverallScore(ratings).toFixed(1)}/5
             </span>
           </div>
         </div>

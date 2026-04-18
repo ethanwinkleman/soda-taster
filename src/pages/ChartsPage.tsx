@@ -18,10 +18,10 @@ interface Props {
 }
 
 function getBarColor(score: number) {
-  if (score >= 8.5) return '#10b981';
-  if (score >= 7) return '#4ade80';
-  if (score >= 5.5) return '#facc15';
-  if (score >= 4) return '#fb923c';
+  if (score >= 4.25) return '#10b981';
+  if (score >= 3.5) return '#4ade80';
+  if (score >= 2.75) return '#facc15';
+  if (score >= 2) return '#fb923c';
   return '#ef4444';
 }
 
@@ -66,20 +66,20 @@ export function ChartsPage({ sodas }: Props) {
     value: Math.round(value * 10) / 10,
   }));
 
-  // Distribution: bucket scores 1-2, 2-4, 4-6, 6-8, 8-10
+  // Distribution: bucket scores 1, 2, 3, 4, 5
   const distribution = [
-    { range: '1–2', count: 0 },
-    { range: '2–4', count: 0 },
-    { range: '4–6', count: 0 },
-    { range: '6–8', count: 0 },
-    { range: '8–10', count: 0 },
+    { range: '1★', count: 0 },
+    { range: '2★', count: 0 },
+    { range: '3★', count: 0 },
+    { range: '4★', count: 0 },
+    { range: '5★', count: 0 },
   ];
   sodas.forEach((s) => {
     const sc = s.overallScore;
-    if (sc <= 2) distribution[0].count++;
-    else if (sc <= 4) distribution[1].count++;
-    else if (sc <= 6) distribution[2].count++;
-    else if (sc <= 8) distribution[3].count++;
+    if (sc <= 1.5) distribution[0].count++;
+    else if (sc <= 2.5) distribution[1].count++;
+    else if (sc <= 3.5) distribution[2].count++;
+    else if (sc <= 4.5) distribution[3].count++;
     else distribution[4].count++;
   });
 
@@ -107,7 +107,7 @@ export function ChartsPage({ sodas }: Props) {
         <StatCard
           label="Best Soda"
           value={top5[0]?.name ?? '—'}
-          sub={top5[0] ? `${top5[0].overallScore.toFixed(1)}/10` : undefined}
+          sub={top5[0] ? `${top5[0].overallScore.toFixed(1)}/5` : undefined}
         />
         <StatCard label="Favorites" value={sodas.filter((s) => s.isFavorite).length.toString()} />
       </div>
@@ -130,9 +130,9 @@ export function ChartsPage({ sodas }: Props) {
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={avgData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
-            <XAxis type="number" domain={[0, 10]} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+            <XAxis type="number" domain={[0, 5]} tick={{ fill: '#9ca3af', fontSize: 12 }} />
             <YAxis dataKey="name" type="category" tick={{ fill: '#9ca3af', fontSize: 12 }} width={80} />
-            <Tooltip {...chartStyle} formatter={(v) => [`${v}/10`, '']} />
+            <Tooltip {...chartStyle} formatter={(v) => [`${v}/5`, '']} />
             <Bar dataKey="value" radius={[0, 4, 4, 0]}>
               {avgData.map((_entry, i) => (
                 <Cell key={i} fill={['#38bdf8', '#818cf8', '#34d399', '#fb923c', '#f472b6'][i % 5]} />
@@ -162,7 +162,7 @@ export function ChartsPage({ sodas }: Props) {
                 <div
                   className="h-2 rounded-full"
                   style={{
-                    width: `${(soda.overallScore / 10) * 80}px`,
+                    width: `${(soda.overallScore / 5) * 80}px`,
                     background: getBarColor(soda.overallScore),
                   }}
                 />

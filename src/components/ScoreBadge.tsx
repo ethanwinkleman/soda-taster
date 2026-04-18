@@ -4,10 +4,10 @@ interface Props {
 }
 
 function getColor(score: number) {
-  if (score >= 8.5) return 'bg-emerald-500 text-white';
-  if (score >= 7) return 'bg-green-400 text-white';
-  if (score >= 5.5) return 'bg-yellow-400 text-gray-900';
-  if (score >= 4) return 'bg-orange-400 text-white';
+  if (score >= 4.25) return 'bg-emerald-500 text-white';
+  if (score >= 3.5) return 'bg-green-400 text-white';
+  if (score >= 2.75) return 'bg-yellow-400 text-gray-900';
+  if (score >= 2) return 'bg-orange-400 text-white';
   return 'bg-red-500 text-white';
 }
 

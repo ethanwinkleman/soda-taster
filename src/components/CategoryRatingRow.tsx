@@ -18,7 +18,7 @@ export function CategoryRatingRow({ label, value, onChange, readOnly = false }: 
       </div>
       {readOnly && (
         <span className="text-sm font-semibold text-gray-600 dark:text-gray-400 w-8 text-right tabular-nums">
-          {value}/10
+          {value}/5
         </span>
       )}
     </div>
