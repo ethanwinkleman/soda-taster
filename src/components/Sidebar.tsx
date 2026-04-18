@@ -7,10 +7,10 @@ import { ShareModal } from './ShareModal';
 import { useProfile } from '../hooks/useProfile';
 
 const links = [
-  { to: '/', icon: List, label: 'All Sodas', end: true },
+  { to: '/', icon: Users, label: 'Groups', end: true },
+  { to: '/sodas', icon: List, label: 'My Sodas', end: false },
   { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
   { to: '/inventory', icon: Package, label: 'Inventory', end: false },
-  { to: '/groups', icon: Users, label: 'Groups', end: false },
   { to: '/charts', icon: BarChart2, label: 'Charts', end: false },
 ];
 

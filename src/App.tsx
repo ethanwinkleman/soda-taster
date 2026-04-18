@@ -51,7 +51,8 @@ function AppRoutes() {
         )}
         <main className="flex-1 pb-20 md:pb-0">
           <Routes>
-            <Route path="/" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
+            <Route path="/" element={<GroupsPage />} />
+            <Route path="/sodas" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
             <Route path="/add" element={<AddSodaPage onAdd={add} onLink={invLink} />} />
             <Route path="/edit/:id" element={<EditSodaWrapper sodas={sodas} onUpdate={update} />} />
             <Route
@@ -63,7 +64,6 @@ function AppRoutes() {
             <Route path="/favorites" element={<FavoritesPage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
             <Route path="/inventory" element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
             <Route path="/charts" element={<ChartsPage sodas={sodas} />} />
-            <Route path="/groups" element={<GroupsPage />} />
             <Route path="/groups/:id" element={<GroupPage />} />
             <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
             <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogIn, Users, Copy, Check, ChevronRight } from 'lucide-react';
+import { Plus, LogIn, Users, Copy, Check, ChevronRight, Lock, List } from 'lucide-react';
 import type { Group } from '../types/group';
 import { useGroups } from '../hooks/useGroups';
 import { useAuth } from '../contexts/AuthContext';
+import { useSodas } from '../hooks/useSodas';
 
 function JoinCodeBadge({ code }: { code: string }) {
   const [copied, setCopied] = useState(false);
@@ -28,6 +29,7 @@ function JoinCodeBadge({ code }: { code: string }) {
 export function GroupsPage() {
   const { user } = useAuth();
   const { groups, loading, createGroup, joinGroup } = useGroups(user?.id);
+  const { sodas } = useSodas(user?.id);
   const navigate = useNavigate();
 
   const [showCreate, setShowCreate] = useState(false);
@@ -62,7 +64,7 @@ export function GroupsPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Groups</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Home</h1>
         <div className="flex gap-2">
           <button
             type="button"
@@ -139,14 +141,38 @@ export function GroupsPage() {
         </div>
       )}
 
-      {/* Groups list */}
+      {/* My Sodas private card — always shown */}
+      <div
+        onClick={() => navigate('/sodas')}
+        className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 mb-3"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white shrink-0">
+          <List size={20} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-gray-900 dark:text-white">My Sodas</p>
+            <Lock size={12} className="text-gray-400 dark:text-gray-500" />
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            {sodas.length} {sodas.length === 1 ? 'soda' : 'sodas'} · Private
+          </p>
+        </div>
+        <ChevronRight size={18} className="text-gray-400 shrink-0" />
+      </div>
+
+      {/* Shared groups section header */}
+      <div className="flex items-center justify-between mt-6 mb-3">
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Shared Groups</h2>
+      </div>
+
+      {/* Shared groups */}
       {loading ? (
         <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
       ) : groups.length === 0 ? (
-        <div className="text-center py-20">
-          <Users size={64} className="text-sky-300/50 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">No groups yet</h2>
-          <p className="text-gray-500 dark:text-gray-400">Create one or join with a code from a friend.</p>
+        <div className="text-center py-12">
+          <Users size={48} className="text-sky-300/50 mx-auto mb-3" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No shared groups yet.<br />Create one or join with a friend's code.</p>
         </div>
       ) : (
         <div className="space-y-3">

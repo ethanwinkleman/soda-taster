@@ -2,10 +2,10 @@ import { NavLink } from 'react-router-dom';
 import { List, Heart, Package, Users, Plus } from 'lucide-react';
 
 const tabs = [
-  { to: '/', icon: List, label: 'Sodas', end: true },
+  { to: '/', icon: Users, label: 'Groups', end: true },
   { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
   { to: '/inventory', icon: Package, label: 'Inventory', end: false },
-  { to: '/groups', icon: Users, label: 'Groups', end: false },
+  { to: '/sodas', icon: List, label: 'My Sodas', end: false },
 ];
 
 export function BottomNav() {
