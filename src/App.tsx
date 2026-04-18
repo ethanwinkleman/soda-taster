@@ -19,6 +19,7 @@ import { GroupPage } from './pages/GroupPage';
 import { GroupSodaDetailPage } from './pages/GroupSodaDetailPage';
 import { GroupAddSodaPage } from './pages/GroupAddSodaPage';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
+import { PageTransition } from './components/PageTransition';
 import type { SodaEntry } from './types/soda';
 
 function EditSodaWrapper({
@@ -52,7 +53,8 @@ function AppRoutes() {
             </div>
           </div>
         )}
-        <main className="flex-1 pb-20 md:pb-0">
+        <main className="flex-1 pb-20 md:pb-0 flex flex-col">
+          <PageTransition>
           <Routes>
             <Route path="/" element={<GroupsPage />} />
             <Route path="/sodas" element={<HomePage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
@@ -71,6 +73,7 @@ function AppRoutes() {
             <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
             <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />
           </Routes>
+          </PageTransition>
         </main>
       </div>
       <BottomNav />
