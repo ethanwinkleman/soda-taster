@@ -25,7 +25,7 @@ export function FavoritesPage({ sodas, onToggleFavorite }: Props) {
           </p>
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/sodas')}
             className="px-6 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-colors"
           >
             Browse Sodas

@@ -119,7 +119,7 @@ export function ChartsPage({ sodas }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
             <XAxis dataKey="range" tick={{ fill: '#9ca3af', fontSize: 12 }} />
             <YAxis allowDecimals={false} tick={{ fill: '#9ca3af', fontSize: 12 }} width={24} />
-            <Tooltip {...chartStyle} formatter={(v) => [v, 'Sodas']} />
+            <Tooltip {...chartStyle} formatter={(v) => [v, 'My Sodas']} />
             <Bar dataKey="count" fill="#38bdf8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>

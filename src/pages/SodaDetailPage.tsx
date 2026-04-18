@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, Trash2, Pencil, ChevronLeft, Calendar, Beaker, CupSoda } from 'lucide-react';
+import { Heart, Trash2, Pencil, ChevronLeft, Calendar, Beaker, CupSoda, Copy, Check, X } from 'lucide-react';
 import type { SodaEntry } from '../types/soda';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { SodaRadarChart } from '../components/SodaRadarChart';
 import { CategoryRatingRow } from '../components/CategoryRatingRow';
 import { getTagLabel, SUGAR_LABELS, SIZE_LABELS } from '../utils/labels';
+import { useAuth } from '../contexts/AuthContext';
+import { useGroups } from '../hooks/useGroups';
+import { supabase } from '../lib/supabase';
 
 interface Props {
   sodas: SodaEntry[];
@@ -17,13 +21,19 @@ export function SodaDetailPage({ sodas, onToggleFavorite, onDelete }: Props) {
   const navigate = useNavigate();
   const soda = sodas.find((s) => s.id === id);
 
+  const { user } = useAuth();
+  const { groups, loading: groupsLoading } = useGroups(user?.id);
+  const [showCopyPicker, setShowCopyPicker] = useState(false);
+  const [copying, setCopying] = useState<string | null>(null); // groupId being copied to
+  const [copied, setCopied] = useState<string | null>(null);   // groupId just copied to
+
   if (!soda) {
     return (
       <div className="text-center py-20 text-gray-400">
         <p>Soda not found.</p>
         <button
           type="button"
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/sodas')}
           className="mt-4 text-sky-500 hover:underline text-sm"
         >
           Go back home
@@ -35,8 +45,46 @@ export function SodaDetailPage({ sodas, onToggleFavorite, onDelete }: Props) {
   function handleDelete() {
     if (confirm(`Delete "${soda!.name}"? This can't be undone.`)) {
       onDelete(soda!.id);
-      navigate('/');
+      navigate('/sodas');
     }
+  }
+
+  async function handleCopyToGroup(groupId: string) {
+    if (!soda || !user || copying) return;
+    setCopying(groupId);
+
+    const { data: sodaRow } = await supabase
+      .from('group_sodas')
+      .insert({
+        group_id: groupId,
+        name: soda.name,
+        brand: soda.brand,
+        flavor: soda.flavor,
+        sugar_type: soda.sugarType,
+        size: soda.size,
+        tags: soda.tags,
+        photo: soda.photo,
+      })
+      .select()
+      .single();
+
+    if (sodaRow) {
+      await supabase.from('group_soda_ratings').insert({
+        group_soda_id: sodaRow.id,
+        user_id: user.id,
+        ratings: soda.ratings,
+        overall_score: soda.overallScore,
+        notes: soda.notes,
+      });
+    }
+
+    setCopying(null);
+    setCopied(groupId);
+    setTimeout(() => {
+      setCopied(null);
+      setShowCopyPicker(false);
+      navigate(`/groups/${groupId}`);
+    }, 800);
   }
 
   return (
@@ -50,6 +98,19 @@ export function SodaDetailPage({ sodas, onToggleFavorite, onDelete }: Props) {
           <ChevronLeft size={16} /> Back
         </button>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setShowCopyPicker((v) => !v)}
+            className={`p-2 rounded-lg transition-colors ${
+              showCopyPicker
+                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-500'
+                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-500'
+            }`}
+            aria-label="Copy to group"
+            title="Copy to group"
+          >
+            <Copy size={18} />
+          </button>
           <button
             type="button"
             onClick={() => onToggleFavorite(soda.id)}
@@ -79,6 +140,51 @@ export function SodaDetailPage({ sodas, onToggleFavorite, onDelete }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Copy to group picker */}
+      {showCopyPicker && (
+        <div className="mb-5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Copy to Group</p>
+            <button type="button" onClick={() => setShowCopyPicker(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+          {groupsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
+              Loading groups…
+            </div>
+          ) : groups.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-gray-500">You haven't joined any groups yet.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {groups.map((g) => {
+                const isCopying = copying === g.id;
+                const isCopied = copied === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => handleCopyToGroup(g.id)}
+                    disabled={!!copying}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-colors disabled:opacity-60 ${
+                      isCopied
+                        ? 'bg-emerald-500 text-white border-emerald-500'
+                        : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-sky-400 hover:text-sky-500'
+                    }`}
+                  >
+                    {isCopied ? <Check size={13} /> : isCopying ? (
+                      <span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : null}
+                    {g.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Hero image / placeholder */}
       {soda.photo ? (

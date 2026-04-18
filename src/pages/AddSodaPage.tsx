@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Upload, X, ChevronLeft, Plus } from 'lucide-react';
+import { Upload, X, ChevronLeft, Plus, Lock } from 'lucide-react';
 import type { SodaEntry, SugarType, SodaSize, FlavorTag, CategoryRatings } from '../types/soda';
 import { StarRating } from '../components/StarRating';
 import { TAG_LABELS, SUGAR_LABELS, SIZE_LABELS, computeOverallScore } from '../utils/labels';
+import { useAuth } from '../contexts/AuthContext';
+import { useGroups } from '../hooks/useGroups';
+import { supabase } from '../lib/supabase';
 
 interface Props {
   onAdd: (soda: SodaEntry) => void;
@@ -27,6 +30,12 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
   const [searchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isEdit = !!existingSoda;
+
+  const { user } = useAuth();
+  const { groups } = useGroups(user?.id);
+  // 'personal' = My Sodas; any other string = groupId
+  const [destination, setDestination] = useState<'personal' | string>('personal');
+  const [saving, setSaving] = useState(false);
 
   const prefillName = searchParams.get('name') ?? '';
   const inventoryId = searchParams.get('inventoryId');
@@ -75,7 +84,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
     return errs;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length) {
@@ -84,7 +93,9 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
     }
 
     const overallScore = computeOverallScore(ratings);
+    setSaving(true);
 
+    // ── Edit mode ──────────────────────────────────────────────
     if (isEdit && existingSoda && onUpdate) {
       onUpdate({
         ...existingSoda,
@@ -99,26 +110,62 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
         overallScore,
         tags,
       });
-    } else {
-      const newId = crypto.randomUUID();
-      onAdd({
-        id: newId,
-        name: name.trim(),
-        brand: brand.trim(),
-        flavor: flavor.trim(),
-        sugarType,
-        size,
-        notes: notes.trim(),
-        photo,
-        ratings,
-        overallScore,
-        tags,
-        isFavorite: false,
-        dateRated: new Date().toISOString(),
-      });
-      if (inventoryId && onLink) onLink(inventoryId, newId);
+      setSaving(false);
+      navigate(-1);
+      return;
     }
-    navigate(inventoryId ? '/inventory' : '/');
+
+    // ── Add to a shared group ──────────────────────────────────
+    if (destination !== 'personal' && user) {
+      const { data: sodaRow } = await supabase
+        .from('group_sodas')
+        .insert({
+          group_id: destination,
+          name: name.trim(),
+          brand: brand.trim(),
+          flavor: flavor.trim(),
+          sugar_type: sugarType,
+          size,
+          tags,
+          photo,
+        })
+        .select()
+        .single();
+
+      if (sodaRow) {
+        await supabase.from('group_soda_ratings').insert({
+          group_soda_id: sodaRow.id,
+          user_id: user.id,
+          ratings,
+          overall_score: overallScore,
+          notes: notes.trim(),
+        });
+      }
+      setSaving(false);
+      navigate(`/groups/${destination}`);
+      return;
+    }
+
+    // ── Add to My Sodas (personal) ─────────────────────────────
+    const newId = crypto.randomUUID();
+    onAdd({
+      id: newId,
+      name: name.trim(),
+      brand: brand.trim(),
+      flavor: flavor.trim(),
+      sugarType,
+      size,
+      notes: notes.trim(),
+      photo,
+      ratings,
+      overallScore,
+      tags,
+      isFavorite: false,
+      dateRated: new Date().toISOString(),
+    });
+    if (inventoryId && onLink) onLink(inventoryId, newId);
+    setSaving(false);
+    navigate(inventoryId ? '/inventory' : '/sodas');
   }
 
   return (
@@ -134,6 +181,41 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {isEdit ? 'Edit Soda' : 'Rate a New Soda'}
       </h1>
+
+      {/* Destination picker — only shown when adding */}
+      {!isEdit && (
+        <div className="mb-6">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Save to</p>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setDestination('personal')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                destination === 'personal'
+                  ? 'bg-gray-700 text-white border-gray-700 dark:bg-gray-200 dark:text-gray-900 dark:border-gray-200'
+                  : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-gray-400'
+              }`}
+            >
+              <Lock size={13} />
+              My Sodas
+            </button>
+            {groups.map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setDestination(g.id)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                  destination === g.id
+                    ? 'bg-sky-500 text-white border-sky-500'
+                    : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-sky-400'
+                }`}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Photo upload */}
@@ -360,9 +442,10 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
 
         <button
           type="submit"
-          className="w-full py-3 bg-sky-500 hover:bg-sky-600 text-white font-semibold rounded-xl transition-colors shadow-sm"
+          disabled={saving}
+          className="w-full py-3 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors shadow-sm"
         >
-          {isEdit ? 'Save Changes' : 'Save Rating'}
+          {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Rating'}
         </button>
       </form>
     </div>
