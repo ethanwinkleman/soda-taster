@@ -112,13 +112,13 @@ export function InventoryPage({
           onChange={(e) => setInputName(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
           placeholder="Soda name…"
-          className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
+          className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-base text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
         />
         <button
           type="button"
           onClick={handleAdd}
           disabled={!inputName.trim()}
-          className="flex items-center gap-1.5 px-4 py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+          className="flex items-center gap-1.5 px-5 py-3 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors shrink-0"
         >
           <Plus size={16} /> Add
         </button>
@@ -246,9 +246,9 @@ export function InventoryPage({
                           type="button"
                           onClick={() => onSetQuantity(item.id, item.quantity - 1)}
                           disabled={item.quantity <= 0}
-                          className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-sky-400 hover:text-sky-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-sky-400 hover:text-sky-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         >
-                          <Minus size={13} />
+                          <Minus size={14} />
                         </button>
                         <span className="w-8 text-center font-semibold text-gray-900 dark:text-white tabular-nums">
                           {item.quantity}
@@ -256,9 +256,9 @@ export function InventoryPage({
                         <button
                           type="button"
                           onClick={() => onSetQuantity(item.id, item.quantity + 1)}
-                          className="w-7 h-7 rounded-lg border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-sky-400 hover:text-sky-500 transition-colors"
+                          className="w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:border-sky-400 hover:text-sky-500 transition-colors"
                         >
-                          <Plus size={13} />
+                          <Plus size={14} />
                         </button>
                       </div>
                     </td>
