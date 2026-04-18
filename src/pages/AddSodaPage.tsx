@@ -121,6 +121,7 @@ export function AddSodaPage({ onAdd, existingSoda, onUpdate, onLink }: Props) {
         .from('group_sodas')
         .insert({
           group_id: destination,
+          created_by: user.id,
           name: name.trim(),
           brand: brand.trim(),
           flavor: flavor.trim(),
