@@ -13,6 +13,10 @@ import { FavoritesPage } from './pages/FavoritesPage';
 import { ChartsPage } from './pages/ChartsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { PublicProfilePage } from './pages/PublicProfilePage';
+import { GroupsPage } from './pages/GroupsPage';
+import { GroupPage } from './pages/GroupPage';
+import { GroupSodaDetailPage } from './pages/GroupSodaDetailPage';
+import { GroupAddSodaPage } from './pages/GroupAddSodaPage';
 import type { SodaEntry } from './types/soda';
 
 function EditSodaWrapper({
@@ -59,6 +63,10 @@ function AppRoutes() {
             <Route path="/favorites" element={<FavoritesPage sodas={sodas} onToggleFavorite={toggleFavorite} />} />
             <Route path="/inventory" element={<InventoryPage items={items} sodas={sodas} loading={invLoading} onAdd={invAdd} onSetQuantity={invSetQty} onRemove={invRemove} onLink={invLink} onUnlink={invUnlink} />} />
             <Route path="/charts" element={<ChartsPage sodas={sodas} />} />
+            <Route path="/groups" element={<GroupsPage />} />
+            <Route path="/groups/:id" element={<GroupPage />} />
+            <Route path="/groups/:groupId/add" element={<GroupAddSodaPage />} />
+            <Route path="/groups/:groupId/soda/:sodaId" element={<GroupSodaDetailPage />} />
           </Routes>
         </main>
       </div>

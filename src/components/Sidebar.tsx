@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, PlusCircle, Package, LogOut, Share2 } from 'lucide-react';
+import { List, Heart, BarChart2, PlusCircle, Package, LogOut, Share2, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 import { ShareModal } from './ShareModal';
@@ -10,6 +10,7 @@ const links = [
   { to: '/', icon: List, label: 'All Sodas', end: true },
   { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
   { to: '/inventory', icon: Package, label: 'Inventory', end: false },
+  { to: '/groups', icon: Users, label: 'Groups', end: false },
   { to: '/charts', icon: BarChart2, label: 'Charts', end: false },
 ];
 

@@ -15,12 +15,22 @@ export function useProfile(user: User | null) {
   async function fetchProfile() {
     if (!user) return;
     setLoading(true);
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    setProfile(data ?? null);
+
+    const { data: existing } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+
+    if (!existing) {
+      // Auto-create profile from Google metadata so member names show in groups
+      const display_name = (user.user_metadata?.full_name ?? user.email ?? '') as string;
+      const avatar_url = (user.user_metadata?.avatar_url ?? null) as string | null;
+      const { data: created } = await supabase
+        .from('profiles')
+        .insert({ id: user.id, display_name, avatar_url })
+        .select()
+        .single();
+      setProfile(created ?? null);
+    } else {
+      setProfile(existing);
+    }
     setLoading(false);
   }
 

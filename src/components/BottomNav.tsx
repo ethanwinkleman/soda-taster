@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { List, Heart, BarChart2, Package, Plus } from 'lucide-react';
+import { List, Heart, Package, Users, Plus } from 'lucide-react';
 
 const tabs = [
   { to: '/', icon: List, label: 'Sodas', end: true },
   { to: '/favorites', icon: Heart, label: 'Favorites', end: false },
   { to: '/inventory', icon: Package, label: 'Inventory', end: false },
-  { to: '/charts', icon: BarChart2, label: 'Charts', end: false },
+  { to: '/groups', icon: Users, label: 'Groups', end: false },
 ];
 
 export function BottomNav() {
