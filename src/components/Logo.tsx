@@ -20,7 +20,7 @@ export function Logo({ size = 'md' }: Props) {
       </div>
       <span className={`${text} leading-none flex items-baseline gap-1.5`}>
         <span className="font-black tracking-tight text-sky-500">Soda</span>
-        <span className="font-cursive text-gray-900 dark:text-white">Taster</span>
+        <span className="font-light tracking-wide text-gray-500 dark:text-white">Taster</span>
       </span>
     </div>
   );
