@@ -1,0 +1,157 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import type { Stash, StashMember } from '../types/stash';
+
+function generateJoinCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromDb(row: any): Stash {
+  return {
+    id: row.id,
+    name: row.name,
+    ownerId: row.owner_id,
+    joinCode: row.join_code,
+    createdAt: row.created_at,
+  };
+}
+
+export function useStashes(userId: string | undefined) {
+  const [stashes, setStashes] = useState<Stash[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) { setStashes([]); setLoading(false); return; }
+    fetchStashes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  async function fetchStashes() {
+    if (!userId) return;
+    setLoading(true);
+
+    const { data: memberships } = await supabase
+      .from('stash_members')
+      .select('stash_id')
+      .eq('user_id', userId);
+
+    if (!memberships?.length) { setStashes([]); setLoading(false); return; }
+
+    const ids = memberships.map((m) => m.stash_id);
+    const { data } = await supabase
+      .from('stashes')
+      .select('*')
+      .in('id', ids)
+      .order('created_at', { ascending: false });
+
+    setStashes((data ?? []).map(fromDb));
+    setLoading(false);
+  }
+
+  async function createStash(name: string): Promise<{ stash: Stash | null; error: string | null }> {
+    if (!userId) return { stash: null, error: 'Not logged in' };
+
+    const joinCode = generateJoinCode();
+    const { data, error } = await supabase
+      .from('stashes')
+      .insert({ name, owner_id: userId, join_code: joinCode })
+      .select()
+      .single();
+
+    if (error || !data) return { stash: null, error: error?.message ?? 'Unknown error' };
+
+    await supabase.from('stash_members').insert({ stash_id: data.id, user_id: userId });
+    const stash = fromDb(data);
+    setStashes((prev) => [stash, ...prev]);
+    return { stash, error: null };
+  }
+
+  async function renameStash(id: string, name: string): Promise<string | null> {
+    const { error } = await supabase.from('stashes').update({ name }).eq('id', id);
+    if (error) return error.message;
+    setStashes((prev) => prev.map((s) => s.id === id ? { ...s, name } : s));
+    return null;
+  }
+
+  async function deleteStash(id: string): Promise<string | null> {
+    const { error } = await supabase.from('stashes').delete().eq('id', id);
+    if (error) return error.message;
+    setStashes((prev) => prev.filter((s) => s.id !== id));
+    return null;
+  }
+
+  async function joinStash(code: string): Promise<{ stashId: string | null; error: string | null }> {
+    if (!userId) return { stashId: null, error: 'Not logged in' };
+
+    const { data } = await supabase.rpc('lookup_stash_by_code', { code: code.toUpperCase().trim() });
+    const found = Array.isArray(data) && data.length > 0 ? data[0] : null;
+    if (!found) return { stashId: null, error: 'Invalid code — no stash found.' };
+
+    const { error } = await supabase
+      .from('stash_members')
+      .insert({ stash_id: found.id, user_id: userId });
+
+    if (error?.code === '23505') {
+      setStashes((prev) => prev.find((s) => s.id === found.id) ? prev : [fromDb(found), ...prev]);
+      return { stashId: found.id, error: null };
+    }
+    if (error) return { stashId: null, error: error.message };
+
+    setStashes((prev) => [fromDb(found), ...prev]);
+    return { stashId: found.id, error: null };
+  }
+
+  async function leaveStash(id: string) {
+    if (!userId) return;
+    await supabase.from('stash_members').delete().eq('stash_id', id).eq('user_id', userId);
+    setStashes((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function getMembers(stashId: string): Promise<StashMember[]> {
+    const { data: memberRows } = await supabase
+      .from('stash_members')
+      .select('user_id, joined_at')
+      .eq('stash_id', stashId);
+
+    if (!memberRows?.length) return [];
+
+    const userIds = memberRows.map((m) => m.user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url')
+      .in('id', userIds);
+
+    return memberRows.map((m) => {
+      const profile = (profiles ?? []).find((p) => p.id === m.user_id);
+      return {
+        userId: m.user_id,
+        displayName: profile?.display_name ?? null,
+        avatarUrl: profile?.avatar_url ?? null,
+        joinedAt: m.joined_at,
+      };
+    });
+  }
+
+  async function removeMember(stashId: string, targetUserId: string) {
+    await supabase
+      .from('stash_members')
+      .delete()
+      .eq('stash_id', stashId)
+      .eq('user_id', targetUserId);
+  }
+
+  return {
+    stashes,
+    loading,
+    createStash,
+    renameStash,
+    deleteStash,
+    joinStash,
+    leaveStash,
+    getMembers,
+    removeMember,
+    refresh: fetchStashes,
+  };
+}
