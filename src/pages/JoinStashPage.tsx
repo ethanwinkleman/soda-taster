@@ -4,29 +4,28 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from '../components/Logo';
 
-const PENDING_KEY = 'pendingJoinCode';
+const PENDING_KEY = 'pendingStashCode';
 
-export function JoinGroupPage() {
+export function JoinStashPage() {
   const { code } = useParams<{ code: string }>();
   const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const [groupName, setGroupName] = useState<string | null>(null);
+  const [stashName, setStashName] = useState<string | null>(null);
   const [invalid, setInvalid] = useState(false);
 
-  // Look up the group name via a public RPC (bypasses RLS for unauthenticated users)
   useEffect(() => {
     if (!code) return;
     supabase
-      .rpc('lookup_group_by_code', { code: code.toUpperCase() })
+      .rpc('lookup_stash_by_code', { code: code.toUpperCase() })
       .then(({ data }) => {
-        const group = Array.isArray(data) && data.length > 0 ? data[0] : null;
-        if (group) setGroupName(group.name);
+        const stash = Array.isArray(data) && data.length > 0 ? data[0] : null;
+        if (stash) setStashName(stash.name);
         else setInvalid(true);
       });
   }, [code]);
 
-  // If already logged in, stash the code and let PendingJoinHandler do the work
+  // Already logged in — stash code and let PendingJoinHandler process it
   useEffect(() => {
     if (!authLoading && user && code) {
       localStorage.setItem(PENDING_KEY, code.toUpperCase());
@@ -53,7 +52,9 @@ export function JoinGroupPage() {
         <div className="text-center max-w-sm">
           <div className="flex justify-center mb-8"><Logo size="lg" /></div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid invite link</h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">This link is no longer valid or the group doesn't exist.</p>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            This link is no longer valid or the stash doesn't exist.
+          </p>
           <button
             type="button"
             onClick={() => navigate('/')}
@@ -71,10 +72,12 @@ export function JoinGroupPage() {
       <div className="text-center max-w-sm w-full">
         <div className="flex justify-center mb-8"><Logo size="lg" /></div>
 
-        {groupName ? (
+        {stashName ? (
           <>
-            <p className="text-sm font-medium text-sky-500 uppercase tracking-wide mb-1">You've been invited to join</p>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{groupName}</h2>
+            <p className="text-sm font-medium text-sky-500 uppercase tracking-wide mb-1">
+              You've been invited to join
+            </p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{stashName}</h2>
           </>
         ) : (
           <div className="h-16 flex items-center justify-center mb-6">
