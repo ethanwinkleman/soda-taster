@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -32,6 +32,7 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [topOpen, setTopOpen] = useState(false);
+  const [restockFilter, setRestockFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   const [renameVal, setRenameVal] = useState('');
   const [renaming, setRenaming] = useState(false);
@@ -101,13 +102,22 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
     .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))
     .slice(0, 3);
 
-  const filtered = sodas.filter((s) =>
-    !search ||
-    s.name.toLowerCase().includes(search.toLowerCase()) ||
-    s.brand.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = sodas.filter((s) => {
+    if (restockFilter && s.inFridge) return false;
+    if (!search) return true;
+    return (
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.brand.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   const sorted = [...filtered].sort((a, b) => {
+    if (restockFilter) {
+      // Personal rating first, fall back to avg, unrated last
+      const aScore = a.myRating?.score ?? a.avgScore ?? -1;
+      const bScore = b.myRating?.score ?? b.avgScore ?? -1;
+      return bScore - aScore;
+    }
     if (sort === 'highest') return (b.avgScore ?? -1) - (a.avgScore ?? -1);
     if (sort === 'lowest') return (a.avgScore ?? 999) - (b.avgScore ?? 999);
     if (sort === 'name') return a.name.localeCompare(b.name);
@@ -227,8 +237,8 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
         </div>
       )}
 
-      {/* Search + sort */}
-      <div className="flex gap-2 mb-5">
+      {/* Search + sort + filter */}
+      <div className="flex gap-2 mb-2">
         <div className="flex-1 relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
@@ -241,7 +251,8 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 uppercase tracking-wide"
+          disabled={restockFilter}
+          className="px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 uppercase tracking-wide disabled:opacity-40"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -249,7 +260,42 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
           <option value="lowest">Lowest rated</option>
           <option value="name">Name A–Z</option>
         </select>
+        <button
+          type="button"
+          onClick={() => setRestockFilter((v) => !v)}
+          title="Show sodas not in stock, sorted by your rating"
+          className={`flex items-center gap-1.5 px-3 py-2.5 border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
+            restockFilter
+              ? 'bg-gray-900 dark:bg-gray-100 border-gray-900 dark:border-gray-100 text-gray-50 dark:text-gray-900'
+              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-700 dark:hover:border-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+          }`}
+        >
+          <ListFilter size={13} />
+          <span className="hidden sm:inline">Restock</span>
+        </button>
       </div>
+
+      {/* Active filter banner */}
+      {restockFilter && (
+        <div className="flex items-center justify-between mb-4 px-3 py-2 border border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-800">
+          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+            Not in stock · sorted by your rating
+            <span className="ml-2 text-gray-500 dark:text-gray-400">
+              ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={() => setRestockFilter(false)}
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            aria-label="Clear filter"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {!restockFilter && <div className="mb-3" />}
 
       {/* Soda list */}
       {loading ? (
@@ -259,7 +305,16 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
       ) : sorted.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-300 dark:border-gray-700">
           <CupSoda size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
-          {search ? (
+          {restockFilter ? (
+            <>
+              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-1">
+                Larder fully supplied!
+              </p>
+              <p className="font-sans text-xs text-gray-400 dark:text-gray-500 italic">
+                All your rated sodas are currently in stock.
+              </p>
+            </>
+          ) : search ? (
             <p className="font-sans italic text-gray-500 dark:text-gray-400">No records match "{search}"</p>
           ) : (
             <>
