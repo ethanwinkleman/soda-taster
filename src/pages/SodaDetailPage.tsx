@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil } from 'lucide-react';
+import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
@@ -11,10 +11,12 @@ export function SodaDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { sodas, loading, editSoda, removeSoda, setFridgeStatus, saveRating, deleteRating } =
+  const { sodas, loading, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating } =
     useStashSodas(stashId, user?.id);
 
   const soda = sodas.find((s) => s.id === sodaId);
+
+  const imgInputRef = useRef<HTMLInputElement>(null);
 
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -72,6 +74,12 @@ export function SodaDetailPage() {
     if (!soda) return;
     const newQty = Math.max(0, soda.quantity + delta);
     await setFridgeStatus(soda.id, soda.inFridge, newQty);
+  }
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !soda) return;
+    await updateSodaImage(soda.id, file);
   }
 
   async function handleDelete() {
@@ -169,6 +177,43 @@ export function SodaDetailPage() {
             aria-label="Edit soda"
           >
             <Pencil size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* Photo */}
+      <div className="mb-5">
+        <input
+          ref={imgInputRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={handleImageChange}
+        />
+        {soda.imageUrl ? (
+          <div className="relative rounded-2xl overflow-hidden">
+            <img
+              src={soda.imageUrl}
+              alt={soda.name}
+              className="w-full h-52 object-cover"
+            />
+            <button
+              type="button"
+              onClick={() => imgInputRef.current?.click()}
+              className="absolute bottom-2 right-2 p-2 bg-black/50 backdrop-blur-sm rounded-xl text-white hover:bg-black/70 transition-colors"
+              aria-label="Change photo"
+            >
+              <Camera size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => imgInputRef.current?.click()}
+            className="w-full h-28 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-sky-400 hover:text-sky-400 dark:hover:border-sky-500 dark:hover:text-sky-400 transition-colors"
+          >
+            <Camera size={20} />
+            <span className="text-sm font-medium">Add photo</span>
           </button>
         )}
       </div>

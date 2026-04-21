@@ -21,6 +21,7 @@ export interface Soda {
   addedBy: string;
   inFridge: boolean;
   quantity: number;
+  imageUrl: string | null;
   createdAt: string;
   ratings: SodaRating[];
   avgScore: number | null;
