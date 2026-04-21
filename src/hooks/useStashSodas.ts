@@ -12,6 +12,7 @@ function sodaFromDb(row: any): Omit<Soda, 'ratings' | 'avgScore' | 'myRating'> {
     addedBy: row.added_by,
     inFridge: row.in_fridge ?? false,
     quantity: row.quantity ?? 0,
+    imageUrl: row.image_url ?? null,
     createdAt: row.created_at,
   };
 }
@@ -72,6 +73,7 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
     brand: string,
     score: number | null,
     displayName: string,
+    imageFile?: File | null,
   ) => {
     if (!stashId || !userId) return;
 
@@ -82,6 +84,17 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
       .single();
 
     if (error || !soda) return;
+
+    if (imageFile) {
+      const path = `${stashId}/${soda.id}`;
+      const { error: upErr } = await supabase.storage
+        .from('soda-images')
+        .upload(path, imageFile, { upsert: true, contentType: imageFile.type });
+      if (!upErr) {
+        const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
+        await supabase.from('stash_sodas').update({ image_url: publicUrl }).eq('id', soda.id);
+      }
+    }
 
     if (score !== null) {
       await supabase.from('stash_soda_ratings').insert({
@@ -94,6 +107,18 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
 
     await fetchSodas();
   }, [stashId, userId, fetchSodas]);
+
+  const updateSodaImage = useCallback(async (sodaId: string, file: File) => {
+    if (!stashId) return;
+    const path = `${stashId}/${sodaId}`;
+    const { error } = await supabase.storage
+      .from('soda-images')
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return;
+    const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
+    await supabase.from('stash_sodas').update({ image_url: publicUrl }).eq('id', sodaId);
+    setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: publicUrl } : s));
+  }, [stashId]);
 
   const editSoda = useCallback(async (sodaId: string, updates: { name?: string; brand?: string }) => {
     const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
@@ -134,6 +159,7 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
     editSoda,
     removeSoda,
     setFridgeStatus,
+    updateSodaImage,
     saveRating,
     deleteRating,
     refresh: fetchSodas,

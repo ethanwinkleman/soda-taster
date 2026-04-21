@@ -113,3 +113,28 @@ LANGUAGE sql SECURITY DEFINER AS $$
   FROM stashes
   WHERE join_code = upper(trim(code));
 $$;
+
+-- ── Soda image support ───────────────────────────────────────────────────────
+-- Run this block after the initial schema to add image upload support.
+
+ALTER TABLE stash_sodas ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+-- Create the storage bucket (public — images are readable without auth).
+-- If the bucket already exists this is a no-op.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('soda-images', 'soda-images', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage RLS: authenticated users may upload/replace/delete images;
+-- anyone may read (bucket is public, so SELECT policy is redundant but explicit).
+CREATE POLICY "soda_images_insert" ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'soda-images' AND auth.role() = 'authenticated');
+
+CREATE POLICY "soda_images_update" ON storage.objects FOR UPDATE
+  USING (bucket_id = 'soda-images' AND auth.role() = 'authenticated');
+
+CREATE POLICY "soda_images_delete" ON storage.objects FOR DELETE
+  USING (bucket_id = 'soda-images' AND auth.role() = 'authenticated');
+
+CREATE POLICY "soda_images_select" ON storage.objects FOR SELECT
+  USING (bucket_id = 'soda-images');

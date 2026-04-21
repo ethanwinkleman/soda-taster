@@ -16,9 +16,17 @@ export function SodaCard({ soda, stashId }: Props) {
       className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex items-center gap-4"
       onClick={() => navigate(`/stash/${stashId}/soda/${soda.id}`)}
     >
-      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
-        <CupSoda size={20} className="text-sky-400" />
-      </div>
+      {soda.imageUrl ? (
+        <img
+          src={soda.imageUrl}
+          alt=""
+          className="w-10 h-10 rounded-xl object-cover shrink-0"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
+          <CupSoda size={20} className="text-sky-400" />
+        </div>
+      )}
 
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
