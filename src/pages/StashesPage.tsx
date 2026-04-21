@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LogIn, Layers, Users } from 'lucide-react';
+import { StashIcon } from '../components/StashIcon';
 import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -179,8 +180,8 @@ export function StashesPage({ stashes, onCreate, onJoin }: Props) {
               className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3"
             >
               {stash.icon ? (
-                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-xl shrink-0">
-                  {stash.icon}
+                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-300 shrink-0">
+                  <StashIcon name={stash.icon} size={20} />
                 </span>
               ) : (
                 <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display">
