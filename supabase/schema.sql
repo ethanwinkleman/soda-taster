@@ -58,9 +58,15 @@ CREATE POLICY "owner_update_stash"    ON stashes FOR UPDATE
 CREATE POLICY "owner_delete_stash"    ON stashes FOR DELETE
   USING (auth.uid() = owner_id);
 
+-- Helper: checks membership without triggering RLS on stash_members (avoids infinite recursion)
+CREATE OR REPLACE FUNCTION is_stash_member(p_stash_id UUID)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
+  SELECT EXISTS (SELECT 1 FROM stash_members WHERE stash_id = p_stash_id AND user_id = auth.uid());
+$$;
+
 -- stash_members
 CREATE POLICY "members_view_stash_members" ON stash_members FOR SELECT
-  USING (EXISTS (SELECT 1 FROM stash_members sm WHERE sm.stash_id = stash_members.stash_id AND sm.user_id = auth.uid()));
+  USING (is_stash_member(stash_id));
 CREATE POLICY "users_join_stashes"    ON stash_members FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "leave_or_owner_remove" ON stash_members FOR DELETE
