@@ -1,8 +1,54 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap');
 
 @theme {
-  --font-cursive: 'Pacifico', cursive;
+  /* ── Typefaces ────────────────────────────────────────────────── */
+  --font-sans:    'Libre Baskerville', Georgia, 'Times New Roman', serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-cursive: 'UnifrakturMaguntia', 'Playfair Display', serif;
+
+  /* ── Newsprint / sepia palette (replaces all gray-* tokens) ──── */
+  --color-gray-50:  #faf7f0;
+  --color-gray-100: #ede7d9;
+  --color-gray-200: #cfc4ae;
+  --color-gray-300: #b0a08a;
+  --color-gray-400: #8a7860;
+  --color-gray-500: #6b5c48;
+  --color-gray-600: #4e3e2e;
+  --color-gray-700: #352a1e;
+  --color-gray-800: #231a10;
+  --color-gray-900: #150e07;
+  --color-gray-950: #0c0904;
+
+  /* ── Dark ink replaces sky-* (CTAs, links, active states) ─────── */
+  --color-sky-50:  #f8f3e8;
+  --color-sky-100: #ede0c4;
+  --color-sky-200: #d4be96;
+  --color-sky-300: #b89660;
+  --color-sky-400: #8b6d3a;
+  --color-sky-500: #5c3d1e;
+  --color-sky-600: #3d2510;
+  --color-sky-700: #2a180a;
+  --color-sky-900: #140c04;
+
+  /* ── Indigo remapped to match ink tones (used in icon gradients) ─ */
+  --color-indigo-400: #7a5c38;
+  --color-indigo-500: #5c3d1e;
+  --color-indigo-900: #1a0f06;
+
+  /* ── Amber: slightly muted vintage gold for stars / ratings ────── */
+  --color-amber-400: #c4901a;
+  --color-amber-500: #a07010;
+
+  /* ── Tight border-radius — angular like newspaper columns ──────── */
+  --radius-xs:  0px;
+  --radius-sm:  1px;
+  --radius:     2px;
+  --radius-md:  2px;
+  --radius-lg:  3px;
+  --radius-xl:  3px;
+  --radius-2xl: 4px;
+  --radius-3xl: 6px;
 }
 
 * {
@@ -11,13 +57,20 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #f9fafb;
+  background-color: #faf7f0;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #030712;
+    background-color: #0c0904;
+  }
+}
+
+/* Semantic headings use Playfair Display */
+@layer base {
+  h1, h2, h3, h4 {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }

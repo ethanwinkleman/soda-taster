@@ -4,8 +4,18 @@ import { Logo } from './Logo';
 
 export function MobileHeader() {
   return (
-    <header className="md:hidden sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-100 dark:border-gray-800 pt-[env(safe-area-inset-top)]">
-      <div className="h-14 px-4 flex items-center justify-between">
+    <header className="md:hidden sticky top-0 z-50 bg-gray-50 dark:bg-gray-950 pt-[env(safe-area-inset-top)] border-b-[5px] border-double border-gray-800 dark:border-gray-200">
+      {/* Dateline bar */}
+      <div className="border-b border-gray-300 dark:border-gray-700 mx-0 px-4 py-0.5 flex items-center justify-between">
+        <span className="text-[9px] uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 font-sans">
+          The Carbonated Chronicle
+        </span>
+        <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 font-sans">
+          Est. MMXXIV
+        </span>
+      </div>
+      {/* Masthead row */}
+      <div className="h-12 px-4 flex items-center justify-between">
         <NavLink to="/">
           <Logo size="sm" />
         </NavLink>

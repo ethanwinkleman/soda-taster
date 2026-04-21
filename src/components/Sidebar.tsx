@@ -22,33 +22,38 @@ export function Sidebar({ stashes }: Props) {
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 z-40">
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-gray-50 dark:bg-gray-950 border-r-2 border-gray-800 dark:border-gray-200 z-40">
 
-      {/* Logo */}
-      <div className="px-5 h-16 flex items-center border-b border-gray-100 dark:border-gray-800 shrink-0">
-        <NavLink to="/"><Logo size="md" /></NavLink>
+      {/* Masthead */}
+      <div className="px-5 py-4 border-b-[5px] border-double border-gray-800 dark:border-gray-200 shrink-0 flex flex-col items-center gap-1">
+        <NavLink to="/" className="block text-center">
+          <Logo size="md" />
+        </NavLink>
+        <p className="text-[9px] uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 font-sans">
+          The Carbonated Chronicle
+        </p>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-          Stashes
+      {/* Navigation column */}
+      <nav className="flex-1 px-3 py-5 overflow-y-auto">
+        <p className="px-3 pb-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-500 border-b border-gray-300 dark:border-gray-700 mb-2">
+          Your Collections
         </p>
 
-        <div className="space-y-0.5">
+        <div className="space-y-px">
           {stashes.map((stash) => (
             <NavLink
               key={stash.id}
               to={`/stash/${stash.id}`}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 pl-3 pr-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                `flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium transition-colors border-l-2 ${
                   isActive
-                    ? 'bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                    ? 'border-gray-900 dark:border-gray-100 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                 }`
               }
             >
-              <span className="w-5 h-5 rounded-md bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+              <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
                 {stash.name[0]?.toUpperCase() ?? '?'}
               </span>
               <span className="flex-1 truncate">{stash.name}</span>
@@ -56,53 +61,53 @@ export function Sidebar({ stashes }: Props) {
           ))}
 
           {stashes.length === 0 && (
-            <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500">No stashes yet</p>
+            <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-sans italic">No collections yet</p>
           )}
 
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="w-full flex items-center gap-2.5 pl-3 pr-3 py-2 rounded-xl text-sm font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="w-full flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border-l-2 border-transparent"
           >
-            <span className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
+            <span className="w-5 h-5 border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
               <Plus size={10} />
             </span>
-            <span>New stash…</span>
+            <span>New collection…</span>
           </button>
         </div>
       </nav>
 
       {/* User footer */}
       {user && (
-        <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0 flex items-center gap-3">
+        <div className="px-4 py-3 border-t-2 border-gray-800 dark:border-gray-200 shrink-0 flex items-center gap-3">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={name} className="w-9 h-9 rounded-full object-cover shrink-0" />
+            <img src={avatarUrl} alt={name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-400" />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-sky-500 text-white text-sm font-bold flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full border-2 border-gray-700 dark:border-gray-300 text-gray-700 dark:text-gray-300 text-xs font-bold flex items-center justify-center shrink-0 font-sans">
               {initials}
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{name.split(' ')[0]}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{user.email}</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate font-sans">{name.split(' ')[0]}</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate font-sans">{user.email}</p>
           </div>
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className="p-2 text-gray-400 hover:text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20 rounded-lg transition-colors shrink-0"
+            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
             aria-label="Share profile"
             title="Share profile"
           >
-            <Share2 size={16} />
+            <Share2 size={15} />
           </button>
           <button
             type="button"
             onClick={signOut}
-            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors shrink-0"
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shrink-0"
             aria-label="Sign out"
             title="Sign out"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       )}
