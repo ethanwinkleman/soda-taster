@@ -114,6 +114,11 @@ LANGUAGE sql SECURITY DEFINER AS $$
   WHERE join_code = upper(trim(code));
 $$;
 
+-- ── Stash icon support ───────────────────────────────────────────────────────
+-- Run this after the initial schema to add emoji icon support for stashes.
+
+ALTER TABLE stashes ADD COLUMN IF NOT EXISTS icon TEXT;
+
 -- ── Soda image support ───────────────────────────────────────────────────────
 -- Run this block after the initial schema to add image upload support.
 

@@ -10,16 +10,24 @@ import { useStashSodas } from '../hooks/useStashSodas';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
 
+const STASH_ICONS = [
+  '🥤', '🍺', '🍻', '🍹', '🍾', '🥂',
+  '🧃', '☕', '🍵', '🧋', '🫗', '🫙',
+  '🌟', '⭐', '🏆', '❤️', '🔥', '🎯',
+  '❄️', '🧊', '🫧', '🌊', '🎪', '🎲',
+];
+
 interface Props {
   stashes: Stash[];
   onRename: (id: string, name: string) => Promise<string | null>;
+  onUpdateIcon: (id: string, icon: string | null) => Promise<void>;
   onDelete: (id: string) => Promise<string | null>;
   onLeave: (id: string) => void;
   getMembers: (stashId: string) => Promise<StashMember[]>;
   removeMember: (stashId: string, userId: string) => Promise<void>;
 }
 
-export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, removeMember }: Props) {
+export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, getMembers, removeMember }: Props) {
   const { id: stashId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -149,7 +157,8 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
           <div className="flex-1 min-w-0">
             <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
             <div className="flex items-baseline justify-between gap-2">
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white truncate">
+              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white truncate flex items-center gap-2">
+                {stash.icon && <span className="not-italic">{stash.icon}</span>}
                 {stash.name}
               </h1>
               <div className="flex gap-1.5 shrink-0">
@@ -360,6 +369,40 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
               </div>
 
               <div className="px-5 py-5 space-y-5">
+                {/* Icon picker — any member can set the icon */}
+                <div>
+                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                    Icon
+                  </label>
+                  <div className="grid grid-cols-6 gap-1 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+                    <button
+                      type="button"
+                      onClick={() => stashId && onUpdateIcon(stashId, null)}
+                      className={`h-9 flex items-center justify-center font-sans text-[10px] uppercase tracking-wide border transition-colors ${
+                        !stash.icon
+                          ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          : 'border-transparent text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      None
+                    </button>
+                    {STASH_ICONS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => stashId && onUpdateIcon(stashId, emoji)}
+                        className={`h-9 flex items-center justify-center text-xl border transition-colors ${
+                          stash.icon === emoji
+                            ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700'
+                            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {isOwner && (
                   <form onSubmit={handleRename}>
                     <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
