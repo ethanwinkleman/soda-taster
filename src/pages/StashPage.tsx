@@ -118,58 +118,70 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
   if (!stash) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="text-gray-400 dark:text-gray-500">Stash not found.</p>
-        <NavLink to="/" className="mt-4 inline-block text-sky-500 text-sm">← Back to stashes</NavLink>
+        <p className="font-sans italic text-gray-400 dark:text-gray-500">Collection not found.</p>
+        <NavLink to="/" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
       </div>
     );
   }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <h1 className="flex-1 text-xl font-bold text-gray-900 dark:text-white truncate">{stash.name}</h1>
-        <button
-          type="button"
-          onClick={() => navigate(`/stash/${stashId}/add`)}
-          className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 rounded-xl transition-colors shrink-0"
-        >
-          <Plus size={15} />
-          <span className="hidden sm:inline">Add Soda</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => { setSettingsOpen(true); setSettingsError(null); }}
-          className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
-          aria-label="Stash settings"
-        >
-          <Settings size={18} />
-        </button>
+      {/* Section masthead */}
+      <div className="mb-6">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
+            <div className="flex items-baseline justify-between gap-2">
+              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white truncate">
+                {stash.name}
+              </h1>
+              <div className="flex gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/stash/${stashId}/add`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors shrink-0"
+                >
+                  <Plus size={12} />
+                  <span className="hidden sm:inline">Record Soda</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setSettingsOpen(true); setSettingsError(null); }}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                  aria-label="Collection settings"
+                >
+                  <Settings size={16} />
+                </button>
+              </div>
+            </div>
+            <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
+          </div>
+        </div>
       </div>
 
       {/* Metrics row */}
       {!loading && sodas.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-0 mb-5 border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
-            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <Refrigerator size={13} className="text-sky-500 shrink-0" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">In Fridge</span>
+              <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
             </div>
-            <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+            <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
               {fridgeSodas.length}
             </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
               {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
             </span>
           </button>
@@ -177,38 +189,38 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
           <button
             type="button"
             onClick={() => setTopOpen(true)}
-            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
           >
             <div className="flex items-center gap-1.5 mb-1">
-              <Trophy size={13} className="text-amber-500 shrink-0" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
+              <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
             </div>
             {topThree.length > 0 ? (
               <>
-                <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+                <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
                   {topThree[0].avgScore?.toFixed(1)}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
                   {topThree[0].name}
                 </span>
               </>
             ) : (
               <>
-                <span className="text-2xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
-                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
+                <span className="font-display text-2xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
               </>
             )}
           </button>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm">
+          <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5 mb-1">
-              <Star size={13} className="text-amber-400 shrink-0" />
-              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
+              <Star size={12} className="text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
             </div>
-            <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+            <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
               {overallAvg !== null ? overallAvg.toFixed(1) : '—'}
             </span>
-            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
               {ratedSodas.length} rated
             </span>
           </div>
@@ -218,18 +230,18 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
       {/* Search + sort */}
       <div className="flex gap-2 mb-5">
         <div className="flex-1 relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search sodas…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
+            placeholder="Search records…"
+            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
           />
         </div>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          className="px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-sky-400"
+          className="px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 uppercase tracking-wide"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -242,28 +254,28 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
       {/* Soda list */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : sorted.length === 0 ? (
-        <div className="text-center py-16">
-          <CupSoda size={48} className="mx-auto mb-4 text-gray-200 dark:text-gray-700" />
+        <div className="text-center py-16 border border-dashed border-gray-300 dark:border-gray-700">
+          <CupSoda size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
           {search ? (
-            <p className="text-gray-500 dark:text-gray-400">No sodas match "{search}"</p>
+            <p className="font-sans italic text-gray-500 dark:text-gray-400">No records match "{search}"</p>
           ) : (
             <>
-              <p className="text-gray-500 dark:text-gray-400 mb-2">No sodas yet</p>
+              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-2">No sodas recorded yet</p>
               <button
                 type="button"
                 onClick={() => navigate(`/stash/${stashId}/add`)}
-                className="mt-1 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-medium rounded-xl transition-colors"
+                className="mt-1 px-4 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
               >
-                Add the first soda
+                File the first record
               </button>
             </>
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {sorted.map((soda) => (
             <SodaCard key={soda.id} soda={soda} stashId={stashId!} />
           ))}
@@ -273,40 +285,41 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
       {/* Settings modal */}
       {settingsOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-[100] bg-black/60 overflow-y-auto"
           onClick={() => setSettingsOpen(false)}
         >
           <div className="flex min-h-full items-center justify-center p-6">
             <div
-              className="w-full max-w-sm bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden"
+              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-200 overflow-hidden shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800">
-                <h2 className="font-bold text-gray-900 dark:text-white">Stash Settings</h2>
+              <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200">
+                <h2 className="font-display font-bold text-gray-900 dark:text-white">Collection Settings</h2>
                 <button
                   type="button"
                   onClick={() => setSettingsOpen(false)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               <div className="px-5 py-5 space-y-5">
-                {/* Rename — owner only (STH-03) */}
                 {isOwner && (
                   <form onSubmit={handleRename}>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Name</label>
+                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+                      Collection Name
+                    </label>
                     <div className="flex gap-2">
                       <input
                         value={renameVal}
                         onChange={(e) => setRenameVal(e.target.value)}
-                        className="flex-1 px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
                       />
                       <button
                         type="submit"
                         disabled={renaming || !renameVal.trim()}
-                        className="px-3 py-2 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white text-sm font-medium rounded-xl transition-colors"
+                        className="px-3 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 disabled:opacity-40 transition-colors"
                       >
                         {renaming ? '…' : 'Save'}
                       </button>
@@ -314,17 +327,18 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
                   </form>
                 )}
 
-                {/* Invite code (SHR-01) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Invite Code</label>
-                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5">
-                    <span className="flex-1 font-mono text-xl tracking-widest text-gray-900 dark:text-gray-100">
+                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+                    Invite Code
+                  </label>
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2.5">
+                    <span className="flex-1 font-mono text-xl tracking-[0.3em] text-gray-900 dark:text-gray-100">
                       {stash.joinCode}
                     </span>
                     <button
                       type="button"
                       onClick={copyCode}
-                      className="text-sky-500 hover:text-sky-600 transition-colors"
+                      className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                       title="Copy code"
                     >
                       {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -333,32 +347,33 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
                   <button
                     type="button"
                     onClick={copyLink}
-                    className="mt-1.5 text-xs text-sky-500 hover:text-sky-600 transition-colors"
+                    className="mt-1.5 font-sans text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 underline transition-colors"
                   >
                     Copy invite link
                   </button>
                 </div>
 
-                {/* Members (SHR-05) */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Members</label>
+                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                    Correspondents
+                  </label>
                   <div className="space-y-1">
                     {members.map((m) => (
                       <div key={m.userId} className="flex items-center gap-2 py-1.5">
-                        <div className="w-7 h-7 rounded-full bg-sky-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 border border-gray-500 dark:border-gray-400 text-gray-700 dark:text-gray-300 text-xs font-bold flex items-center justify-center shrink-0 font-sans">
                           {(m.displayName ?? '?')[0].toUpperCase()}
                         </div>
-                        <span className="flex-1 text-sm text-gray-900 dark:text-gray-100 truncate">
+                        <span className="flex-1 font-sans text-sm text-gray-900 dark:text-gray-100 truncate">
                           {m.displayName ?? 'Unknown'}
                           {m.userId === stash.ownerId && (
-                            <span className="ml-1.5 text-xs text-gray-400">owner</span>
+                            <span className="ml-1.5 font-sans text-[10px] uppercase tracking-wide text-gray-400 italic">proprietor</span>
                           )}
                         </span>
                         {isOwner && m.userId !== user?.id && (
                           <button
                             type="button"
                             onClick={() => handleRemoveMember(m.userId)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
                             aria-label="Remove member"
                           >
                             <UserMinus size={14} />
@@ -367,32 +382,33 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
                       </div>
                     ))}
                     {members.length === 0 && (
-                      <p className="text-sm text-gray-400 dark:text-gray-500">Loading members…</p>
+                      <p className="font-sans text-xs italic text-gray-400 dark:text-gray-500">Loading correspondents…</p>
                     )}
                   </div>
                 </div>
 
-                {settingsError && <p className="text-sm text-red-500">{settingsError}</p>}
+                {settingsError && (
+                  <p className="font-sans text-sm text-red-600 dark:text-red-400 italic">{settingsError}</p>
+                )}
 
-                {/* Danger zone */}
-                <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+                <div className="border-t border-gray-300 dark:border-gray-700 pt-4">
                   {isOwner ? (
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
                     >
-                      <Trash2 size={15} />
-                      Delete Stash
+                      <Trash2 size={13} />
+                      Dissolve Collection
                     </button>
                   ) : (
                     <button
                       type="button"
                       onClick={handleLeave}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-colors"
                     >
-                      <LogOut size={15} />
-                      Leave Stash
+                      <LogOut size={13} />
+                      Resign from Collection
                     </button>
                   )}
                 </div>
@@ -401,63 +417,64 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
           </div>
         </div>
       )}
+
       {/* Inventory panel */}
       {inventoryOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
           onClick={() => setInventoryOpen(false)}
         >
           <div
-            className="w-full sm:max-w-sm bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl sm:border border-gray-100 dark:border-gray-800 max-h-[80vh] flex flex-col"
+            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
               <div className="flex items-center gap-2">
-                <Refrigerator size={18} className="text-sky-500" />
-                <h2 className="font-bold text-gray-900 dark:text-white">In Fridge</h2>
-                <span className="text-sm text-gray-400 dark:text-gray-500">{fridgeSodas.length}</span>
+                <Refrigerator size={16} className="text-gray-700 dark:text-gray-300" />
+                <h2 className="font-display font-bold text-gray-900 dark:text-white">Stock Inventory</h2>
+                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">({fridgeSodas.length})</span>
               </div>
               <button
                 type="button"
                 onClick={() => setInventoryOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             <div className="overflow-y-auto">
               {fridgeSodas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
-                  <Refrigerator size={40} className="text-gray-200 dark:text-gray-700 mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No sodas in the fridge yet.</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Open a soda and toggle "In Fridge" to track stock.
+                  <Refrigerator size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
+                  <p className="font-display italic text-gray-500 dark:text-gray-400 text-sm">Larder is bare.</p>
+                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
+                    Open a soda record and toggle "In Stock" to track your supply.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                <div className="divide-y divide-gray-200 dark:divide-gray-800">
                   {fridgeSodas.map((soda) => (
                     <button
                       key={soda.id}
                       type="button"
                       onClick={() => { setInventoryOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
-                      className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
                     >
                       {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                        <img src={soda.imageUrl} alt="" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
-                          <CupSoda size={18} className="text-sky-400" />
+                        <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
+                          <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
+                        <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
                         {soda.brand && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                          <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-xs font-bold text-sky-500 dark:text-sky-400 tabular-nums">
+                        <span className="font-display text-sm font-black text-gray-700 dark:text-gray-300 tabular-nums">
                           ×{soda.quantity}
                         </span>
                         {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}
@@ -474,62 +491,62 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
       {/* Top rated panel */}
       {topOpen && (
         <div
-          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
           onClick={() => setTopOpen(false)}
         >
           <div
-            className="w-full sm:max-w-sm bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl sm:border border-gray-100 dark:border-gray-800 max-h-[80vh] flex flex-col"
+            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+            <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
               <div className="flex items-center gap-2">
-                <Trophy size={18} className="text-amber-500" />
-                <h2 className="font-bold text-gray-900 dark:text-white">Top Rated</h2>
+                <Trophy size={16} className="text-amber-600 dark:text-amber-500" />
+                <h2 className="font-display font-bold text-gray-900 dark:text-white">Distinguished Sodas</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setTopOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             <div className="overflow-y-auto">
               {topThree.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
-                  <Trophy size={40} className="text-gray-200 dark:text-gray-700 mb-3" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No ratings yet.</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    Rate some sodas to see the top ranked ones here.
+                  <Trophy size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
+                  <p className="font-display italic text-gray-500 dark:text-gray-400 text-sm">No verdicts rendered yet.</p>
+                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
+                    Rate some sodas to see the most distinguished ones here.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                <div className="divide-y divide-gray-200 dark:divide-gray-800">
                   {topThree.map((soda, i) => (
                     <button
                       key={soda.id}
                       type="button"
                       onClick={() => { setTopOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
-                      className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
                     >
-                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
-                        i === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
-                        i === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' :
-                                  'bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400'
+                      <span className={`w-7 h-7 border flex items-center justify-center font-display text-xs font-black shrink-0 ${
+                        i === 0 ? 'border-amber-600 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' :
+                        i === 1 ? 'border-gray-400 text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800' :
+                                  'border-orange-400 text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20'
                       }`}>
                         {i + 1}
                       </span>
                       {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                        <img src={soda.imageUrl} alt="" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
-                          <CupSoda size={18} className="text-sky-400" />
+                        <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
+                          <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
+                        <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
                         {soda.brand && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                          <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
                         )}
                       </div>
                       {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}

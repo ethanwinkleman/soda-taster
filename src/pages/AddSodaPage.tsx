@@ -58,46 +58,58 @@ export function AddSodaPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
+
+      {/* Page header */}
       <div className="flex items-center gap-3 mb-8">
         <button
           type="button"
           onClick={() => navigate(`/stash/${stashId}`)}
-          className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <ChevronLeft size={20} />
         </button>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add Soda</h1>
+        <div className="flex-1">
+          <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
+          <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white">
+            Record a Soda
+          </h1>
+          <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Soda Name <span className="text-red-400">*</span>
+          <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+            Soda Name <span className="text-red-500">*</span>
           </label>
           <input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Boylan Cane Cola"
-            className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
+            className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 font-sans text-sm"
           />
         </div>
 
+        {/* Brand */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Brand <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+            Manufacturer <span className="text-gray-400 font-normal italic">(optional)</span>
           </label>
           <input
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
-            placeholder="e.g. Boylan"
-            className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
+            placeholder="e.g. Boylan Bottling Co."
+            className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 font-sans text-sm"
           />
         </div>
 
+        {/* Photo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Photo <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+            Illustration <span className="text-gray-400 font-normal italic">(optional)</span>
           </label>
           <input
             ref={fileInputRef}
@@ -107,7 +119,7 @@ export function AddSodaPage() {
             onChange={handleImageSelect}
           />
           {imagePreview ? (
-            <div className="relative rounded-2xl overflow-hidden">
+            <div className="relative border border-gray-300 dark:border-gray-600 overflow-hidden">
               <img
                 src={imagePreview}
                 alt="Soda preview"
@@ -116,7 +128,7 @@ export function AddSodaPage() {
               <button
                 type="button"
                 onClick={clearImage}
-                className="absolute top-2 right-2 p-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-black/70 transition-colors"
+                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
                 aria-label="Remove photo"
               >
                 <X size={14} />
@@ -124,47 +136,50 @@ export function AddSodaPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-2 right-2 p-2 bg-black/50 backdrop-blur-sm rounded-xl text-white hover:bg-black/70 transition-colors"
+                className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
                 aria-label="Change photo"
               >
-                <Camera size={16} />
+                <Camera size={14} />
               </button>
             </div>
           ) : (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-32 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-sky-400 hover:text-sky-400 dark:hover:border-sky-500 dark:hover:text-sky-400 transition-colors"
+              className="w-full h-28 border border-dashed border-gray-400 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-gray-700 dark:hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
             >
-              <Camera size={22} />
-              <span className="text-sm font-medium">Add photo</span>
+              <Camera size={20} />
+              <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add illustration</span>
             </button>
           )}
         </div>
 
+        {/* Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            My Rating <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+            My Rating <span className="text-gray-400 font-normal italic">(optional)</span>
           </label>
           <StarRating value={score} onChange={setScore} size="lg" />
           {score > 0 && (
             <button
               type="button"
               onClick={() => setScore(0)}
-              className="mt-2 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="mt-2 text-[10px] font-sans uppercase tracking-wider text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               Clear rating
             </button>
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={saving || !name.trim()}
-          className="w-full py-3.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
-        >
-          {saving ? 'Adding…' : 'Add Soda'}
-        </button>
+        <div className="border-t border-gray-300 dark:border-gray-600 pt-5">
+          <button
+            type="submit"
+            disabled={saving || !name.trim()}
+            className="w-full py-3 font-sans text-sm font-bold uppercase tracking-[0.15em] text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {saving ? 'Filing…' : 'File This Record'}
+          </button>
+        </div>
       </form>
     </div>
   );

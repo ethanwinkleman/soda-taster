@@ -51,122 +51,144 @@ export function StashesPage({ stashes, onCreate, onJoin }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Stashes</h1>
-          {firstName && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{firstName}'s collections</p>
-          )}
+
+      {/* Page masthead */}
+      <div className="mb-8">
+        <div className="border-t-2 border-gray-800 dark:border-gray-200 mb-1" />
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 className="font-display text-3xl font-black italic text-gray-900 dark:text-white tracking-tight">
+            My Collections
+          </h1>
+          <div className="flex gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => { setJoining(true); setCreating(false); setError(null); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300 border border-gray-700 dark:border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <LogIn size={13} />
+              Join
+            </button>
+            <button
+              type="button"
+              onClick={() => { setCreating(true); setJoining(false); setError(null); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+            >
+              <Plus size={13} />
+              New
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => { setJoining(true); setCreating(false); setError(null); }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            <LogIn size={15} />
-            Join
-          </button>
-          <button
-            type="button"
-            onClick={() => { setCreating(true); setJoining(false); setError(null); }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-sky-500 hover:bg-sky-600 rounded-xl transition-colors"
-          >
-            <Plus size={15} />
-            New Stash
-          </button>
-        </div>
+        {firstName && (
+          <p className="text-xs font-sans text-gray-500 dark:text-gray-400 mt-0.5 italic">
+            {firstName}'s soda records
+          </p>
+        )}
+        <div className="border-b border-gray-400 dark:border-gray-600 mt-1.5" />
       </div>
 
+      {/* Create form */}
       {creating && (
-        <form onSubmit={handleCreate} className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-3">New Stash</h2>
-          <input
-            autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Stash name"
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-3"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setCreating(false)}
-              className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={busy || !newName.trim()}
-              className="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors text-sm"
-            >
-              {busy ? 'Creating…' : 'Create'}
-            </button>
-          </div>
-        </form>
+        <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
+          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1">
+            — New Collection —
+          </p>
+          <form onSubmit={handleCreate}>
+            <input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Collection name"
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 mb-3 font-sans text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setCreating(false)}
+                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busy || !newName.trim()}
+                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 transition-colors"
+              >
+                {busy ? 'Creating…' : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
+      {/* Join form */}
       {joining && (
-        <form onSubmit={handleJoin} className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-1">Join a Stash</h2>
-          <p className="text-sm text-gray-400 dark:text-gray-500 mb-3">Enter the 6-character invite code</p>
-          <input
-            autoFocus
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
-            placeholder="XXXXXX"
-            maxLength={6}
-            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-400 mb-3 font-mono tracking-widest text-center text-xl uppercase"
-          />
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setJoining(false)}
-              className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={busy || joinCode.length < 4}
-              className="flex-1 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-40 text-white font-semibold rounded-xl transition-colors text-sm"
-            >
-              {busy ? 'Joining…' : 'Join'}
-            </button>
-          </div>
-        </form>
+        <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
+          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1">
+            — Join a Collection —
+          </p>
+          <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3 italic">
+            Enter the 6-character invite code
+          </p>
+          <form onSubmit={handleJoin}>
+            <input
+              autoFocus
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+              placeholder="XXXXXX"
+              maxLength={6}
+              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 mb-3 font-mono tracking-[0.4em] text-center text-xl uppercase"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setJoining(false)}
+                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busy || joinCode.length < 4}
+                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 transition-colors"
+              >
+                {busy ? 'Joining…' : 'Join'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
 
-      {error && <p className="mb-4 text-sm text-red-500 dark:text-red-400">{error}</p>}
+      {error && (
+        <p className="mb-4 text-sm text-red-600 dark:text-red-400 font-sans italic">{error}</p>
+      )}
 
+      {/* Stash list */}
       {stashes.length === 0 ? (
-        <div className="text-center py-20">
-          <Layers size={48} className="mx-auto mb-4 text-gray-200 dark:text-gray-700" />
-          <p className="text-gray-500 dark:text-gray-400 mb-1">No stashes yet</p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">Create one to start tracking sodas</p>
+        <div className="text-center py-20 border border-dashed border-gray-300 dark:border-gray-700">
+          <Layers size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+          <p className="font-display italic text-gray-500 dark:text-gray-400">No collections yet</p>
+          <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mt-1">Create one to begin tracking sodas</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {stashes.map((stash) => (
             <button
               key={stash.id}
               type="button"
               onClick={() => navigate(`/stash/${stash.id}`)}
-              className="w-full text-left bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3"
             >
-              <div className="flex items-center gap-3">
-                <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-base font-bold shrink-0">
-                  {stash.name[0]?.toUpperCase() ?? '?'}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 dark:text-white truncate">{stash.name}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
-                    <Users size={11} />
-                    {stash.ownerId === user?.id ? 'Owner' : 'Member'}
-                  </p>
-                </div>
+              <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display">
+                {stash.name[0]?.toUpperCase() ?? '?'}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="font-display font-bold text-gray-900 dark:text-white truncate">{stash.name}</p>
+                <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-wide">
+                  <Users size={10} />
+                  {stash.ownerId === user?.id ? 'Proprietor' : 'Member'}
+                </p>
               </div>
+              <span className="text-gray-300 dark:text-gray-600 font-sans">›</span>
             </button>
           ))}
         </div>
