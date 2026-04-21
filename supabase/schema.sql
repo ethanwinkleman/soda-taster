@@ -49,8 +49,10 @@ ALTER TABLE stash_sodas       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stash_soda_ratings ENABLE ROW LEVEL SECURITY;
 
 -- stashes
+-- owner_id check lets the owner read back their stash immediately after INSERT,
+-- before they've been added to stash_members.
 CREATE POLICY "members_view_stashes"  ON stashes FOR SELECT
-  USING (EXISTS (SELECT 1 FROM stash_members WHERE stash_id = stashes.id AND user_id = auth.uid()));
+  USING (owner_id = auth.uid() OR is_stash_member(id));
 CREATE POLICY "users_create_stashes"  ON stashes FOR INSERT
   WITH CHECK (auth.uid() = owner_id);
 CREATE POLICY "owner_update_stash"    ON stashes FOR UPDATE
