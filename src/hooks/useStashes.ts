@@ -12,6 +12,7 @@ function fromDb(row: any): Stash {
   return {
     id: row.id,
     name: row.name,
+    icon: row.icon ?? null,
     ownerId: row.owner_id,
     joinCode: row.join_code,
     createdAt: row.created_at,
@@ -73,6 +74,11 @@ export function useStashes(userId: string | undefined) {
     if (error) return error.message;
     setStashes((prev) => prev.map((s) => s.id === id ? { ...s, name } : s));
     return null;
+  }
+
+  async function updateStashIcon(id: string, icon: string | null): Promise<void> {
+    setStashes((prev) => prev.map((s) => s.id === id ? { ...s, icon } : s));
+    await supabase.from('stashes').update({ icon }).eq('id', id);
   }
 
   async function deleteStash(id: string): Promise<string | null> {
@@ -147,6 +153,7 @@ export function useStashes(userId: string | undefined) {
     loading,
     createStash,
     renameStash,
+    updateStashIcon,
     deleteStash,
     joinStash,
     leaveStash,

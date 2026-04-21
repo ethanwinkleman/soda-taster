@@ -21,6 +21,7 @@ function AppRoutes() {
     stashes,
     createStash,
     renameStash,
+    updateStashIcon,
     deleteStash,
     joinStash,
     leaveStash,
@@ -52,6 +53,7 @@ function AppRoutes() {
                   <StashPage
                     stashes={stashes}
                     onRename={renameStash}
+                    onUpdateIcon={updateStashIcon}
                     onDelete={deleteStash}
                     onLeave={leaveStash}
                     getMembers={getMembers}

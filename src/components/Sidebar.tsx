@@ -53,9 +53,15 @@ export function Sidebar({ stashes }: Props) {
                 }`
               }
             >
-              <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
-                {stash.name[0]?.toUpperCase() ?? '?'}
-              </span>
+              {stash.icon ? (
+                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-sm shrink-0 bg-gray-100 dark:bg-gray-800">
+                  {stash.icon}
+                </span>
+              ) : (
+                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
+                  {stash.name[0]?.toUpperCase() ?? '?'}
+                </span>
+              )}
               <span className="flex-1 truncate">{stash.name}</span>
             </NavLink>
           ))}

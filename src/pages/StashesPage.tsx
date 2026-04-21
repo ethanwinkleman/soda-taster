@@ -178,9 +178,15 @@ export function StashesPage({ stashes, onCreate, onJoin }: Props) {
               onClick={() => navigate(`/stash/${stash.id}`)}
               className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3"
             >
-              <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display">
-                {stash.name[0]?.toUpperCase() ?? '?'}
-              </span>
+              {stash.icon ? (
+                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-xl shrink-0">
+                  {stash.icon}
+                </span>
+              ) : (
+                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display">
+                  {stash.name[0]?.toUpperCase() ?? '?'}
+                </span>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-display font-bold text-gray-900 dark:text-white truncate">{stash.name}</p>
                 <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-wide">
