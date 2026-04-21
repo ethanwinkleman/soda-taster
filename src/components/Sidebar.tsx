@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Plus, LogOut, Share2 } from 'lucide-react';
+import { StashIcon } from './StashIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import { Logo } from './Logo';
@@ -54,8 +55,8 @@ export function Sidebar({ stashes }: Props) {
               }
             >
               {stash.icon ? (
-                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-sm shrink-0 bg-gray-100 dark:bg-gray-800">
-                  {stash.icon}
+                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  <StashIcon name={stash.icon} size={12} />
                 </span>
               ) : (
                 <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">

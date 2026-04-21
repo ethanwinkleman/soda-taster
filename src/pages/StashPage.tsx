@@ -9,13 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
-
-const STASH_ICONS = [
-  '🥤', '🍺', '🍻', '🍹', '🍾', '🥂',
-  '🧃', '☕', '🍵', '🧋', '🫗', '🫙',
-  '🌟', '⭐', '🏆', '❤️', '🔥', '🎯',
-  '❄️', '🧊', '🫧', '🌊', '🎪', '🎲',
-];
+import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 
 interface Props {
   stashes: Stash[];
@@ -158,7 +152,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
             <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
             <div className="flex items-baseline justify-between gap-2">
               <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white truncate flex items-center gap-2">
-                {stash.icon && <span className="not-italic">{stash.icon}</span>}
+                {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
                 {stash.name}
               </h1>
               <div className="flex gap-1.5 shrink-0">
@@ -386,18 +380,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                     >
                       None
                     </button>
-                    {STASH_ICONS.map((emoji) => (
+                    {STASH_ICON_DEFS.map(({ name }) => (
                       <button
-                        key={emoji}
+                        key={name}
                         type="button"
-                        onClick={() => stashId && onUpdateIcon(stashId, emoji)}
-                        className={`h-9 flex items-center justify-center text-xl border transition-colors ${
-                          stash.icon === emoji
-                            ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700'
-                            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                        onClick={() => stashId && onUpdateIcon(stashId, name)}
+                        className={`h-9 flex items-center justify-center border transition-colors ${
+                          stash.icon === name
+                            ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
                         }`}
                       >
-                        {emoji}
+                        <StashIcon name={name} size={16} />
                       </button>
                     ))}
                   </div>
