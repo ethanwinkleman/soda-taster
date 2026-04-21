@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { SodaCard } from '../components/SodaCard';
+import { ScoreBadge } from '../components/ScoreBadge';
 
 interface Props {
   stashes: Stash[];
@@ -29,6 +30,8 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
   const { sodas, loading } = useStashSodas(stashId, user?.id);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [inventoryOpen, setInventoryOpen] = useState(false);
+  const [topOpen, setTopOpen] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   const [renameVal, setRenameVal] = useState('');
   const [renaming, setRenaming] = useState(false);
@@ -89,6 +92,15 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
     setTimeout(() => setCopied(false), 2000);
   }
 
+  const fridgeSodas = sodas.filter((s) => s.inFridge);
+  const ratedSodas = sodas.filter((s) => s.avgScore !== null);
+  const overallAvg = ratedSodas.length
+    ? Math.round(ratedSodas.reduce((sum, s) => sum + (s.avgScore ?? 0), 0) / ratedSodas.length * 10) / 10
+    : null;
+  const topThree = [...ratedSodas]
+    .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))
+    .slice(0, 3);
+
   const filtered = sodas.filter((s) =>
     !search ||
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,6 +153,67 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
           <Settings size={18} />
         </button>
       </div>
+
+      {/* Metrics row */}
+      {!loading && sodas.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <button
+            type="button"
+            onClick={() => setInventoryOpen(true)}
+            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Refrigerator size={13} className="text-sky-500 shrink-0" />
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">In Fridge</span>
+            </div>
+            <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+              {fridgeSodas.length}
+            </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTopOpen(true)}
+            className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Trophy size={13} className="text-amber-500 shrink-0" />
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
+            </div>
+            {topThree.length > 0 ? (
+              <>
+                <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+                  {topThree[0].avgScore?.toFixed(1)}
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                  {topThree[0].name}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-2xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
+              </>
+            )}
+          </button>
+
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-3 flex flex-col gap-0.5 shadow-sm">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Star size={13} className="text-amber-400 shrink-0" />
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
+            </div>
+            <span className="text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+              {overallAvg !== null ? overallAvg.toFixed(1) : '—'}
+            </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              {ratedSodas.length} rated
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Search + sort */}
       <div className="flex gap-2 mb-5">
@@ -324,6 +397,146 @@ export function StashPage({ stashes, onRename, onDelete, onLeave, getMembers, re
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Inventory panel */}
+      {inventoryOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
+          onClick={() => setInventoryOpen(false)}
+        >
+          <div
+            className="w-full sm:max-w-sm bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl sm:border border-gray-100 dark:border-gray-800 max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <Refrigerator size={18} className="text-sky-500" />
+                <h2 className="font-bold text-gray-900 dark:text-white">In Fridge</h2>
+                <span className="text-sm text-gray-400 dark:text-gray-500">{fridgeSodas.length}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInventoryOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              {fridgeSodas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
+                  <Refrigerator size={40} className="text-gray-200 dark:text-gray-700 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No sodas in the fridge yet.</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Open a soda and toggle "In Fridge" to track stock.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                  {fridgeSodas.map((soda) => (
+                    <button
+                      key={soda.id}
+                      type="button"
+                      onClick={() => { setInventoryOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
+                      className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                    >
+                      {soda.imageUrl ? (
+                        <img src={soda.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
+                          <CupSoda size={18} className="text-sky-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
+                        {soda.brand && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs font-bold text-sky-500 dark:text-sky-400 tabular-nums">
+                          ×{soda.quantity}
+                        </span>
+                        {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top rated panel */}
+      {topOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center"
+          onClick={() => setTopOpen(false)}
+        >
+          <div
+            className="w-full sm:max-w-sm bg-white dark:bg-gray-900 rounded-t-2xl sm:rounded-2xl shadow-xl sm:border border-gray-100 dark:border-gray-800 max-h-[80vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
+              <div className="flex items-center gap-2">
+                <Trophy size={18} className="text-amber-500" />
+                <h2 className="font-bold text-gray-900 dark:text-white">Top Rated</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTopOpen(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              {topThree.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
+                  <Trophy size={40} className="text-gray-200 dark:text-gray-700 mb-3" />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No ratings yet.</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Rate some sodas to see the top ranked ones here.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                  {topThree.map((soda, i) => (
+                    <button
+                      key={soda.id}
+                      type="button"
+                      onClick={() => { setTopOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
+                      className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                    >
+                      <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${
+                        i === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
+                        i === 1 ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400' :
+                                  'bg-orange-50 dark:bg-orange-900/20 text-orange-500 dark:text-orange-400'
+                      }`}>
+                        {i + 1}
+                      </span>
+                      {soda.imageUrl ? (
+                        <img src={soda.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-100 to-indigo-100 dark:from-sky-900 dark:to-indigo-900 flex items-center justify-center shrink-0">
+                          <CupSoda size={18} className="text-sky-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
+                        {soda.brand && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                        )}
+                      </div>
+                      {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
