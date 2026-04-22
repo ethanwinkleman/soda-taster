@@ -1,34 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <clipPath id="mug-clip">
-      <rect x="10" y="26" width="34" height="28" rx="4"/>
+      <path d="M 12,28 L 48,28 L 44,57 Q 44,60 41,60 L 19,60 Q 16,60 16,57 Z"/>
     </clipPath>
   </defs>
 
   <!-- Background: newspaper ink -->
   <rect width="64" height="64" rx="14" fill="#1a0e06"/>
 
-  <!-- Steam wisps (amber) — rendered first so foam overlaps the base -->
-  <path d="M 21,19 Q 24,14 21,9" fill="none" stroke="#c4901a" stroke-width="2.5" stroke-linecap="round"/>
-  <path d="M 33,16 Q 36,11 33,6" fill="none" stroke="#c4901a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Handle: thick C-shape -->
+  <path d="M 48,35 C 62,35 62,51 48,51 L 48,45 C 56,45 56,41 48,41 Z" fill="#f0e6cf"/>
 
-  <!-- Handle (C-shape, cream) -->
-  <path d="M 44,33 C 57,33 57,47 44,47 L 44,42 C 51,42 51,38 44,38 Z" fill="#f0e6cf"/>
+  <!-- Mug body: trapezoid, wider at top like a beer mug -->
+  <path d="M 12,28 L 48,28 L 44,57 Q 44,60 41,60 L 19,60 Q 16,60 16,57 Z" fill="#f0e6cf"/>
 
-  <!-- Mug body (parchment cream) -->
-  <rect x="10" y="26" width="34" height="28" rx="4" fill="#f0e6cf"/>
+  <!-- Liquid fill (clipped to mug shape) -->
+  <rect x="12" y="37" width="36" height="23" fill="#3a1c0c" clip-path="url(#mug-clip)"/>
 
-  <!-- Dark coffee fill, clipped to mug shape -->
-  <rect x="10" y="36" width="34" height="18" fill="#3a1c0c" clip-path="url(#mug-clip)"/>
+  <!-- Foam head: 5 blobs, big and overflowing -->
+  <circle cx="14" cy="29" r="6.5" fill="#f5eedc"/>
+  <circle cx="22" cy="25" r="7.5" fill="#f5eedc"/>
+  <circle cx="30" cy="22" r="8"   fill="#f5eedc"/>
+  <circle cx="38" cy="25" r="7.5" fill="#f5eedc"/>
+  <circle cx="46" cy="29" r="6.5" fill="#f5eedc"/>
+  <!-- Bridge fills gaps between blobs and mug rim -->
+  <rect x="12" y="23" width="36" height="11" fill="#f5eedc"/>
 
-  <!-- Foam blobs overflowing above the rim -->
-  <circle cx="16" cy="27" r="7"   fill="#f5eedc"/>
-  <circle cx="27" cy="22" r="8"   fill="#f5eedc"/>
-  <circle cx="38" cy="27" r="7"   fill="#f5eedc"/>
-  <!-- Bridge rect fills gaps between blobs and connects to mug top -->
-  <rect x="10" y="24" width="34" height="9" fill="#f5eedc"/>
-
-  <!-- Subtle foam texture bubbles -->
-  <circle cx="21" cy="28" r="2"   fill="#d9c9a8" opacity="0.65"/>
-  <circle cx="35" cy="26" r="2.5" fill="#d9c9a8" opacity="0.65"/>
+  <!-- Subtle foam texture -->
+  <circle cx="22" cy="27" r="2"   fill="#d4c49e" opacity="0.65"/>
+  <circle cx="36" cy="26" r="2.5" fill="#d4c49e" opacity="0.65"/>
+  <circle cx="29" cy="24" r="1.5" fill="#d4c49e" opacity="0.55"/>
 </svg>
