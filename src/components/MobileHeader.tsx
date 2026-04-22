@@ -11,7 +11,7 @@ export function MobileHeader() {
           The Carbonated Chronicle
         </span>
         <span className="text-[9px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 font-sans">
-          Est. MMXXIV
+          Est. MMXXVI
         </span>
       </div>
       {/* Masthead row */}
