@@ -111,13 +111,18 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
   const updateSodaImage = useCallback(async (sodaId: string, file: File): Promise<string | null> => {
     if (!stashId) return 'No stash';
     const path = `${stashId}/${sodaId}`;
+    console.log('[updateSodaImage] uploading', path);
     const { error } = await supabase.storage
       .from('soda-images')
       .upload(path, file, { upsert: true, contentType: file.type });
-    if (error) return error.message;
+    if (error) { console.error('[updateSodaImage] upload error', error); return error.message; }
+    console.log('[updateSodaImage] upload ok');
     const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
     const url = `${publicUrl}?t=${Date.now()}`;
-    await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
+    console.log('[updateSodaImage] new url', url);
+    const { error: dbErr } = await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
+    if (dbErr) { console.error('[updateSodaImage] db update error', dbErr); return dbErr.message; }
+    console.log('[updateSodaImage] db updated, patching local state');
     setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
     return null;
   }, [stashId]);
