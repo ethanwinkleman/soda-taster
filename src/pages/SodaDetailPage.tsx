@@ -24,6 +24,8 @@ export function SodaDetailPage() {
   const [ratingVal, setRatingVal] = useState(0);
   const [initialized, setInitialized] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
 
@@ -78,7 +80,12 @@ export function SodaDetailPage() {
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !soda) return;
-    await updateSodaImage(soda.id, file);
+    e.target.value = '';
+    setImageError(null);
+    setUploadingImage(true);
+    const err = await updateSodaImage(soda.id, file);
+    setUploadingImage(false);
+    if (err) setImageError(err);
   }
 
   async function handleDelete() {
@@ -206,10 +213,13 @@ export function SodaDetailPage() {
             <button
               type="button"
               onClick={() => imgInputRef.current?.click()}
-              className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
+              disabled={uploadingImage}
+              className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors disabled:opacity-50"
               aria-label="Change photo"
             >
-              <Camera size={14} />
+              {uploadingImage
+                ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <Camera size={14} />}
             </button>
           </div>
         ) : (
@@ -221,6 +231,9 @@ export function SodaDetailPage() {
             <Camera size={18} />
             <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add illustration</span>
           </button>
+        )}
+        {imageError && (
+          <p className="mt-2 text-xs font-sans text-red-600 dark:text-red-400 italic">{imageError}</p>
         )}
       </div>
 

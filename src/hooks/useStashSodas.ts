@@ -108,17 +108,18 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
     await fetchSodas();
   }, [stashId, userId, fetchSodas]);
 
-  const updateSodaImage = useCallback(async (sodaId: string, file: File) => {
-    if (!stashId) return;
+  const updateSodaImage = useCallback(async (sodaId: string, file: File): Promise<string | null> => {
+    if (!stashId) return 'No stash';
     const path = `${stashId}/${sodaId}`;
     const { error } = await supabase.storage
       .from('soda-images')
       .upload(path, file, { upsert: true, contentType: file.type });
-    if (error) return;
+    if (error) return error.message;
     const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
     const url = `${publicUrl}?t=${Date.now()}`;
     await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
     setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
+    return null;
   }, [stashId]);
 
   const editSoda = useCallback(async (sodaId: string, updates: { name?: string; brand?: string }) => {
