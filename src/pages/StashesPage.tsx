@@ -55,7 +55,6 @@ export function StashesPage({ stashes, onCreate, onJoin }: Props) {
 
       {/* Page masthead */}
       <div className="mb-8">
-        <div className="border-t-2 border-gray-800 dark:border-gray-200 mb-1" />
         <div className="flex items-baseline justify-between gap-4">
           <h1 className="font-display text-3xl font-black italic text-gray-900 dark:text-white tracking-tight">
             My Collections
