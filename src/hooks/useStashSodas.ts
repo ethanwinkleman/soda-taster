@@ -116,8 +116,9 @@ export function useStashSodas(stashId: string | undefined, userId: string | unde
       .upload(path, file, { upsert: true, contentType: file.type });
     if (error) return;
     const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
-    await supabase.from('stash_sodas').update({ image_url: publicUrl }).eq('id', sodaId);
-    setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: publicUrl } : s));
+    const url = `${publicUrl}?t=${Date.now()}`;
+    await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
+    setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
   }, [stashId]);
 
   const editSoda = useCallback(async (sodaId: string, updates: { name?: string; brand?: string }) => {
