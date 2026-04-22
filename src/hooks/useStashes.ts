@@ -124,16 +124,30 @@ export function useStashes(userId: string | undefined) {
     if (!memberRows?.length) return [];
 
     const userIds = memberRows.map((m) => m.user_id);
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .in('id', userIds);
+
+    const [{ data: profiles }, { data: sodaRows }] = await Promise.all([
+      supabase.from('profiles').select('id, display_name, avatar_url').in('id', userIds),
+      supabase.from('stash_sodas').select('id').eq('stash_id', stashId),
+    ]);
+
+    // Fall back to the display_name stored on ratings if the profile has none
+    let ratingNames: { user_id: string; display_name: string }[] = [];
+    if (sodaRows?.length) {
+      const sodaIds = sodaRows.map((s) => s.id);
+      const { data } = await supabase
+        .from('stash_soda_ratings')
+        .select('user_id, display_name')
+        .in('soda_id', sodaIds)
+        .in('user_id', userIds);
+      ratingNames = (data ?? []).filter((r) => r.display_name);
+    }
 
     return memberRows.map((m) => {
       const profile = (profiles ?? []).find((p) => p.id === m.user_id);
+      const ratingName = ratingNames.find((r) => r.user_id === m.user_id)?.display_name ?? null;
       return {
         userId: m.user_id,
-        displayName: profile?.display_name ?? null,
+        displayName: profile?.display_name ?? ratingName,
         avatarUrl: profile?.avatar_url ?? null,
         joinedAt: m.joined_at,
       };
