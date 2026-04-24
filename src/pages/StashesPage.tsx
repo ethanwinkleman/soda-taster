@@ -2,16 +2,18 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LogIn, Layers, Users } from 'lucide-react';
 import { StashIcon } from '../components/StashIcon';
+import { Skeleton } from '../components/Skeleton';
 import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   stashes: Stash[];
+  loading: boolean;
   onCreate: (name: string) => Promise<{ stash: Stash | null; error: string | null }>;
   onJoin: (code: string) => Promise<{ stashId: string | null; error: string | null }>;
 }
 
-export function StashesPage({ stashes, onCreate, onJoin }: Props) {
+export function StashesPage({ stashes, loading, onCreate, onJoin }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -163,7 +165,19 @@ export function StashesPage({ stashes, onCreate, onJoin }: Props) {
       )}
 
       {/* Stash list */}
-      {stashes.length === 0 ? (
+      {loading ? (
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="p-4 flex items-center gap-3 bg-white dark:bg-gray-800">
+              <Skeleton className="w-10 h-10 shrink-0" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <Skeleton className="h-3.5 w-2/5" />
+                <Skeleton className="h-2.5 w-1/5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : stashes.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-gray-300 dark:border-gray-700">
           <Layers size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
           <p className="font-display italic text-gray-500 dark:text-gray-400">No collections yet</p>

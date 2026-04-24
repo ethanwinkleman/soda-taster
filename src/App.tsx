@@ -20,6 +20,7 @@ function AppRoutes() {
   const location = useLocation();
   const {
     stashes,
+    loading: stashesLoading,
     createStash,
     renameStash,
     updateStashIcon,
@@ -34,20 +35,20 @@ function AppRoutes() {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <PendingJoinHandler onJoined={joinStash} />
-      <Sidebar stashes={stashes} onToggleFavorite={toggleFavorite} />
+      <Sidebar stashes={stashes} loading={stashesLoading} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
         <MobileHeader />
         <main className="flex-1 pb-20 md:pb-0">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 18 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             <Routes location={location}>
               <Route
                 path="/"
-                element={<StashesPage stashes={stashes} onCreate={createStash} onJoin={joinStash} />}
+                element={<StashesPage stashes={stashes} loading={stashesLoading} onCreate={createStash} onJoin={joinStash} />}
               />
               <Route
                 path="/stash/:id"

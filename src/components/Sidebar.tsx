@@ -7,14 +7,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import { Logo } from './Logo';
 import { ShareModal } from './ShareModal';
+import { Skeleton } from './Skeleton';
 import type { Stash } from '../types/stash';
 
 interface Props {
   stashes: Stash[];
+  loading: boolean;
   onToggleFavorite: (stashId: string) => void;
 }
 
-export function Sidebar({ stashes, onToggleFavorite }: Props) {
+export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
   const { user, signOut } = useAuth();
   const { profile, saveProfile } = useProfile(user);
   const navigate = useNavigate();
@@ -44,8 +46,14 @@ export function Sidebar({ stashes, onToggleFavorite }: Props) {
         </p>
 
         <div className="space-y-px">
+          {loading && Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2.5 pl-3 pr-3 py-2">
+              <Skeleton className="w-5 h-5 shrink-0" />
+              <Skeleton className="h-3 flex-1" style={{ width: `${55 + (i * 13) % 30}%` }} />
+            </div>
+          ))}
           <AnimatePresence initial={false}>
-          {stashes.map((stash) => (
+          {!loading && stashes.map((stash) => (
             <motion.div
               key={stash.id}
               layout
@@ -91,7 +99,7 @@ export function Sidebar({ stashes, onToggleFavorite }: Props) {
           ))}
           </AnimatePresence>
 
-          {stashes.length === 0 && (
+          {!loading && stashes.length === 0 && (
             <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-sans italic">No collections yet</p>
           )}
 
