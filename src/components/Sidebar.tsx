@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, LogOut, Share2, Star } from 'lucide-react';
 import { StashIcon } from './StashIcon';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,8 +44,14 @@ export function Sidebar({ stashes, onToggleFavorite }: Props) {
         </p>
 
         <div className="space-y-px">
+          <AnimatePresence initial={false}>
           {stashes.map((stash) => (
-            <div key={stash.id} className="relative group">
+            <motion.div
+              key={stash.id}
+              layout
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="relative group"
+            >
               <NavLink
                 to={`/stash/${stash.id}`}
                 className={({ isActive }) =>
@@ -80,8 +87,9 @@ export function Sidebar({ stashes, onToggleFavorite }: Props) {
                   className={stash.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-gray-400 dark:text-gray-500'}
                 />
               </button>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
 
           {stashes.length === 0 && (
             <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-sans italic">No collections yet</p>
