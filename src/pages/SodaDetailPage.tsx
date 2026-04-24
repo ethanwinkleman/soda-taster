@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -237,19 +238,28 @@ export function SodaDetailPage() {
       </div>
 
       {/* Average score */}
-      {soda.avgScore !== null && (
-        <div className="flex items-center gap-4 mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
-          <ScoreBadge score={soda.avgScore} size="lg" />
-          <div>
-            <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums">
-              {soda.avgScore.toFixed(1)}
-            </p>
-            <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-              {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {soda.avgScore !== null && (
+          <motion.div
+            key={soda.avgScore}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.25 }}
+            className="flex items-center gap-4 mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600"
+          >
+            <ScoreBadge score={soda.avgScore} size="lg" />
+            <div>
+              <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums">
+                {soda.avgScore.toFixed(1)}
+              </p>
+              <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* My Rating */}
       <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
@@ -286,8 +296,15 @@ export function SodaDetailPage() {
       </div>
 
       {/* Rating breakdown */}
+      <AnimatePresence>
       {soda.ratings.length > 1 && (
-        <div className="mb-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="mb-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 overflow-hidden"
+        >
           <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
             Correspondent Ratings
           </p>
@@ -314,8 +331,9 @@ export function SodaDetailPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Fridge inventory */}
       <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">

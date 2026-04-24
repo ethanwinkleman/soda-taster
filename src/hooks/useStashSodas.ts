@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
 import type { Soda, SodaRating } from '../types/stash';
@@ -37,10 +37,11 @@ export function useStashSodas(
 ) {
   const [sodas, setSodas] = useState<Soda[]>([]);
   const [loading, setLoading] = useState(true);
+  const initialFetched = useRef(false);
 
-  const fetchSodas = useCallback(async () => {
+  const fetchSodas = useCallback(async (silent = false) => {
     if (!stashId || !userId) { setSodas([]); setLoading(false); return; }
-    setLoading(true);
+    if (!silent || !initialFetched.current) setLoading(true);
 
     const { data: sodaRows } = await supabase
       .from('stash_sodas')
@@ -69,6 +70,7 @@ export function useStashSodas(
 
     setSodas(result);
     setLoading(false);
+    initialFetched.current = true;
   }, [stashId, userId]);
 
   useEffect(() => { fetchSodas(); }, [fetchSodas]);
@@ -116,7 +118,7 @@ export function useStashSodas(
     }
 
     await act({ stashId, userId, displayName: dn, action: 'soda_added', sodaId: soda.id, sodaName: name });
-    await fetchSodas();
+    await fetchSodas(true);
   }, [stashId, userId, fetchSodas]);
 
   const updateSodaImage = useCallback(async (sodaId: string, file: File): Promise<string | null> => {
@@ -139,7 +141,7 @@ export function useStashSodas(
     const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
     if (!error) {
       await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
-      await fetchSodas();
+      await fetchSodas(true);
     }
   }, [fetchSodas, sodas, stashId, userId, displayName]);
 
@@ -169,14 +171,14 @@ export function useStashSodas(
       { onConflict: 'soda_id,user_id' },
     );
     await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name });
-    await fetchSodas();
+    await fetchSodas(true);
   }, [userId, sodas, fetchSodas, stashId]);
 
   const deleteRating = useCallback(async (ratingId: string, sodaId: string) => {
     const soda = sodas.find((s) => s.id === sodaId);
     await supabase.from('stash_soda_ratings').delete().eq('id', ratingId);
     await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'rating_removed', sodaId, sodaName: soda?.name });
-    await fetchSodas();
+    await fetchSodas(true);
   }, [fetchSodas, sodas, stashId, userId, displayName]);
 
   return {
