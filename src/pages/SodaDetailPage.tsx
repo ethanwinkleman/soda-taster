@@ -184,11 +184,11 @@ export function SodaDetailPage() {
             </div>
           ) : (
             <>
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight">
+              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight break-words">
                 {soda.name}
               </h1>
               {soda.brand && (
-                <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 italic">
+                <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 italic break-words">
                   {soda.brand}
                 </p>
               )}

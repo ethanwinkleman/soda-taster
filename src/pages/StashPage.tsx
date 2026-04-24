@@ -153,9 +153,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
           <div className="flex-1 min-w-0">
             <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
             <div className="flex items-baseline justify-between gap-2">
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white truncate flex items-center gap-2">
+              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2 min-w-0">
                 {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
-                {stash.name}
+                <span className="truncate">{stash.name}</span>
               </h1>
               <div className="flex gap-1.5 shrink-0">
                 <button
