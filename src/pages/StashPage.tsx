@@ -2,14 +2,42 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
+import { useStashActivity, type ActivityEntry } from '../hooks/useStashActivity';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
+function describeAction(entry: ActivityEntry): string {
+  const soda = entry.sodaName ? `"${entry.sodaName}"` : 'a soda';
+  switch (entry.action) {
+    case 'soda_added':      return `added ${soda}`;
+    case 'soda_edited':     return `edited ${soda}`;
+    case 'soda_removed':    return `removed ${soda}`;
+    case 'rating_added':    return `rated ${soda}`;
+    case 'rating_updated':  return `updated rating for ${soda}`;
+    case 'rating_removed':  return `removed rating for ${soda}`;
+    case 'member_joined':   return 'joined the collection';
+    case 'member_removed':  return 'was removed from the collection';
+    default:                return entry.action;
+  }
+}
 
 interface Props {
   stashes: Stash[];
@@ -29,11 +57,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
   const stash = stashes.find((s) => s.id === stashId);
   const isOwner = stash?.ownerId === user?.id;
 
-  const { sodas, loading } = useStashSodas(stashId, user?.id);
+  const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
+  const { sodas, loading } = useStashSodas(stashId, user?.id, displayName);
+  const activityHook = useStashActivity(stashId);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [topOpen, setTopOpen] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const [restockFilter, setRestockFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   const [renameVal, setRenameVal] = useState('');
@@ -163,6 +194,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                 >
                   <Plus size={12} />
                   <span className="hidden sm:inline">Record Soda</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setActivityOpen(true); activityHook.fetch(); }}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                  aria-label="Activity feed"
+                >
+                  <History size={16} />
                 </button>
                 <button
                   type="button"
@@ -572,6 +611,65 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                         {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}
                       </div>
                     </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Activity panel */}
+      {activityOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
+          onClick={() => setActivityOpen(false)}
+        >
+          <div
+            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
+              <div className="flex items-center gap-2">
+                <History size={16} className="text-gray-700 dark:text-gray-300" />
+                <h2 className="font-display font-bold text-gray-900 dark:text-white">Activity</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActivityOpen(false)}
+                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="overflow-y-auto">
+              {activityHook.loading ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-4 h-4 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : activityHook.entries.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
+                  <History size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
+                  <p className="font-display italic text-gray-500 dark:text-gray-400 text-sm">No activity yet.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100 dark:divide-gray-800">
+                  {activityHook.entries.map((entry) => (
+                    <div key={entry.id} className="px-5 py-3 flex items-start gap-3">
+                      <div className="w-7 h-7 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold font-sans shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 mt-0.5">
+                        {entry.displayName[0]?.toUpperCase() ?? '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-sans text-sm text-gray-900 dark:text-gray-100">
+                          <span className="font-bold">{entry.displayName.split(' ')[0]}</span>
+                          {' '}
+                          <span className="text-gray-600 dark:text-gray-400">{describeAction(entry)}</span>
+                        </p>
+                        <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wide">
+                          {relativeTime(entry.createdAt)}
+                        </p>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

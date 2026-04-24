@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { logActivity } from '../lib/activity';
 import type { Stash, StashMember } from '../types/stash';
 
 function generateJoinCode(): string {
@@ -88,7 +89,7 @@ export function useStashes(userId: string | undefined) {
     return null;
   }
 
-  async function joinStash(code: string): Promise<{ stashId: string | null; error: string | null }> {
+  async function joinStash(code: string, displayName?: string): Promise<{ stashId: string | null; error: string | null }> {
     if (!userId) return { stashId: null, error: 'Not logged in' };
 
     const { data } = await supabase.rpc('lookup_stash_by_code', { code: code.toUpperCase().trim() });
@@ -101,10 +102,16 @@ export function useStashes(userId: string | undefined) {
 
     if (error?.code === '23505') {
       setStashes((prev) => prev.find((s) => s.id === found.id) ? prev : [fromDb(found), ...prev]);
+      if (userId && displayName && found.id) {
+        await logActivity({ stashId: found.id, userId, displayName, action: 'member_joined' });
+      }
       return { stashId: found.id, error: null };
     }
     if (error) return { stashId: null, error: error.message };
 
+    if (userId && displayName && found.id) {
+      await logActivity({ stashId: found.id, userId, displayName, action: 'member_joined' });
+    }
     setStashes((prev) => [fromDb(found), ...prev]);
     return { stashId: found.id, error: null };
   }
@@ -154,12 +161,15 @@ export function useStashes(userId: string | undefined) {
     });
   }
 
-  async function removeMember(stashId: string, targetUserId: string) {
+  async function removeMember(stashId: string, targetUserId: string, displayName?: string) {
     await supabase
       .from('stash_members')
       .delete()
       .eq('stash_id', stashId)
       .eq('user_id', targetUserId);
+    if (userId && displayName) {
+      await logActivity({ stashId, userId, displayName, action: 'member_removed' });
+    }
   }
 
   return {

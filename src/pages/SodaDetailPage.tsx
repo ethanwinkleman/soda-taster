@@ -11,8 +11,9 @@ export function SodaDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
   const { sodas, loading, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating } =
-    useStashSodas(stashId, user?.id);
+    useStashSodas(stashId, user?.id, displayName);
 
   const soda = sodas.find((s) => s.id === sodaId);
 
@@ -26,8 +27,6 @@ export function SodaDetailPage() {
   const [savingRating, setSavingRating] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
-
-  const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
 
   useEffect(() => {
     if (!loading && soda && !initialized) {
@@ -61,7 +60,7 @@ export function SodaDetailPage() {
 
   async function handleDeleteRating() {
     if (!soda?.myRating) return;
-    await deleteRating(soda.myRating.id);
+    await deleteRating(soda.myRating.id, soda.id);
     setRatingVal(0);
   }
 
