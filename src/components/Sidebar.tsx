@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Plus, LogOut, Share2 } from 'lucide-react';
+import { Plus, LogOut, Share2, Star } from 'lucide-react';
 import { StashIcon } from './StashIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
@@ -10,9 +10,10 @@ import type { Stash } from '../types/stash';
 
 interface Props {
   stashes: Stash[];
+  onToggleFavorite: (stashId: string) => void;
 }
 
-export function Sidebar({ stashes }: Props) {
+export function Sidebar({ stashes, onToggleFavorite }: Props) {
   const { user, signOut } = useAuth();
   const { profile, saveProfile } = useProfile(user);
   const navigate = useNavigate();
@@ -43,28 +44,43 @@ export function Sidebar({ stashes }: Props) {
 
         <div className="space-y-px">
           {stashes.map((stash) => (
-            <NavLink
-              key={stash.id}
-              to={`/stash/${stash.id}`}
-              className={({ isActive }) =>
-                `flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium transition-colors border-l-2 ${
-                  isActive
-                    ? 'border-gray-900 dark:border-gray-100 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                    : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-                }`
-              }
-            >
-              {stash.icon ? (
-                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                  <StashIcon name={stash.icon} size={12} />
-                </span>
-              ) : (
-                <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
-                  {stash.name[0]?.toUpperCase() ?? '?'}
-                </span>
-              )}
-              <span className="flex-1 truncate">{stash.name}</span>
-            </NavLink>
+            <div key={stash.id} className="relative group">
+              <NavLink
+                to={`/stash/${stash.id}`}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 pl-3 pr-8 py-2 text-sm font-sans font-medium transition-colors border-l-2 ${
+                    isActive
+                      ? 'border-gray-900 dark:border-gray-100 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`
+                }
+              >
+                {stash.icon ? (
+                  <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <StashIcon name={stash.icon} size={12} />
+                  </span>
+                ) : (
+                  <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
+                    {stash.name[0]?.toUpperCase() ?? '?'}
+                  </span>
+                )}
+                <span className="flex-1 truncate">{stash.name}</span>
+              </NavLink>
+              <button
+                type="button"
+                onClick={() => onToggleFavorite(stash.id)}
+                className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1 transition-opacity ${
+                  stash.isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                }`}
+                aria-label={stash.isFavorite ? 'Unpin' : 'Pin to top'}
+                title={stash.isFavorite ? 'Unpin' : 'Pin to top'}
+              >
+                <Star
+                  size={11}
+                  className={stash.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-gray-400 dark:text-gray-500'}
+                />
+              </button>
+            </div>
           ))}
 
           {stashes.length === 0 && (

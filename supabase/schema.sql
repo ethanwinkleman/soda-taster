@@ -196,3 +196,7 @@ CREATE POLICY "members_insert_activity" ON stash_activity FOR INSERT
 -- ── Activity score column ─────────────────────────────────────────────────────
 -- Stores the rating value on rating_added / rating_updated events.
 ALTER TABLE stash_activity ADD COLUMN IF NOT EXISTS score NUMERIC(3,1);
+
+-- ── Stash favorites ───────────────────────────────────────────────────────────
+-- Per-user favorite flag on memberships; favorited stashes sort to the top.
+ALTER TABLE stash_members ADD COLUMN IF NOT EXISTS is_favorite BOOLEAN NOT NULL DEFAULT FALSE;

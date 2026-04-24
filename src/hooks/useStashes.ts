@@ -9,7 +9,7 @@ function generateJoinCode(): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromDb(row: any): Stash {
+function fromDb(row: any, isFavorite = false): Stash {
   return {
     id: row.id,
     name: row.name,
@@ -17,7 +17,16 @@ function fromDb(row: any): Stash {
     ownerId: row.owner_id,
     joinCode: row.join_code,
     createdAt: row.created_at,
+    isFavorite,
   };
+}
+
+function sortStashes(list: Stash[]): Stash[] {
+  return [...list].sort((a, b) => {
+    if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+    if (a.isFavorite && b.isFavorite) return a.name.localeCompare(b.name);
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
 
 export function useStashes(userId: string | undefined) {
@@ -36,19 +45,20 @@ export function useStashes(userId: string | undefined) {
 
     const { data: memberships } = await supabase
       .from('stash_members')
-      .select('stash_id')
+      .select('stash_id, is_favorite')
       .eq('user_id', userId);
 
     if (!memberships?.length) { setStashes([]); setLoading(false); return; }
 
+    const favoriteMap = new Map(memberships.map((m) => [m.stash_id, m.is_favorite ?? false]));
     const ids = memberships.map((m) => m.stash_id);
     const { data } = await supabase
       .from('stashes')
       .select('*')
-      .in('id', ids)
-      .order('created_at', { ascending: false });
+      .in('id', ids);
 
-    setStashes((data ?? []).map(fromDb));
+    const result = (data ?? []).map((row) => fromDb(row, favoriteMap.get(row.id) ?? false));
+    setStashes(sortStashes(result));
     setLoading(false);
   }
 
@@ -66,14 +76,14 @@ export function useStashes(userId: string | undefined) {
 
     await supabase.from('stash_members').insert({ stash_id: data.id, user_id: userId });
     const stash = fromDb(data);
-    setStashes((prev) => [stash, ...prev]);
+    setStashes((prev) => sortStashes([stash, ...prev]));
     return { stash, error: null };
   }
 
   async function renameStash(id: string, name: string): Promise<string | null> {
     const { error } = await supabase.from('stashes').update({ name }).eq('id', id);
     if (error) return error.message;
-    setStashes((prev) => prev.map((s) => s.id === id ? { ...s, name } : s));
+    setStashes((prev) => sortStashes(prev.map((s) => s.id === id ? { ...s, name } : s)));
     return null;
   }
 
@@ -101,7 +111,7 @@ export function useStashes(userId: string | undefined) {
       .insert({ stash_id: found.id, user_id: userId });
 
     if (error?.code === '23505') {
-      setStashes((prev) => prev.find((s) => s.id === found.id) ? prev : [fromDb(found), ...prev]);
+      setStashes((prev) => prev.find((s) => s.id === found.id) ? prev : sortStashes([fromDb(found), ...prev]));
       if (userId && displayName && found.id) {
         await logActivity({ stashId: found.id, userId, displayName, action: 'member_joined' });
       }
@@ -112,7 +122,7 @@ export function useStashes(userId: string | undefined) {
     if (userId && displayName && found.id) {
       await logActivity({ stashId: found.id, userId, displayName, action: 'member_joined' });
     }
-    setStashes((prev) => [fromDb(found), ...prev]);
+    setStashes((prev) => sortStashes([fromDb(found), ...prev]));
     return { stashId: found.id, error: null };
   }
 
@@ -120,6 +130,18 @@ export function useStashes(userId: string | undefined) {
     if (!userId) return;
     await supabase.from('stash_members').delete().eq('stash_id', id).eq('user_id', userId);
     setStashes((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  async function toggleFavorite(stashId: string): Promise<void> {
+    const stash = stashes.find((s) => s.id === stashId);
+    if (!stash || !userId) return;
+    const newVal = !stash.isFavorite;
+    setStashes((prev) => sortStashes(prev.map((s) => s.id === stashId ? { ...s, isFavorite: newVal } : s)));
+    await supabase
+      .from('stash_members')
+      .update({ is_favorite: newVal })
+      .eq('stash_id', stashId)
+      .eq('user_id', userId);
   }
 
   async function getMembers(stashId: string): Promise<StashMember[]> {
@@ -181,6 +203,7 @@ export function useStashes(userId: string | undefined) {
     deleteStash,
     joinStash,
     leaveStash,
+    toggleFavorite,
     getMembers,
     removeMember,
     refresh: fetchStashes,

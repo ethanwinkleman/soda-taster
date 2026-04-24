@@ -5,6 +5,7 @@ export interface Stash {
   ownerId: string;
   joinCode: string;
   createdAt: string;
+  isFavorite: boolean;
 }
 
 export interface StashMember {

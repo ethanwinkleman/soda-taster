@@ -26,6 +26,7 @@ function AppRoutes() {
     deleteStash,
     joinStash,
     leaveStash,
+    toggleFavorite,
     getMembers,
     removeMember,
   } = useStashes(user?.id);
@@ -33,7 +34,7 @@ function AppRoutes() {
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
       <PendingJoinHandler onJoined={joinStash} />
-      <Sidebar stashes={stashes} />
+      <Sidebar stashes={stashes} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
         <MobileHeader />
         <main className="flex-1 pb-20 md:pb-0">
