@@ -12,6 +12,7 @@ export async function logActivity(params: {
   action: ActivityAction;
   sodaId?: string;
   sodaName?: string;
+  score?: number;
 }) {
   await supabase.from('stash_activity').insert({
     stash_id: params.stashId,
@@ -20,5 +21,6 @@ export async function logActivity(params: {
     action: params.action,
     soda_id: params.sodaId ?? null,
     soda_name: params.sodaName ?? null,
+    score: params.score ?? null,
   });
 }

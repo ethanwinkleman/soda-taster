@@ -192,3 +192,7 @@ CREATE POLICY "members_view_activity" ON stash_activity FOR SELECT
 CREATE POLICY "members_insert_activity" ON stash_activity FOR INSERT
   WITH CHECK (auth.uid() = user_id AND is_stash_member(stash_id));
 -- No UPDATE or DELETE policies — feed entries are read-only (ACT-06)
+
+-- ── Activity score column ─────────────────────────────────────────────────────
+-- Stores the rating value on rating_added / rating_updated events.
+ALTER TABLE stash_activity ADD COLUMN IF NOT EXISTS score NUMERIC(3,1);

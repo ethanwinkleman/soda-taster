@@ -170,7 +170,7 @@ export function useStashSodas(
       { soda_id: sodaId, user_id: userId, display_name: dn, score },
       { onConflict: 'soda_id,user_id' },
     );
-    await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name });
+    await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
     await fetchSodas(true);
   }, [userId, sodas, fetchSodas, stashId]);
 

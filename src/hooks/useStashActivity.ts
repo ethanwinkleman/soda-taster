@@ -9,6 +9,7 @@ export interface ActivityEntry {
   action: ActivityAction;
   sodaId: string | null;
   sodaName: string | null;
+  score: number | null;
   createdAt: string;
 }
 
@@ -21,6 +22,7 @@ function fromDb(r: any): ActivityEntry {
     action: r.action as ActivityAction,
     sodaId: r.soda_id,
     sodaName: r.soda_name,
+    score: r.score != null ? Number(r.score) : null,
     createdAt: r.created_at,
   };
 }

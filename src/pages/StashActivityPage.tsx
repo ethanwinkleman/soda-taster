@@ -17,12 +17,13 @@ function relativeTime(iso: string): string {
 
 function describeAction(entry: ActivityEntry): string {
   const soda = entry.sodaName ? `"${entry.sodaName}"` : 'a soda';
+  const scoreStr = entry.score != null ? ` — ★ ${entry.score.toFixed(1)}` : '';
   switch (entry.action) {
     case 'soda_added':     return `added ${soda}`;
     case 'soda_edited':    return `edited ${soda}`;
     case 'soda_removed':   return `removed ${soda}`;
-    case 'rating_added':   return `rated ${soda}`;
-    case 'rating_updated': return `updated rating for ${soda}`;
+    case 'rating_added':   return `rated ${soda}${scoreStr}`;
+    case 'rating_updated': return `updated rating for ${soda}${scoreStr}`;
     case 'rating_removed': return `removed rating for ${soda}`;
     case 'member_joined':  return 'joined the collection';
     case 'member_removed': return 'was removed from the collection';
