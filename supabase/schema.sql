@@ -72,6 +72,9 @@ CREATE POLICY "members_view_stash_members" ON stash_members FOR SELECT
   USING (is_stash_member(stash_id));
 CREATE POLICY "users_join_stashes"    ON stash_members FOR INSERT
   WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "members_update_own_membership" ON stash_members FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "leave_or_owner_remove" ON stash_members FOR DELETE
   USING (auth.uid() = user_id OR
     EXISTS (SELECT 1 FROM stashes WHERE id = stash_members.stash_id AND owner_id = auth.uid()));
