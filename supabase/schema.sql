@@ -62,7 +62,8 @@ CREATE POLICY "owner_delete_stash"    ON stashes FOR DELETE
 
 -- Helper: checks membership without triggering RLS on stash_members (avoids infinite recursion)
 CREATE OR REPLACE FUNCTION is_stash_member(p_stash_id UUID)
-RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE AS $$
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public AS $$
   SELECT EXISTS (SELECT 1 FROM stash_members WHERE stash_id = p_stash_id AND user_id = auth.uid());
 $$;
 
@@ -108,7 +109,8 @@ CREATE POLICY "own_delete_rating" ON stash_soda_ratings FOR DELETE
 
 CREATE OR REPLACE FUNCTION lookup_stash_by_code(code TEXT)
 RETURNS TABLE (id UUID, name TEXT, join_code TEXT, owner_id UUID)
-LANGUAGE sql SECURITY DEFINER AS $$
+LANGUAGE sql SECURITY DEFINER
+SET search_path = public AS $$
   SELECT id, name, join_code, owner_id
   FROM stashes
   WHERE join_code = upper(trim(code));
@@ -125,7 +127,8 @@ RETURNS TABLE (
   score     NUMERIC,
   rated_at  TIMESTAMPTZ
 )
-LANGUAGE sql SECURITY DEFINER STABLE AS $$
+LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public AS $$
   SELECT r.soda_id, s.name, s.brand, r.score, r.created_at
   FROM stash_soda_ratings r
   JOIN stash_sodas s ON s.id = r.soda_id
@@ -152,8 +155,8 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('soda-images', 'soda-images', true)
 ON CONFLICT (id) DO NOTHING;
 
--- Storage RLS: authenticated users may upload/replace/delete images;
--- anyone may read (bucket is public, so SELECT policy is redundant but explicit).
+-- Storage RLS: authenticated users may upload/replace/delete images.
+-- No SELECT policy needed — the bucket is public so objects are accessible by URL.
 CREATE POLICY "soda_images_insert" ON storage.objects FOR INSERT
   WITH CHECK (bucket_id = 'soda-images' AND auth.role() = 'authenticated');
 
@@ -162,9 +165,6 @@ CREATE POLICY "soda_images_update" ON storage.objects FOR UPDATE
 
 CREATE POLICY "soda_images_delete" ON storage.objects FOR DELETE
   USING (bucket_id = 'soda-images' AND auth.role() = 'authenticated');
-
-CREATE POLICY "soda_images_select" ON storage.objects FOR SELECT
-  USING (bucket_id = 'soda-images');
 
 -- ── Half-star rating support ──────────────────────────────────────────────────
 -- Widens the score range from [1,5] whole numbers to [0.5,5.0] half steps.
