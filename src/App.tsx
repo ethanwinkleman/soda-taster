@@ -11,6 +11,7 @@ import { StashesPage } from './pages/StashesPage';
 import { StashPage } from './pages/StashPage';
 import { AddSodaPage } from './pages/AddSodaPage';
 import { SodaDetailPage } from './pages/SodaDetailPage';
+import { StashActivityPage } from './pages/StashActivityPage';
 import { PublicProfilePage } from './pages/PublicProfilePage';
 import { JoinStashPage } from './pages/JoinStashPage';
 
@@ -62,6 +63,7 @@ function AppRoutes() {
                 }
               />
               <Route path="/stash/:id/add" element={<AddSodaPage />} />
+              <Route path="/stash/:id/activity" element={<StashActivityPage />} />
               <Route path="/stash/:id/soda/:sodaId" element={<SodaDetailPage />} />
             </Routes>
           </motion.div>
