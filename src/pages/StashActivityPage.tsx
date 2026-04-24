@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, History } from 'lucide-react';
 import { useStashActivity, type ActivityEntry } from '../hooks/useStashActivity';
+import { Skeleton } from '../components/Skeleton';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -63,8 +64,16 @@ export function StashActivityPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="flex justify-center py-24">
-          <div className="w-5 h-5 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
+        <div className="border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800">
+              <Skeleton className="w-7 h-7 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-2 pt-0.5">
+                <Skeleton className="h-3 w-3/5" />
+                <Skeleton className="h-2.5 w-1/4" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-gray-300 dark:border-gray-700">

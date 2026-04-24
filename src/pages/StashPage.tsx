@@ -10,6 +10,7 @@ import { useStashSodas } from '../hooks/useStashSodas';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
+import { Skeleton } from '../components/Skeleton';
 
 
 interface Props {
@@ -311,8 +312,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
 
       {/* Soda list */}
       {loading ? (
-        <div className="flex justify-center py-16">
-          <div className="w-5 h-5 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
+        <div className="space-y-px">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center gap-3 p-3">
+              <Skeleton className="w-12 h-12 shrink-0" />
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <Skeleton className="h-3.5 w-2/3" />
+                <Skeleton className="h-2.5 w-1/3" />
+                <Skeleton className="h-2 w-1/4" />
+              </div>
+              <Skeleton className="w-8 h-8 shrink-0" />
+            </div>
+          ))}
         </div>
       ) : sorted.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-300 dark:border-gray-700">

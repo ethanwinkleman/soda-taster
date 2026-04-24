@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
+import { Skeleton } from '../components/Skeleton';
 
 export function SodaDetailPage() {
   const { id: stashId, sodaId } = useParams<{ id: string; sodaId: string }>();
@@ -96,8 +97,39 @@ export function SodaDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh]">
-        <div className="w-5 h-5 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
+      <div className="max-w-md mx-auto px-4 py-8 space-y-5">
+        {/* Header */}
+        <div className="flex items-start gap-2">
+          <Skeleton className="w-8 h-8 shrink-0 mt-1" />
+          <div className="flex-1 space-y-2 pt-1">
+            <div className="border-t border-gray-800 dark:border-gray-200 mb-2" />
+            <Skeleton className="h-6 w-3/4" />
+            <Skeleton className="h-3.5 w-1/3" />
+            <div className="border-b border-gray-400 dark:border-gray-600 mt-2" />
+          </div>
+        </div>
+        {/* Image */}
+        <Skeleton className="w-full h-52" />
+        {/* Avg score */}
+        <div className="flex items-center gap-4 p-4 border border-gray-300 dark:border-gray-600">
+          <Skeleton className="w-12 h-12 shrink-0" />
+          <div className="space-y-2">
+            <Skeleton className="h-7 w-16" />
+            <Skeleton className="h-2.5 w-20" />
+          </div>
+        </div>
+        {/* My rating */}
+        <div className="p-4 border border-gray-300 dark:border-gray-600 space-y-3">
+          <Skeleton className="h-2.5 w-20" />
+          <Skeleton className="h-7 w-36" />
+        </div>
+        {/* Fridge */}
+        <div className="p-4 border border-gray-300 dark:border-gray-600">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="w-11 h-6" />
+          </div>
+        </div>
       </div>
     );
   }
