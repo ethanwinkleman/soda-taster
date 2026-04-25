@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
@@ -61,8 +62,14 @@ function FillingBeer() {
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithGoogle } = useAuth();
+  const [minElapsed, setMinElapsed] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    const t = setTimeout(() => setMinElapsed(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading || !minElapsed) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <FillingBeer />
