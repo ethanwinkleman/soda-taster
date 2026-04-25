@@ -1,5 +1,63 @@
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
+
+function FillingBeer() {
+  return (
+    <svg
+      width="72" height="72"
+      viewBox="0 0 24 24"
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-gray-700 dark:text-gray-300"
+    >
+      <defs>
+        <clipPath id="mug-fill-clip">
+          <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5Z" />
+        </clipPath>
+      </defs>
+
+      {/* Rising liquid */}
+      <motion.rect
+        x="2" width="14"
+        fill="#fbbf24"
+        clipPath="url(#mug-fill-clip)"
+        initial={{ y: 21, height: 0 }}
+        animate={{ y: 9.5, height: 11.5 }}
+        transition={{
+          duration: 1.3,
+          ease: [0.4, 0, 0.2, 1],
+          repeat: Infinity,
+          repeatType: 'loop',
+          repeatDelay: 0.7,
+        }}
+      />
+
+      {/* Foam — fades in near the end of each fill */}
+      <motion.rect
+        x="3" y="7.5" width="12" height="3"
+        fill="#fef9c3"
+        clipPath="url(#mug-fill-clip)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 0, 1, 1, 0] }}
+        transition={{
+          duration: 2,
+          times: [0, 0.55, 0.75, 0.9, 1],
+          repeat: Infinity,
+          repeatType: 'loop',
+        }}
+      />
+
+      {/* Handle */}
+      <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
+      {/* Foam line at top */}
+      <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5" stroke="currentColor" strokeWidth="1.5" />
+      {/* Mug body */}
+      <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -7,9 +65,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="animate-pulse opacity-60">
-          <Logo size="md" />
-        </div>
+        <FillingBeer />
       </div>
     );
   }
