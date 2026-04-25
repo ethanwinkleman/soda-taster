@@ -1,62 +1,81 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
 function FillingBeer() {
+  const fillLevel = useMotionValue(0); // 0 = empty, 1 = full
+  const opacity   = useMotionValue(0);
+
+  // Both y and height driven from a single value — perfectly in sync
+  const rectY      = useTransform(fillLevel, [0, 1], [19, 8.5]);
+  const rectHeight = useTransform(fillLevel, [0, 1], [0,  10.5]);
+  const foamOpacity = useTransform(fillLevel, [0.75, 0.85], [0, 1]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loop() {
+      while (!cancelled) {
+        // Rise
+        await animate(fillLevel, 1, { duration: 1.4, ease: [0.4, 0, 0.2, 1] });
+        // Hold
+        await new Promise(r => setTimeout(r, 500));
+        // Fade out
+        await animate(opacity, 0, { duration: 0.35, ease: 'easeIn' });
+        // Reset (invisible)
+        fillLevel.set(0);
+        // Pause before next fill
+        await new Promise(r => setTimeout(r, 300));
+        await animate(opacity, 1, { duration: 0.2 });
+      }
+    }
+    loop();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
-    <svg
-      width="72" height="72"
-      viewBox="0 0 24 24"
-      fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-gray-700 dark:text-gray-300"
-    >
-      <defs>
-        <clipPath id="mug-fill-clip">
-          <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5Z" />
-        </clipPath>
-      </defs>
+    <div className="flex flex-col items-center gap-8">
+      <motion.svg
+        width="96" height="96"
+        viewBox="0 0 24 24"
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-gray-800 dark:text-gray-200"
+        style={{ opacity }}
+      >
+        <defs>
+          <clipPath id="mug-fill-clip">
+            <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5Z" />
+          </clipPath>
+        </defs>
 
-      {/* Rising liquid */}
-      <motion.rect
-        x="2" width="14"
-        fill="#fbbf24"
-        clipPath="url(#mug-fill-clip)"
-        initial={{ y: 21, height: 0 }}
-        animate={{ y: 9.5, height: 11.5 }}
-        transition={{
-          duration: 1.3,
-          ease: [0.4, 0, 0.2, 1],
-          repeat: Infinity,
-          repeatType: 'loop',
-          repeatDelay: 0.7,
-        }}
-      />
+        {/* Liquid */}
+        <motion.rect
+          x="2" width="14"
+          fill="#b45309"
+          clipPath="url(#mug-fill-clip)"
+          style={{ y: rectY, height: rectHeight }}
+        />
 
-      {/* Foam — fades in near the end of each fill */}
-      <motion.rect
-        x="3" y="7.5" width="12" height="3"
-        fill="#fef9c3"
-        clipPath="url(#mug-fill-clip)"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: [0, 0, 1, 1, 0] }}
-        transition={{
-          duration: 2,
-          times: [0, 0.55, 0.75, 0.9, 1],
-          repeat: Infinity,
-          repeatType: 'loop',
-        }}
-      />
+        {/* Foam */}
+        <motion.rect
+          x="3" y="7.5" width="12" height="2.5"
+          fill="#fef3c7"
+          clipPath="url(#mug-fill-clip)"
+          style={{ opacity: foamOpacity }}
+        />
 
-      {/* Handle */}
-      <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
-      {/* Foam line at top */}
-      <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5" stroke="currentColor" strokeWidth="1.5" />
-      {/* Mug body */}
-      <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
-    </svg>
+        {/* Handle */}
+        <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
+        {/* Foam bumps */}
+        <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5" stroke="currentColor" strokeWidth="1.5" />
+        {/* Body */}
+        <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
+      </motion.svg>
+
+      <Logo size="md" />
+    </div>
   );
 }
 
