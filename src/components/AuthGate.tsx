@@ -8,8 +8,8 @@ function FillingBeer() {
   const opacity   = useMotionValue(1);
 
   // Both y and height driven from a single value — perfectly in sync
-  const rectY      = useTransform(fillLevel, [0, 1], [19, 8.5]);
-  const rectHeight = useTransform(fillLevel, [0, 1], [0,  10.5]);
+  const rectY      = useTransform(fillLevel, [0, 1], [19, 7.5]);
+  const rectHeight = useTransform(fillLevel, [0, 1], [0,  11.5]);
   const foamOpacity = useTransform(fillLevel, [0.75, 0.85], [0, 1]);
 
   useEffect(() => {
