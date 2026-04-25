@@ -76,7 +76,7 @@ export function useStashSodas(
   useEffect(() => { fetchSodas(); }, [fetchSodas]);
 
   async function act(params: Parameters<typeof logActivity>[0]) {
-    if (!stashId || !userId || !displayName) return;
+    if (!stashId || !userId) return;
     await logActivity(params);
   }
 
