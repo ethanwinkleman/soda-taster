@@ -5,7 +5,7 @@ import { Logo } from './Logo';
 
 function FillingBeer() {
   const fillLevel = useMotionValue(0); // 0 = empty, 1 = full
-  const opacity   = useMotionValue(0);
+  const opacity   = useMotionValue(1);
 
   // Both y and height driven from a single value — perfectly in sync
   const rectY      = useTransform(fillLevel, [0, 1], [19, 8.5]);
