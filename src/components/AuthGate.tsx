@@ -4,41 +4,30 @@ import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
 function FillingBeer() {
-  const fillLevel = useMotionValue(0); // 0 = empty, 1 = full
-  const opacity   = useMotionValue(1);
+  const fillLevel = useMotionValue(0);
   const liquidRef = useRef<SVGRectElement>(null);
   const foamRef   = useRef<SVGRectElement>(null);
 
-  // Drive SVG attributes directly — bypasses CSS-pixel vs SVG-user-unit mismatch
   useEffect(() => {
     return fillLevel.on('change', v => {
       if (liquidRef.current) {
-        const h = v * 11.5;
+        // Liquid fills to just below foam (stops at y=9.5, leaving room for foam layer)
+        const fullH = 9.5;
+        const h = v * fullH;
         liquidRef.current.setAttribute('y',      String(19 - h));
         liquidRef.current.setAttribute('height', String(h));
       }
       if (foamRef.current) {
-        const fo = v < 0.75 ? 0 : Math.min(1, (v - 0.75) / 0.1);
+        const fo = v < 0.85 ? 0 : Math.min(1, (v - 0.85) / 0.1);
         foamRef.current.setAttribute('opacity', String(fo));
       }
     });
   }, [fillLevel]);
 
   useEffect(() => {
-    let cancelled = false;
-    async function loop() {
-      while (!cancelled) {
-        await animate(fillLevel, 1, { duration: 1.4, ease: [0.4, 0, 0.2, 1] });
-        await new Promise(r => setTimeout(r, 500));
-        await animate(opacity, 0, { duration: 0.35, ease: 'easeIn' });
-        fillLevel.set(0);
-        await new Promise(r => setTimeout(r, 300));
-        await animate(opacity, 1, { duration: 0.2 });
-      }
-    }
-    loop();
-    return () => { cancelled = true; };
-  }, [fillLevel, opacity]);
+    // Fill once and hold — AuthGate unmounts this component when ready
+    animate(fillLevel, 1, { duration: 1.6, ease: [0.4, 0, 0.2, 1] });
+  }, [fillLevel]);
 
   return (
     <div className="flex flex-col items-center gap-8">
@@ -49,7 +38,9 @@ function FillingBeer() {
         strokeLinecap="round"
         strokeLinejoin="round"
         className="text-gray-800 dark:text-gray-200"
-        style={{ opacity }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
       >
         <defs>
           <clipPath id="mug-fill-clip">
@@ -57,7 +48,7 @@ function FillingBeer() {
           </clipPath>
         </defs>
 
-        {/* Liquid — y/height set imperatively in SVG user units */}
+        {/* Liquid */}
         <rect
           ref={liquidRef}
           x="2" y="19" width="14" height="0"
@@ -65,18 +56,18 @@ function FillingBeer() {
           clipPath="url(#mug-fill-clip)"
         />
 
-        {/* Foam — opacity set imperatively */}
+        {/* Foam layer — sits on top of liquid at the mug opening */}
         <rect
           ref={foamRef}
-          x="3" y="7.5" width="12" height="2.5"
-          fill="#fef3c7"
+          x="2" y="7.5" width="14" height="3"
+          fill="white"
           clipPath="url(#mug-fill-clip)"
           opacity="0"
         />
 
         {/* Handle */}
         <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
-        {/* Foam bumps */}
+        {/* Foam bumps (wavy top edge) */}
         <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5" stroke="currentColor" strokeWidth="1.5" />
         {/* Body */}
         <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
