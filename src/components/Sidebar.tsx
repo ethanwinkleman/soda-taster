@@ -80,6 +80,11 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
                   </span>
                 )}
                 <span className="flex-1 truncate">{stash.name}</span>
+                {stash.sodaCount > 0 && (
+                  <span className="text-[9px] font-mono font-bold tabular-nums text-gray-400 dark:text-gray-500 shrink-0">
+                    {stash.sodaCount}
+                  </span>
+                )}
               </NavLink>
               <button
                 type="button"

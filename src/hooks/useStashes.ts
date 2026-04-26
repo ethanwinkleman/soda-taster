@@ -9,7 +9,7 @@ function generateJoinCode(): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromDb(row: any, isFavorite = false): Stash {
+function fromDb(row: any, isFavorite = false, sodaCount = 0): Stash {
   return {
     id: row.id,
     name: row.name,
@@ -18,6 +18,7 @@ function fromDb(row: any, isFavorite = false): Stash {
     joinCode: row.join_code,
     createdAt: row.created_at,
     isFavorite,
+    sodaCount,
   };
 }
 
@@ -52,12 +53,17 @@ export function useStashes(userId: string | undefined) {
 
     const favoriteMap = new Map(memberships.map((m) => [m.stash_id, m.is_favorite ?? false]));
     const ids = memberships.map((m) => m.stash_id);
-    const { data } = await supabase
-      .from('stashes')
-      .select('*')
-      .in('id', ids);
+    const [{ data }, { data: sodaRows }] = await Promise.all([
+      supabase.from('stashes').select('*').in('id', ids),
+      supabase.from('stash_sodas').select('stash_id').in('stash_id', ids),
+    ]);
 
-    const result = (data ?? []).map((row) => fromDb(row, favoriteMap.get(row.id) ?? false));
+    const countMap = new Map<string, number>();
+    (sodaRows ?? []).forEach((r) => countMap.set(r.stash_id, (countMap.get(r.stash_id) ?? 0) + 1));
+
+    const result = (data ?? []).map((row) =>
+      fromDb(row, favoriteMap.get(row.id) ?? false, countMap.get(row.id) ?? 0)
+    );
     setStashes(sortStashes(result));
     setLoading(false);
   }

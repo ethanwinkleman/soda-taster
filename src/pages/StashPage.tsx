@@ -3,7 +3,7 @@ import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -98,6 +98,26 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function exportCsv() {
+    if (!stash || sodas.length === 0) return;
+    const header = ['Name', 'Brand', 'Avg Score', 'My Score', 'In Stock', 'Quantity'];
+    const rows = sodas.map((s) => [
+      `"${s.name.replace(/"/g, '""')}"`,
+      `"${s.brand.replace(/"/g, '""')}"`,
+      s.avgScore ?? '',
+      s.myRating?.score ?? '',
+      s.inFridge ? 'Yes' : 'No',
+      s.quantity,
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${stash.name.replace(/[^a-z0-9]/gi, '_')}_sodas.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const fridgeSodas = sodas.filter((s) => s.inFridge);
   const ratedSodas = sodas.filter((s) => s.avgScore !== null);
   const overallAvg = ratedSodas.length
@@ -175,6 +195,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                   aria-label="Activity feed"
                 >
                   <History size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={exportCsv}
+                  disabled={sodas.length === 0}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                  aria-label="Export CSV"
+                  title="Export sodas as CSV"
+                >
+                  <Download size={16} />
                 </button>
                 <button
                   type="button"
@@ -549,6 +579,12 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_, info) => {
+              if (info.velocity.y > 400 || info.offset.y > 120) setInventoryOpen(false);
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
@@ -629,6 +665,12 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            drag="y"
+            dragConstraints={{ top: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_, info) => {
+              if (info.velocity.y > 400 || info.offset.y > 120) setTopOpen(false);
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">

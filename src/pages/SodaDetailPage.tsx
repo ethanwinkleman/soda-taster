@@ -379,7 +379,7 @@ export function SodaDetailPage() {
           <button
             type="button"
             onClick={handleFridgeToggle}
-            className={`relative w-11 h-6 transition-colors border ${
+            className={`relative w-11 h-6 transition-colors duration-200 border ${
               soda.inFridge
                 ? 'bg-gray-800 dark:bg-gray-200 border-gray-900 dark:border-gray-100'
                 : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
@@ -387,7 +387,7 @@ export function SodaDetailPage() {
             aria-label="Toggle in fridge"
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 transition-transform ${
+              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 transition-transform duration-200 ${
                 soda.inFridge ? 'translate-x-5' : ''
               }`}
             />
@@ -398,23 +398,27 @@ export function SodaDetailPage() {
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <span className="font-sans text-xs uppercase tracking-wider text-gray-600 dark:text-gray-400">Quantity</span>
             <div className="flex items-center gap-3">
-              <button
+              <motion.button
                 type="button"
                 onClick={() => handleQtyChange(-1)}
+                whileTap={{ scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="w-8 h-8 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Minus size={12} />
-              </button>
+              </motion.button>
               <span className="w-8 text-center font-display font-black text-gray-900 dark:text-gray-100 tabular-nums">
                 {soda.quantity}
               </span>
-              <button
+              <motion.button
                 type="button"
                 onClick={() => handleQtyChange(1)}
+                whileTap={{ scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                 className="w-8 h-8 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Plus size={12} />
-              </button>
+              </motion.button>
             </div>
           </div>
         )}

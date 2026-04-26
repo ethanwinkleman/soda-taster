@@ -6,6 +6,7 @@ export interface Stash {
   joinCode: string;
   createdAt: string;
   isFavorite: boolean;
+  sodaCount: number;
 }
 
 export interface StashMember {

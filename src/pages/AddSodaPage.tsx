@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, Camera, X } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
@@ -118,8 +119,16 @@ export function AddSodaPage() {
             className="sr-only"
             onChange={handleImageSelect}
           />
+          <AnimatePresence mode="wait">
           {imagePreview ? (
-            <div className="relative border border-gray-300 dark:border-gray-600 overflow-hidden">
+            <motion.div
+              key="preview"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="relative border border-gray-300 dark:border-gray-600 overflow-hidden"
+            >
               <img
                 src={imagePreview}
                 alt="Soda preview"
@@ -141,7 +150,7 @@ export function AddSodaPage() {
               >
                 <Camera size={14} />
               </button>
-            </div>
+            </motion.div>
           ) : (
             <button
               type="button"
@@ -152,6 +161,7 @@ export function AddSodaPage() {
               <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add illustration</span>
             </button>
           )}
+          </AnimatePresence>
         </div>
 
         {/* Rating */}

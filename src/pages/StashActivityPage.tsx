@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, History } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, History, RefreshCw } from 'lucide-react';
 import { useStashActivity, type ActivityEntry } from '../hooks/useStashActivity';
 import { Skeleton } from '../components/Skeleton';
 
@@ -36,8 +37,15 @@ export function StashActivityPage() {
   const { id: stashId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { entries, loading, fetch } = useStashActivity(stashId);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => { fetch(); }, [fetch]);
+
+  async function handleRefresh() {
+    setRefreshing(true);
+    await fetch();
+    setRefreshing(false);
+  }
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
@@ -52,11 +60,24 @@ export function StashActivityPage() {
         </button>
         <div className="flex-1 min-w-0">
           <div className="border-t border-gray-800 dark:border-gray-200 mb-1.5" />
-          <div className="flex items-center gap-2">
-            <History size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
-            <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
-              Activity
-            </h1>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <History size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
+              <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
+                Activity
+              </h1>
+            </div>
+            <motion.button
+              type="button"
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              animate={{ rotate: refreshing ? 360 : 0 }}
+              transition={{ duration: 0.6, ease: 'linear', repeat: refreshing ? Infinity : 0 }}
+              className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+              aria-label="Refresh activity"
+            >
+              <RefreshCw size={14} />
+            </motion.button>
           </div>
           <div className="border-b border-gray-400 dark:border-gray-600 mt-1.5" />
         </div>
