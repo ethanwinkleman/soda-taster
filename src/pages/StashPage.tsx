@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
   ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History,
@@ -532,13 +533,22 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
       )}
 
       {/* Inventory panel */}
+      <AnimatePresence>
       {inventoryOpen && (
-        <div
+        <motion.div
           className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={() => setInventoryOpen(false)}
         >
-          <div
+          <motion.div
             className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
@@ -597,19 +607,28 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-
+      </AnimatePresence>
 
       {/* Top rated panel */}
+      <AnimatePresence>
       {topOpen && (
-        <div
+        <motion.div
           className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={() => setTopOpen(false)}
         >
-          <div
+          <motion.div
             className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
@@ -669,9 +688,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                 </div>
               )}
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
