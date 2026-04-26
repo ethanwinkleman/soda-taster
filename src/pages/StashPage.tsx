@@ -108,6 +108,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
 
   const filtered = sodas.filter((s) => {
     if (restockFilter && s.inFridge) return false;
+    if (restockFilter && (s.avgScore === null || s.avgScore < 4)) return false;
     if (!search) return true;
     return (
       s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -292,7 +293,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
       {restockFilter && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 border border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-800">
           <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
-            Not in stock · sorted by your rating
+            Not in stock · ★ 4+ avg · sorted by your rating
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
             </span>
