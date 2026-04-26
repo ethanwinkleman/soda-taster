@@ -1,11 +1,15 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { writeFileSync } from 'fs'
-import Bonjour from 'bonjour-service'
+import type BonjourType from 'bonjour-service'
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
+const BonjourModule = require('bonjour-service') as any
+const Bonjour: typeof BonjourType = BonjourModule.default ?? BonjourModule
 
 let mainWindow: BrowserWindow | null = null
-let bonjour: InstanceType<typeof Bonjour> | null = null
-const browsers: ReturnType<InstanceType<typeof Bonjour>['find']>[] = []
+let bonjour: InstanceType<typeof BonjourType> | null = null
+const browsers: ReturnType<InstanceType<typeof BonjourType>['find']>[] = []
 
 const PRINTER_TYPES = ['ipp', 'ipps', 'printer', 'pdl-datastream']
 
