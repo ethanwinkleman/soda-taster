@@ -6,14 +6,12 @@ import { Logo } from './Logo';
 function FillingBeer() {
   const fillLevel = useMotionValue(0);
   const liquidRef = useRef<SVGRectElement>(null);
-  const foamRef   = useRef<SVGRectElement>(null);
+  const foamRef   = useRef<SVGGElement>(null);
 
   useEffect(() => {
     return fillLevel.on('change', v => {
       if (liquidRef.current) {
-        // Liquid fills to just below foam (stops at y=9.5, leaving room for foam layer)
-        const fullH = 9.5;
-        const h = v * fullH;
+        const h = v * 11.5;
         liquidRef.current.setAttribute('y',      String(19 - h));
         liquidRef.current.setAttribute('height', String(h));
       }
@@ -25,7 +23,6 @@ function FillingBeer() {
   }, [fillLevel]);
 
   useEffect(() => {
-    // Fill once and hold — AuthGate unmounts this component when ready
     animate(fillLevel, 1, { duration: 1.6, ease: [0.4, 0, 0.2, 1] });
   }, [fillLevel]);
 
@@ -56,19 +53,24 @@ function FillingBeer() {
           clipPath="url(#mug-fill-clip)"
         />
 
-        {/* Foam layer — sits on top of liquid at the mug opening */}
-        <rect
-          ref={foamRef}
-          x="2" y="7.5" width="14" height="3"
-          fill="white"
-          clipPath="url(#mug-fill-clip)"
-          opacity="0"
-        />
+        {/* Foam — 3 rounded bubbles that extend above the mug rim */}
+        <g ref={foamRef} opacity="0">
+          {/* White fill for the foam body */}
+          <path
+            d="M3 10 V7.5 C3 4.5 7 4.5 7 7.5 C7 4 11 4 11 7.5 C11 4.5 15 4.5 15 7.5 V10 Z"
+            fill="white"
+          />
+          {/* Stroke outline on the bubble tops only */}
+          <path
+            d="M3 7.5 C3 4.5 7 4.5 7 7.5 C7 4 11 4 11 7.5 C11 4.5 15 4.5 15 7.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </g>
 
         {/* Handle */}
         <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
-        {/* Foam bumps (wavy top edge) */}
-        <path d="M14 7.5c-1 0-1.44.5-3 .5s-2-.5-3-.5-1.44.5-3 .5" stroke="currentColor" strokeWidth="1.5" />
         {/* Body */}
         <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
       </motion.svg>
