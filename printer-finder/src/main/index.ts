@@ -59,9 +59,10 @@ function parseTxt(line: string): Record<string, string> {
 }
 
 function emitPrinter(printer: Record<string, unknown>): void {
-  const id = printer['id'] as string
-  if (discovered.has(id)) return
-  discovered.add(id)
+  // Deduplicate by hostname — same physical device can advertise on multiple service types/ports
+  const host = printer['host'] as string
+  if (discovered.has(host)) return
+  discovered.add(host)
   console.log(`[PrinterFinder] Printer ready: ${printer['name']} at ${(printer['addresses'] as string[])[0]}:${printer['port']}`)
   mainWindow?.webContents.send('printer:discovered', printer)
 }
