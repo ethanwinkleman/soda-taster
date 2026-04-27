@@ -393,14 +393,23 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
       )}
 
       {/* Settings modal */}
+      <AnimatePresence>
       {settingsOpen && (
-        <div
+        <motion.div
           className="fixed inset-0 z-[100] bg-black/60 overflow-y-auto"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={() => setSettingsOpen(false)}
         >
           <div className="flex min-h-full items-center justify-center p-6">
-            <div
+            <motion.div
               className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-200 overflow-hidden shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200">
@@ -557,10 +566,11 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Inventory panel */}
       <AnimatePresence>
