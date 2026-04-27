@@ -75,6 +75,28 @@ export function useStashSodas(
 
   useEffect(() => { fetchSodas(); }, [fetchSodas]);
 
+  // Real-time: re-fetch silently whenever any member changes sodas or ratings in this stash
+  useEffect(() => {
+    if (!stashId || !userId) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    const silentRefetch = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fetchSodas(true), 150);
+    };
+
+    const channel = supabase
+      .channel(`stash-sodas-rt-${stashId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_sodas' }, silentRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_soda_ratings' }, silentRefetch)
+      .subscribe();
+
+    return () => {
+      clearTimeout(timer);
+      supabase.removeChannel(channel);
+    };
+  }, [stashId, userId, fetchSodas]);
+
   async function act(params: Parameters<typeof logActivity>[0]) {
     if (!stashId || !userId) return;
     await logActivity(params);

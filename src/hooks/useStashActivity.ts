@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { ActivityAction } from '../lib/activity';
 
@@ -42,6 +42,22 @@ export function useStashActivity(stashId: string | undefined) {
       .limit(100);
     setEntries((data ?? []).map(fromDb));
     setLoading(false);
+  }, [stashId]);
+
+  // Real-time: prepend new activity entries as they arrive
+  useEffect(() => {
+    if (!stashId) return;
+
+    const channel = supabase
+      .channel(`stash-activity-rt-${stashId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'stash_activity', filter: `stash_id=eq.${stashId}` },
+        (payload) => setEntries((prev) => [fromDb(payload.new), ...prev]),
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [stashId]);
 
   return { entries, loading, fetch };
