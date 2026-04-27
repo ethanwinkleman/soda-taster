@@ -29,6 +29,7 @@ function createWindow(): void {
 
   if (process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.webContents.openDevTools()
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
@@ -53,17 +54,22 @@ function mapService(service: Record<string, unknown>, type: string) {
 function startScan(): void {
   if (bonjour) return
 
+  console.log('[PrinterFinder] Starting mDNS scan...')
   bonjour = new Bonjour()
 
   for (const type of PRINTER_TYPES) {
+    console.log(`[PrinterFinder] Browsing for _${type}._tcp`)
     const browser = bonjour.find({ type })
 
     browser.on('up', (service: Record<string, unknown>) => {
+      console.log(`[PrinterFinder] Found printer: ${service.name} (${(service.addresses as string[])?.[0]} port ${service.port}) via _${type}._tcp`)
+      console.log(`[PrinterFinder] TXT records:`, service.txt)
       const printer = mapService(service, type)
       mainWindow?.webContents.send('printer:discovered', printer)
     })
 
     browser.on('down', (service: Record<string, unknown>) => {
+      console.log(`[PrinterFinder] Printer left: ${service.name}`)
       const id = `${service.host}:${service.port}:_${type}._tcp`
       mainWindow?.webContents.send('printer:removed', id)
     })
@@ -72,6 +78,7 @@ function startScan(): void {
   }
 
   mainWindow?.webContents.send('scan:status', 'scanning')
+  console.log('[PrinterFinder] Scan started, listening for mDNS announcements...')
 }
 
 function stopScan(): void {
