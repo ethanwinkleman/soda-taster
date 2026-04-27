@@ -7,6 +7,7 @@ import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
+import { SodaComments } from '../components/SodaComments';
 
 export function SodaDetailPage() {
   const { id: stashId, sodaId } = useParams<{ id: string; sodaId: string }>();
@@ -423,6 +424,16 @@ export function SodaDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Correspondence */}
+      {stashId && user && (
+        <SodaComments
+          sodaId={soda.id}
+          stashId={stashId}
+          userId={user.id}
+          displayName={displayName}
+        />
+      )}
 
       {/* Remove */}
       <button
