@@ -70,6 +70,11 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
         (payload) => {
           const c: SodaComment = { ...fromDb(payload.new), replies: [] };
           setComments((prev) => {
+            // Deduplicate: already present if addComment's fetchComments() ran first
+            const alreadyExists = prev.some(
+              (r) => r.id === c.id || r.replies.some((reply) => reply.id === c.id),
+            );
+            if (alreadyExists) return prev;
             if (c.parentId) {
               return prev.map((root) =>
                 root.id === c.parentId
@@ -113,11 +118,14 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
       body: body.trim(),
       parent_id: parentId ?? null,
     });
-  }, [sodaId, stashId]);
+    // Re-fetch so comments show up even if realtime isn't enabled for this table yet.
+    await fetchComments();
+  }, [sodaId, stashId, fetchComments]);
 
   const deleteComment = useCallback(async (commentId: string) => {
     await supabase.from('soda_comments').delete().eq('id', commentId);
-  }, []);
+    await fetchComments();
+  }, [fetchComments]);
 
   return { comments, loading, addComment, deleteComment, refresh: fetchComments };
 }
