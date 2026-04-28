@@ -43,20 +43,17 @@ export function useStashSodas(
     if (!stashId || !userId) { setSodas([]); setLoading(false); return; }
     if (!silent || !initialFetched.current) setLoading(true);
 
-    const { data: sodaRows } = await supabase
-      .from('stash_sodas')
-      .select('*')
-      .eq('stash_id', stashId)
-      .order('created_at', { ascending: false });
+    // Fetch sodas and comment counts in parallel (both keyed by stash_id).
+    const [{ data: sodaRows }, { data: commentRows }] = await Promise.all([
+      supabase.from('stash_sodas').select('*').eq('stash_id', stashId).order('created_at', { ascending: false }),
+      supabase.from('soda_comments').select('soda_id').eq('stash_id', stashId),
+    ]);
 
     const sodaIds = (sodaRows ?? []).map((s) => s.id);
 
-    const [{ data: ratingRows }, { data: commentRows }] = sodaIds.length
-      ? await Promise.all([
-          supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true }),
-          supabase.from('soda_comments').select('soda_id').in('soda_id', sodaIds),
-        ])
-      : [{ data: [] }, { data: [] }];
+    const { data: ratingRows } = sodaIds.length
+      ? await supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true })
+      : { data: [] };
 
     const commentCountMap = new Map<string, number>();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
