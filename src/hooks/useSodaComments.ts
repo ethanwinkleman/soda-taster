@@ -59,49 +59,25 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
 
   useEffect(() => { fetchComments(); }, [fetchComments]);
 
+  // Real-time: debounced re-fetch on any INSERT or DELETE (same pattern as useStashSodas).
+  // The 150ms debounce collapses the local mutation echo + realtime event into one fetch.
   useEffect(() => {
     if (!sodaId) return;
 
+    let timer: ReturnType<typeof setTimeout>;
+    const silentRefetch = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fetchComments(), 150);
+    };
+
     const channel = supabase
       .channel(`soda-comments-rt-${sodaId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'soda_comments', filter: `soda_id=eq.${sodaId}` },
-        (payload) => {
-          const c: SodaComment = { ...fromDb(payload.new), replies: [] };
-          setComments((prev) => {
-            // Deduplicate: already present if addComment's fetchComments() ran first
-            const alreadyExists = prev.some(
-              (r) => r.id === c.id || r.replies.some((reply) => reply.id === c.id),
-            );
-            if (alreadyExists) return prev;
-            if (c.parentId) {
-              return prev.map((root) =>
-                root.id === c.parentId
-                  ? { ...root, replies: [...root.replies, c] }
-                  : root,
-              );
-            }
-            return [...prev, c];
-          });
-        },
-      )
-      .on(
-        'postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'soda_comments', filter: `soda_id=eq.${sodaId}` },
-        (payload) => {
-          const deletedId = payload.old.id as string;
-          setComments((prev) =>
-            prev
-              .filter((c) => c.id !== deletedId)
-              .map((c) => ({ ...c, replies: c.replies.filter((r) => r.id !== deletedId) })),
-          );
-        },
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'soda_comments', filter: `soda_id=eq.${sodaId}` }, silentRefetch)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'soda_comments', filter: `soda_id=eq.${sodaId}` }, silentRefetch)
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [sodaId]);
+    return () => { clearTimeout(timer); supabase.removeChannel(channel); };
+  }, [sodaId, fetchComments]);
 
   const addComment = useCallback(async (
     userId: string,
@@ -110,7 +86,7 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
     parentId?: string,
   ) => {
     if (!sodaId || !stashId || !body.trim()) return;
-    await supabase.from('soda_comments').insert({
+    const { error } = await supabase.from('soda_comments').insert({
       soda_id: sodaId,
       stash_id: stashId,
       user_id: userId,
@@ -118,8 +94,7 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
       body: body.trim(),
       parent_id: parentId ?? null,
     });
-    // Re-fetch so comments show up even if realtime isn't enabled for this table yet.
-    await fetchComments();
+    if (!error) await fetchComments();
   }, [sodaId, stashId, fetchComments]);
 
   const deleteComment = useCallback(async (commentId: string) => {
