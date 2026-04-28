@@ -29,6 +29,7 @@ export interface Soda {
   ratings: SodaRating[];
   avgScore: number | null;
   myRating: SodaRating | null;
+  commentCount: number;
 }
 
 export interface SodaRating {

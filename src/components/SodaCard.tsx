@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Refrigerator, CupSoda } from 'lucide-react';
+import { Refrigerator, CupSoda, MessageSquare } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { ScoreBadge } from './ScoreBadge';
 
@@ -47,9 +47,18 @@ export function SodaCard({ soda, stashId }: Props) {
             </span>
           )}
         </div>
-        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 font-sans uppercase tracking-wide">
-          {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
-        </p>
+        <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 font-sans uppercase tracking-wide">
+          <span>{soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}</span>
+          {soda.commentCount > 0 && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className="flex items-center gap-0.5">
+                <MessageSquare size={9} />
+                {soda.commentCount}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Score seal */}

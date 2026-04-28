@@ -4,7 +4,7 @@ import { logActivity } from '../lib/activity';
 import type { Soda, SodaRating } from '../types/stash';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sodaFromDb(row: any): Omit<Soda, 'ratings' | 'avgScore' | 'myRating'> {
+function sodaFromDb(row: any): Omit<Soda, 'ratings' | 'avgScore' | 'myRating' | 'commentCount'> {
   return {
     id: row.id,
     stashId: row.stash_id,
@@ -51,13 +51,18 @@ export function useStashSodas(
 
     const sodaIds = (sodaRows ?? []).map((s) => s.id);
 
-    const { data: ratingRows } = sodaIds.length
-      ? await supabase
-          .from('stash_soda_ratings')
-          .select('*')
-          .in('soda_id', sodaIds)
-          .order('created_at', { ascending: true })
-      : { data: [] };
+    const [{ data: ratingRows }, { data: commentRows }] = sodaIds.length
+      ? await Promise.all([
+          supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true }),
+          supabase.from('soda_comments').select('soda_id').in('soda_id', sodaIds),
+        ])
+      : [{ data: [] }, { data: [] }];
+
+    const commentCountMap = new Map<string, number>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (commentRows ?? []).forEach((r: any) =>
+      commentCountMap.set(r.soda_id, (commentCountMap.get(r.soda_id) ?? 0) + 1),
+    );
 
     const result: Soda[] = (sodaRows ?? []).map((s) => {
       const ratings = (ratingRows ?? []).filter((r) => r.soda_id === s.id).map(ratingFromDb);
@@ -65,7 +70,7 @@ export function useStashSodas(
         ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
         : null;
       const myRating = ratings.find((r) => r.userId === userId) ?? null;
-      return { ...sodaFromDb(s), ratings, avgScore, myRating };
+      return { ...sodaFromDb(s), ratings, avgScore, myRating, commentCount: commentCountMap.get(s.id) ?? 0 };
     });
 
     setSodas(result);
@@ -89,6 +94,7 @@ export function useStashSodas(
       .channel(`stash-sodas-rt-${stashId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_sodas' }, silentRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_soda_ratings' }, silentRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'soda_comments' }, silentRefetch)
       .subscribe();
 
     return () => {
