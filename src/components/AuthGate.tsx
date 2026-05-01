@@ -53,16 +53,16 @@ function FillingBeer() {
           clipPath="url(#mug-fill-clip)"
         />
 
-        {/* Foam — 3 rounded bubbles that extend above the mug rim */}
+        {/* Foam — outer bubbles poof 1.5 units past each mug wall, centre dome is tallest */}
         <g ref={foamRef} opacity="0">
-          {/* White fill for the foam body */}
+          {/* White fill so the foam is opaque over the liquid */}
           <path
-            d="M3 10 V7.5 C3 4.5 7 4.5 7 7.5 C7 4 11 4 11 7.5 C11 4.5 15 4.5 15 7.5 V10 Z"
+            d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5 Z"
             fill="white"
           />
           {/* Stroke outline on the bubble tops only */}
           <path
-            d="M3 7.5 C3 4.5 7 4.5 7 7.5 C7 4 11 4 11 7.5 C11 4.5 15 4.5 15 7.5"
+            d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5"
             stroke="currentColor"
             strokeWidth="1.5"
             fill="none"
