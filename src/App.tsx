@@ -21,9 +21,11 @@ function AppRoutes() {
   const {
     stashes,
     loading: stashesLoading,
+    recentActivity,
     createStash,
     renameStash,
     updateStashIcon,
+    updateAccentColor,
     deleteStash,
     joinStash,
     leaveStash,
@@ -48,7 +50,7 @@ function AppRoutes() {
             <Routes location={location}>
               <Route
                 path="/"
-                element={<StashesPage stashes={stashes} loading={stashesLoading} onCreate={createStash} onJoin={joinStash} />}
+                element={<StashesPage stashes={stashes} loading={stashesLoading} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}
               />
               <Route
                 path="/stash/:id"
@@ -57,6 +59,7 @@ function AppRoutes() {
                     stashes={stashes}
                     onRename={renameStash}
                     onUpdateIcon={updateStashIcon}
+                    onUpdateAccentColor={updateAccentColor}
                     onDelete={deleteStash}
                     onLeave={leaveStash}
                     getMembers={getMembers}

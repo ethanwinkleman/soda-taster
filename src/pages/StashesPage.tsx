@@ -1,19 +1,37 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogIn, Layers, Users } from 'lucide-react';
+import { Plus, LogIn, Layers, Users, CupSoda } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { StashIcon } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
-import type { Stash } from '../types/stash';
+import { ScoreBadge } from '../components/ScoreBadge';
+import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
+
+function relativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60_000);
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 5) return `${weeks}w ago`;
+  const months = Math.floor(days / 30);
+  return `${months}mo ago`;
+}
 
 interface Props {
   stashes: Stash[];
   loading: boolean;
+  recentActivity: RecentRatingActivity[];
   onCreate: (name: string) => Promise<{ stash: Stash | null; error: string | null }>;
   onJoin: (code: string) => Promise<{ stashId: string | null; error: string | null }>;
 }
 
-export function StashesPage({ stashes, loading, onCreate, onJoin }: Props) {
+export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -51,6 +69,9 @@ export function StashesPage({ stashes, loading, onCreate, onJoin }: Props) {
   }
 
   const firstName = (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0];
+
+  // Build a stashId → stash name lookup for the Recently Tasted section
+  const stashNameMap = new Map(stashes.map((s) => [s.id, s.name]));
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -172,7 +193,7 @@ export function StashesPage({ stashes, loading, onCreate, onJoin }: Props) {
               <Skeleton className="w-10 h-10 shrink-0" />
               <div className="flex-1 min-w-0 space-y-2">
                 <Skeleton className="h-3.5 w-2/5" />
-                <Skeleton className="h-2.5 w-1/5" />
+                <Skeleton className="h-2.5 w-1/3" />
               </div>
             </div>
           ))}
@@ -186,31 +207,104 @@ export function StashesPage({ stashes, loading, onCreate, onJoin }: Props) {
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {stashes.map((stash) => (
-            <button
+            <motion.button
               key={stash.id}
               type="button"
               onClick={() => navigate(`/stash/${stash.id}`)}
-              className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3"
+              whileTap={{ scale: 0.985, opacity: 0.85 }}
+              transition={{ duration: 0.1 }}
+              style={{ borderLeftColor: stash.accentColor ?? 'transparent' }}
+              className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3 border-l-4"
             >
               {stash.icon ? (
-                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-300 shrink-0">
+                <span
+                  className={stash.accentColor
+                    ? 'w-10 h-10 border-2 flex items-center justify-center shrink-0'
+                    : 'w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-300 shrink-0'}
+                  style={stash.accentColor ? { borderColor: stash.accentColor, color: stash.accentColor } : undefined}
+                >
                   <StashIcon name={stash.icon} size={20} />
                 </span>
               ) : (
-                <span className="w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display">
+                <span
+                  className={stash.accentColor
+                    ? 'w-10 h-10 border-2 flex items-center justify-center shrink-0 text-base font-black font-display'
+                    : 'w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display'}
+                  style={stash.accentColor ? { borderColor: stash.accentColor, color: stash.accentColor } : undefined}
+                >
                   {stash.name[0]?.toUpperCase() ?? '?'}
                 </span>
               )}
+
               <div className="flex-1 min-w-0">
                 <p className="font-display font-bold text-gray-900 dark:text-white truncate">{stash.name}</p>
-                <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5 uppercase tracking-wide">
-                  <Users size={10} />
-                  {stash.ownerId === user?.id ? 'Proprietor' : 'Member'}
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide flex-wrap">
+                  <Users size={9} />
+                  <span>{stash.ownerId === user?.id ? 'Proprietor' : 'Member'}</span>
+                  <span className="text-gray-300 dark:text-gray-600">·</span>
+                  <span>{stash.sodaCount} {stash.sodaCount === 1 ? 'soda' : 'sodas'}</span>
+                  {stash.lastTastedAt && (
+                    <>
+                      <span className="text-gray-300 dark:text-gray-600">·</span>
+                      <span>{relativeTime(stash.lastTastedAt)}</span>
+                    </>
+                  )}
+                </div>
               </div>
-              <span className="text-gray-300 dark:text-gray-600 font-sans">›</span>
-            </button>
+
+              {stash.newActivityCount > 0 && (
+                <span className="shrink-0 font-sans text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700/60">
+                  {stash.newActivityCount} new
+                </span>
+              )}
+
+              <span className="text-gray-300 dark:text-gray-600 font-sans shrink-0">›</span>
+            </motion.button>
           ))}
+        </div>
+      )}
+
+      {/* Recently Tasted supplemental section */}
+      {!loading && recentActivity.length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-baseline gap-3 mb-3">
+            <h2 className="font-display text-sm font-bold italic text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              Recently Tasted
+            </h2>
+            <div className="flex-1 border-b border-gray-300 dark:border-gray-700" />
+          </div>
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+            {recentActivity.map((entry, i) => {
+              const stashName = stashNameMap.get(entry.stashId) ?? 'Unknown collection';
+              return (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center gap-3"
+                >
+                  {entry.score !== null ? (
+                    <ScoreBadge score={entry.score} size="sm" />
+                  ) : (
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">
+                      {entry.sodaName}
+                    </p>
+                    <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-0.5 truncate">
+                      {stashName}
+                      <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
+                      {entry.displayName}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                    {relativeTime(entry.createdAt)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

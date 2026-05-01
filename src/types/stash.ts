@@ -7,6 +7,18 @@ export interface Stash {
   createdAt: string;
   isFavorite: boolean;
   sodaCount: number;
+  accentColor: string | null;
+  lastTastedAt: string | null;
+  newActivityCount: number;
+}
+
+export interface RecentRatingActivity {
+  sodaId: string | null;
+  sodaName: string;
+  stashId: string;
+  score: number | null;
+  displayName: string;
+  createdAt: string;
 }
 
 export interface StashMember {

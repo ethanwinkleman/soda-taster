@@ -8,23 +8,39 @@ import {
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
+import { markVisited } from '../hooks/useStashes';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
+
+const ACCENT_COLORS: { label: string; value: string | null }[] = [
+  { label: 'None', value: null },
+  { label: 'Garnet', value: '#7f1d1d' },
+  { label: 'Forest', value: '#14532d' },
+  { label: 'Navy', value: '#1e3a5f' },
+  { label: 'Amber', value: '#78350f' },
+  { label: 'Plum', value: '#4a1d96' },
+  { label: 'Teal', value: '#134e4a' },
+  { label: 'Claret', value: '#881337' },
+  { label: 'Copper', value: '#7c2d12' },
+  { label: 'Slate', value: '#334155' },
+  { label: 'Moss', value: '#365314' },
+];
 
 
 interface Props {
   stashes: Stash[];
   onRename: (id: string, name: string) => Promise<string | null>;
   onUpdateIcon: (id: string, icon: string | null) => Promise<void>;
+  onUpdateAccentColor: (id: string, color: string | null) => Promise<void>;
   onDelete: (id: string) => Promise<string | null>;
   onLeave: (id: string) => void;
   getMembers: (stashId: string) => Promise<StashMember[]>;
   removeMember: (stashId: string, userId: string) => Promise<void>;
 }
 
-export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, getMembers, removeMember }: Props) {
+export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor, onDelete, onLeave, getMembers, removeMember }: Props) {
   const { id: stashId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,6 +61,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('newest');
   const [settingsError, setSettingsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (stashId) markVisited(stashId);
+  }, [stashId]);
 
   useEffect(() => {
     if (stash) setRenameVal(stash.name);
@@ -457,6 +477,38 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onDelete, onLeave, 
                     ))}
                   </div>
                 </div>
+
+                {isOwner && (
+                  <div>
+                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                      Accent Colour
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ACCENT_COLORS.map(({ label, value }) => (
+                        <button
+                          key={label}
+                          type="button"
+                          title={label}
+                          onClick={() => stashId && onUpdateAccentColor(stashId, value)}
+                          className={`w-7 h-7 border-2 transition-all ${
+                            stash.accentColor === value
+                              ? 'scale-110 shadow'
+                              : 'opacity-70 hover:opacity-100'
+                          } ${!value ? 'border-gray-400 dark:border-gray-500' : 'border-transparent'}`}
+                          style={value ? { backgroundColor: value, borderColor: stash.accentColor === value ? value : 'transparent' } : undefined}
+                          aria-label={label}
+                          aria-pressed={stash.accentColor === value}
+                        >
+                          {!value && (
+                            <span className="text-gray-400 dark:text-gray-500 text-[9px] font-sans uppercase leading-none flex items-center justify-center w-full h-full">
+                              ✕
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {isOwner && (
                   <form onSubmit={handleRename}>

@@ -234,3 +234,8 @@ CREATE POLICY "members_insert_comments" ON soda_comments FOR INSERT
 
 CREATE POLICY "own_delete_comment" ON soda_comments FOR DELETE
   USING (auth.uid() = user_id);
+
+-- ── Collection accent colors ──────────────────────────────────────────────────
+-- Per-collection accent colour set by the proprietor; displayed as a left
+-- border tint on collection cards.  Stored as a CSS hex string, e.g. '#7f1d1d'.
+ALTER TABLE stashes ADD COLUMN IF NOT EXISTS accent_color TEXT;

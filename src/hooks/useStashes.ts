@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
-import type { Stash, StashMember } from '../types/stash';
+import type { Stash, StashMember, RecentRatingActivity } from '../types/stash';
 
 function generateJoinCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -9,7 +9,13 @@ function generateJoinCode(): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromDb(row: any, isFavorite = false, sodaCount = 0): Stash {
+function fromDb(
+  row: any,
+  isFavorite = false,
+  sodaCount = 0,
+  lastTastedAt: string | null = null,
+  newActivityCount = 0,
+): Stash {
   return {
     id: row.id,
     name: row.name,
@@ -19,6 +25,9 @@ function fromDb(row: any, isFavorite = false, sodaCount = 0): Stash {
     createdAt: row.created_at,
     isFavorite,
     sodaCount,
+    accentColor: row.accent_color ?? null,
+    lastTastedAt,
+    newActivityCount,
   };
 }
 
@@ -30,9 +39,18 @@ function sortStashes(list: Stash[]): Stash[] {
   });
 }
 
+export function markVisited(stashId: string) {
+  try {
+    localStorage.setItem(`stash_last_visit_${stashId}`, new Date().toISOString());
+  } catch {
+    // localStorage unavailable
+  }
+}
+
 export function useStashes(userId: string | undefined) {
   const [stashes, setStashes] = useState<Stash[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recentActivity, setRecentActivity] = useState<RecentRatingActivity[]>([]);
 
   useEffect(() => {
     if (!userId) { setStashes([]); setLoading(false); return; }
@@ -49,20 +67,59 @@ export function useStashes(userId: string | undefined) {
       .select('stash_id, is_favorite')
       .eq('user_id', userId);
 
-    if (!memberships?.length) { setStashes([]); setLoading(false); return; }
+    if (!memberships?.length) { setStashes([]); setRecentActivity([]); setLoading(false); return; }
 
     const favoriteMap = new Map(memberships.map((m) => [m.stash_id, m.is_favorite ?? false]));
     const ids = memberships.map((m) => m.stash_id);
-    const [{ data }, { data: sodaRows }] = await Promise.all([
+
+    const [{ data }, { data: sodaRows }, { data: activityRows }] = await Promise.all([
       supabase.from('stashes').select('*').in('id', ids),
       supabase.from('stash_sodas').select('stash_id').in('stash_id', ids),
+      supabase
+        .from('stash_activity')
+        .select('stash_id, soda_id, soda_name, score, display_name, user_id, created_at')
+        .in('stash_id', ids)
+        .in('action', ['rating_added', 'rating_updated'])
+        .order('created_at', { ascending: false })
+        .limit(100),
     ]);
 
     const countMap = new Map<string, number>();
     (sodaRows ?? []).forEach((r) => countMap.set(r.stash_id, (countMap.get(r.stash_id) ?? 0) + 1));
 
+    // Per-stash: most recent rating timestamp and count of new ratings since last visit
+    const lastTastedMap = new Map<string, string>();
+    const newActivityCountMap = new Map<string, number>();
+    (activityRows ?? []).forEach((r) => {
+      if (!lastTastedMap.has(r.stash_id)) {
+        lastTastedMap.set(r.stash_id, r.created_at);
+      }
+      if (r.user_id === userId) return; // own activity doesn't count as "new"
+      const lastVisit = localStorage.getItem(`stash_last_visit_${r.stash_id}`);
+      if (!lastVisit || new Date(r.created_at) > new Date(lastVisit)) {
+        newActivityCountMap.set(r.stash_id, (newActivityCountMap.get(r.stash_id) ?? 0) + 1);
+      }
+    });
+
+    // Top-5 most recent ratings across all stashes for the "Recently Tasted" section
+    const recent: RecentRatingActivity[] = (activityRows ?? []).slice(0, 5).map((r) => ({
+      sodaId: r.soda_id ?? null,
+      sodaName: r.soda_name ?? 'Unknown soda',
+      stashId: r.stash_id,
+      score: r.score != null ? Number(r.score) : null,
+      displayName: r.display_name,
+      createdAt: r.created_at,
+    }));
+    setRecentActivity(recent);
+
     const result = (data ?? []).map((row) =>
-      fromDb(row, favoriteMap.get(row.id) ?? false, countMap.get(row.id) ?? 0)
+      fromDb(
+        row,
+        favoriteMap.get(row.id) ?? false,
+        countMap.get(row.id) ?? 0,
+        lastTastedMap.get(row.id) ?? null,
+        newActivityCountMap.get(row.id) ?? 0,
+      )
     );
     setStashes(sortStashes(result));
     setLoading(false);
@@ -96,6 +153,11 @@ export function useStashes(userId: string | undefined) {
   async function updateStashIcon(id: string, icon: string | null): Promise<void> {
     setStashes((prev) => prev.map((s) => s.id === id ? { ...s, icon } : s));
     await supabase.from('stashes').update({ icon }).eq('id', id);
+  }
+
+  async function updateAccentColor(id: string, color: string | null): Promise<void> {
+    setStashes((prev) => prev.map((s) => s.id === id ? { ...s, accentColor: color } : s));
+    await supabase.from('stashes').update({ accent_color: color }).eq('id', id);
   }
 
   async function deleteStash(id: string): Promise<string | null> {
@@ -203,9 +265,11 @@ export function useStashes(userId: string | undefined) {
   return {
     stashes,
     loading,
+    recentActivity,
     createStash,
     renameStash,
     updateStashIcon,
+    updateAccentColor,
     deleteStash,
     joinStash,
     leaveStash,
