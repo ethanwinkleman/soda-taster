@@ -109,14 +109,15 @@ export function SodaDetailPage() {
             <div className="border-b border-gray-400 dark:border-gray-600 mt-2" />
           </div>
         </div>
-        {/* Image */}
-        <Skeleton className="w-full h-52" />
-        {/* Avg score */}
-        <div className="flex items-center gap-4 p-4 border border-gray-300 dark:border-gray-600">
-          <Skeleton className="w-12 h-12 shrink-0" />
-          <div className="space-y-2">
-            <Skeleton className="h-7 w-16" />
-            <Skeleton className="h-2.5 w-20" />
+        {/* Hero (image + score) */}
+        <div className="flex border border-gray-300 dark:border-gray-600 overflow-hidden">
+          <Skeleton className="w-1/3 shrink-0 min-h-[11rem]" />
+          <div className="flex-1 p-4 flex items-center gap-3">
+            <Skeleton className="w-12 h-12 shrink-0" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-12" />
+              <Skeleton className="h-2.5 w-16" />
+            </div>
           </div>
         </div>
         {/* My rating */}
@@ -227,72 +228,90 @@ export function SodaDetailPage() {
         )}
       </div>
 
-      {/* Illustration */}
-      <div className="mb-5">
-        <input
-          ref={imgInputRef}
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          onChange={handleImageChange}
-        />
-        {soda.imageUrl ? (
-          <div className="relative border border-gray-300 dark:border-gray-600 overflow-hidden">
-            <img
-              src={soda.imageUrl}
-              alt={soda.name}
-              className="w-full h-52 object-cover"
-            />
+      {/* Hero — image (left ⅓) + avg score (right ⅔) */}
+      <div className="mb-5 flex border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-800">
+        {/* Image column */}
+        <div className="w-1/3 shrink-0 relative min-h-[11rem] self-stretch">
+          <input
+            ref={imgInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleImageChange}
+          />
+          {soda.imageUrl ? (
+            <>
+              <img
+                src={soda.imageUrl}
+                alt={soda.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => imgInputRef.current?.click()}
+                disabled={uploadingImage}
+                className="absolute bottom-2 right-1.5 p-1 bg-black/60 text-white hover:bg-black/80 transition-colors disabled:opacity-50"
+                aria-label="Change photo"
+              >
+                {uploadingImage
+                  ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  : <Camera size={12} />}
+              </button>
+            </>
+          ) : (
             <button
               type="button"
               onClick={() => imgInputRef.current?.click()}
-              disabled={uploadingImage}
-              className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors disabled:opacity-50"
-              aria-label="Change photo"
+              className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors border-r border-dashed border-gray-300 dark:border-gray-600"
             >
-              {uploadingImage
-                ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <Camera size={14} />}
+              <Camera size={16} />
+              <span className="text-[9px] font-sans uppercase tracking-wider text-center leading-tight px-1">
+                Add photo
+              </span>
             </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => imgInputRef.current?.click()}
-            className="w-full h-24 border border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-gray-600 dark:hover:border-gray-400 hover:text-gray-600 dark:hover:text-gray-400 transition-colors"
-          >
-            <Camera size={18} />
-            <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add illustration</span>
-          </button>
-        )}
-        {imageError && (
-          <p className="mt-2 text-xs font-sans text-red-600 dark:text-red-400 italic">{imageError}</p>
-        )}
+          )}
+        </div>
+
+        {/* Score column */}
+        <div className="flex-1 p-4 flex flex-col justify-center gap-0.5 min-h-[11rem]">
+          <AnimatePresence mode="wait">
+            {soda.avgScore !== null ? (
+              <motion.div
+                key={soda.avgScore}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.25 }}
+                className="flex items-center gap-3"
+              >
+                <ScoreBadge score={soda.avgScore} size="lg" />
+                <div>
+                  <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+                    {soda.avgScore.toFixed(1)}
+                  </p>
+                  <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-1">
+                    {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.p
+                key="unrated"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="font-sans text-xs italic text-gray-400 dark:text-gray-500"
+              >
+                Not yet rated
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
-      {/* Average score */}
-      <AnimatePresence mode="wait">
-        {soda.avgScore !== null && (
-          <motion.div
-            key={soda.avgScore}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.25 }}
-            className="flex items-center gap-4 mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600"
-          >
-            <ScoreBadge score={soda.avgScore} size="lg" />
-            <div>
-              <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums">
-                {soda.avgScore.toFixed(1)}
-              </p>
-              <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {imageError && (
+        <p className="mb-4 -mt-3 text-xs font-sans text-red-600 dark:text-red-400 italic">{imageError}</p>
+      )}
 
       {/* My Rating */}
       <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
