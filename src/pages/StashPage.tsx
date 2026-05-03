@@ -3,7 +3,7 @@ import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -207,6 +207,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 >
                   <Plus size={12} />
                   <span className="hidden sm:inline">Record Soda</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/stash/${stashId}/scan`)}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                  aria-label="Scan barcode"
+                  title="Scan a barcode"
+                >
+                  <Barcode size={16} />
                 </button>
                 <button
                   type="button"

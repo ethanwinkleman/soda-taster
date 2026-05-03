@@ -111,8 +111,9 @@ export function useStashSodas(
     score: number | null,
     dn: string,
     imageFile?: File | null,
+    externalImageUrl?: string | null,
   ) => {
-    if (!stashId || !userId) return;
+    if (!stashId || !userId) return null;
 
     const { data: soda, error } = await supabase
       .from('stash_sodas')
@@ -120,7 +121,7 @@ export function useStashSodas(
       .select()
       .single();
 
-    if (error || !soda) return;
+    if (error || !soda) return null;
 
     if (imageFile) {
       const path = `${stashId}/${soda.id}`;
@@ -131,6 +132,8 @@ export function useStashSodas(
         const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
         await supabase.from('stash_sodas').update({ image_url: publicUrl }).eq('id', soda.id);
       }
+    } else if (externalImageUrl) {
+      await supabase.from('stash_sodas').update({ image_url: externalImageUrl }).eq('id', soda.id);
     }
 
     if (score !== null) {
@@ -144,6 +147,7 @@ export function useStashSodas(
 
     await act({ stashId, userId, displayName: dn, action: 'soda_added', sodaId: soda.id, sodaName: name });
     await fetchSodas(true);
+    return { sodaId: soda.id as string };
   }, [stashId, userId, fetchSodas]);
 
   const updateSodaImage = useCallback(async (sodaId: string, file: File): Promise<string | null> => {

@@ -14,6 +14,8 @@ import { SodaDetailPage } from './pages/SodaDetailPage';
 import { StashActivityPage } from './pages/StashActivityPage';
 import { PublicProfilePage } from './pages/PublicProfilePage';
 import { JoinStashPage } from './pages/JoinStashPage';
+import { BarcodeScanPage } from './pages/BarcodeScanPage';
+import { BarcodeResultPage } from './pages/BarcodeResultPage';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -68,6 +70,8 @@ function AppRoutes() {
                 }
               />
               <Route path="/stash/:id/add" element={<AddSodaPage />} />
+              <Route path="/stash/:id/scan" element={<BarcodeScanPage />} />
+              <Route path="/stash/:id/scan/result" element={<BarcodeResultPage />} />
               <Route path="/stash/:id/activity" element={<StashActivityPage />} />
               <Route path="/stash/:id/soda/:sodaId" element={<SodaDetailPage />} />
             </Routes>

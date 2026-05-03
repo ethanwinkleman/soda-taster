@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, Camera, X } from 'lucide-react';
+import { ChevronLeft, Camera, X, Barcode } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
@@ -76,6 +76,21 @@ export function AddSodaPage() {
           </h1>
           <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
         </div>
+      </div>
+
+      {/* Scan entry point */}
+      <button
+        type="button"
+        onClick={() => navigate(`/stash/${stashId}/scan`)}
+        className="w-full flex items-center justify-center gap-2 py-3 mb-2 border-2 border-dashed border-gray-400 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-700 dark:hover:border-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      >
+        <Barcode size={18} />
+        <span className="font-sans text-sm uppercase tracking-wider">Scan a Barcode</span>
+      </button>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="flex-1 border-b border-gray-300 dark:border-gray-700" />
+        <span className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wider shrink-0">or enter manually</span>
+        <div className="flex-1 border-b border-gray-300 dark:border-gray-700" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
