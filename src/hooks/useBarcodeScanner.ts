@@ -10,8 +10,8 @@ export function useBarcodeScanner(
 ) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<{ stop(): void } | null>(null);
-  const hintTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const prominentTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const hintTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const prominentTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const resolvedRef = useRef(false);
 
   const [status, setStatus] = useState<ScanStatus>('idle');

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
-import type { BarcodeResult, SodaProductCandidate } from '../lib/barcodeApi';
+import type { BarcodeResult } from '../lib/barcodeApi';
 
 function ProductImage({
   src,
