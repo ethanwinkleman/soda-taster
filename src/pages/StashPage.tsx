@@ -185,66 +185,64 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Section masthead */}
       <div className="mb-6">
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0"
+            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0 mt-0.5"
           >
             <ChevronLeft size={20} />
           </button>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1">
             <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
-            <div className="flex items-baseline justify-between gap-2">
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2 min-w-0">
-                {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
-                <span className="truncate">{stash.name}</span>
-              </h1>
-              <div className="flex gap-1.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/stash/${stashId}/add`)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors shrink-0"
-                >
-                  <Plus size={12} />
-                  <span className="hidden sm:inline">Record Soda</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/stash/${stashId}/scan`)}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
-                  aria-label="Scan barcode"
-                  title="Scan a barcode"
-                >
-                  <Barcode size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/stash/${stashId}/activity`)}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
-                  aria-label="Activity feed"
-                >
-                  <History size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={exportCsv}
-                  disabled={sodas.length === 0}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                  aria-label="Export CSV"
-                  title="Export sodas as CSV"
-                >
-                  <Download size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setSettingsOpen(true); setSettingsError(null); }}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
-                  aria-label="Collection settings"
-                >
-                  <Settings size={16} />
-                </button>
-              </div>
+            <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2">
+              {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
+              {stash.name}
+            </h1>
+            <div className="flex justify-end gap-1.5 mt-2">
+              <button
+                type="button"
+                onClick={() => navigate(`/stash/${stashId}/add`)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors shrink-0"
+              >
+                <Plus size={12} />
+                <span className="hidden sm:inline">Record Soda</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/stash/${stashId}/scan`)}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                aria-label="Scan barcode"
+                title="Scan a barcode"
+              >
+                <Barcode size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/stash/${stashId}/activity`)}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                aria-label="Activity feed"
+              >
+                <History size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={exportCsv}
+                disabled={sodas.length === 0}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                aria-label="Export CSV"
+                title="Export sodas as CSV"
+              >
+                <Download size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSettingsOpen(true); setSettingsError(null); }}
+                className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 border border-gray-300 dark:border-gray-600"
+                aria-label="Collection settings"
+              >
+                <Settings size={16} />
+              </button>
             </div>
             <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
           </div>
