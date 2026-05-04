@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
@@ -124,6 +125,29 @@ export function useStashes(userId: string | undefined) {
 
   const stashes = data?.stashes ?? [];
   const recentActivity = data?.recentActivity ?? [];
+
+  // Real-time: invalidate when any member adds/removes sodas or records ratings
+  useEffect(() => {
+    if (!userId) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const invalidateDebounced = () => {
+      clearTimeout(timer);
+      timer = setTimeout(
+        () => queryClient.invalidateQueries({ queryKey: ['stashes', userId] }),
+        300,
+      );
+    };
+    const channel = supabase
+      .channel(`stashes-rt-${userId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_activity' }, invalidateDebounced)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stash_sodas' }, invalidateDebounced)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'stash_sodas' }, invalidateDebounced)
+      .subscribe();
+    return () => {
+      clearTimeout(timer);
+      supabase.removeChannel(channel);
+    };
+  }, [userId, queryClient]);
 
   function patch(updater: (prev: Stash[]) => Stash[]) {
     queryClient.setQueryData<StashesData>(queryKey, (old) =>
