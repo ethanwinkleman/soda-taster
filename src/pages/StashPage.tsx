@@ -194,82 +194,86 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           >
             <ChevronLeft size={20} />
           </button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
-            <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2">
-              {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
-              {stash.name}
-            </h1>
-            <div className="flex justify-end items-center gap-1.5 mt-2">
-              <button
-                type="button"
-                onClick={() => navigate(`/stash/${stashId}/add`)}
-                className="flex items-center justify-center gap-1.5 px-6 py-1.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
-              >
-                <Plus size={12} />
-                Record Soda
-              </button>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setMenuOpen((v) => !v)}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-300 dark:border-gray-600"
-                  aria-label="More actions"
-                >
-                  <MoreHorizontal size={16} />
-                </button>
-                <AnimatePresence>
-                  {menuOpen && (
-                    <>
-                      <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-                      <motion.div
-                        className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 shadow-lg min-w-[11rem]"
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -4 }}
-                        transition={{ duration: 0.12 }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => { setMenuOpen(false); navigate(`/stash/${stashId}/scan`); }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+            {/* Name row — ⋯ floats top-right, name fills remaining width */}
+            <div className="relative pr-9">
+              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2">
+                {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
+                {stash.name}
+              </h1>
+              <div className="absolute right-0 top-0">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setMenuOpen((v) => !v)}
+                    className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    aria-label="More actions"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                  <AnimatePresence>
+                    {menuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                        <motion.div
+                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 shadow-lg min-w-[11rem]"
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.12 }}
                         >
-                          <Barcode size={14} />
-                          Scan barcode
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setMenuOpen(false); navigate(`/stash/${stashId}/activity`); }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
-                        >
-                          <History size={14} />
-                          Activity
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setMenuOpen(false); exportCsv(); }}
-                          disabled={sodas.length === 0}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                          <Download size={14} />
-                          Export CSV
-                        </button>
-                        <div className="border-t border-gray-200 dark:border-gray-700" />
-                        <button
-                          type="button"
-                          onClick={() => { setMenuOpen(false); setSettingsOpen(true); setSettingsError(null); }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
-                        >
-                          <Settings size={14} />
-                          Settings
-                        </button>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); navigate(`/stash/${stashId}/scan`); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                          >
+                            <Barcode size={14} />
+                            Scan barcode
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); navigate(`/stash/${stashId}/activity`); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                          >
+                            <History size={14} />
+                            Activity
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); exportCsv(); }}
+                            disabled={sodas.length === 0}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Download size={14} />
+                            Export CSV
+                          </button>
+                          <div className="border-t border-gray-200 dark:border-gray-700" />
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); setSettingsOpen(true); setSettingsError(null); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                          >
+                            <Settings size={14} />
+                            Settings
+                          </button>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
-            <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
+            {/* Full-width primary CTA */}
+            <button
+              type="button"
+              onClick={() => navigate(`/stash/${stashId}/add`)}
+              className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+            >
+              <Plus size={13} />
+              Record Soda
+            </button>
+            <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
           </div>
         </div>
       </div>
