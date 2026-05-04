@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
 import type { Soda, SodaRating } from '../types/stash';
@@ -30,61 +31,70 @@ function ratingFromDb(row: any): SodaRating {
   };
 }
 
+async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
+  const [{ data: sodaRows }, { data: commentRows }] = await Promise.all([
+    supabase.from('stash_sodas').select('*').eq('stash_id', stashId).order('created_at', { ascending: false }),
+    supabase.from('soda_comments').select('soda_id').eq('stash_id', stashId),
+  ]);
+
+  const sodaIds = (sodaRows ?? []).map((s) => s.id);
+
+  const { data: ratingRows } = sodaIds.length
+    ? await supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true })
+    : { data: [] };
+
+  const commentCountMap = new Map<string, number>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (commentRows ?? []).forEach((r: any) =>
+    commentCountMap.set(r.soda_id, (commentCountMap.get(r.soda_id) ?? 0) + 1),
+  );
+
+  return (sodaRows ?? []).map((s) => {
+    const ratings = (ratingRows ?? []).filter((r) => r.soda_id === s.id).map(ratingFromDb);
+    const avgScore = ratings.length
+      ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
+      : null;
+    const myRating = ratings.find((r) => r.userId === userId) ?? null;
+    return { ...sodaFromDb(s), ratings, avgScore, myRating, commentCount: commentCountMap.get(s.id) ?? 0 };
+  });
+}
+
 export function useStashSodas(
   stashId: string | undefined,
   userId: string | undefined,
   displayName?: string,
 ) {
-  const [sodas, setSodas] = useState<Soda[]>([]);
-  const [loading, setLoading] = useState(true);
-  const initialFetched = useRef(false);
+  const queryClient = useQueryClient();
+  const queryKey = ['stash-sodas', stashId, userId] as const;
 
-  const fetchSodas = useCallback(async (silent = false) => {
-    if (!stashId || !userId) { setSodas([]); setLoading(false); return; }
-    if (!silent || !initialFetched.current) setLoading(true);
+  const { data, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => loadSodas(stashId!, userId!),
+    enabled: !!(stashId && userId),
+    staleTime: 3 * 60 * 1000,
+  });
 
-    // Fetch sodas and comment counts in parallel (both keyed by stash_id).
-    const [{ data: sodaRows }, { data: commentRows }] = await Promise.all([
-      supabase.from('stash_sodas').select('*').eq('stash_id', stashId).order('created_at', { ascending: false }),
-      supabase.from('soda_comments').select('soda_id').eq('stash_id', stashId),
-    ]);
+  const sodas = data ?? [];
 
-    const sodaIds = (sodaRows ?? []).map((s) => s.id);
+  function patch(updater: (prev: Soda[]) => Soda[]) {
+    queryClient.setQueryData<Soda[]>(queryKey, (old) => updater(old ?? []));
+  }
 
-    const { data: ratingRows } = sodaIds.length
-      ? await supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true })
-      : { data: [] };
+  function invalidate() {
+    return queryClient.invalidateQueries({ queryKey: ['stash-sodas', stashId, userId] });
+  }
 
-    const commentCountMap = new Map<string, number>();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (commentRows ?? []).forEach((r: any) =>
-      commentCountMap.set(r.soda_id, (commentCountMap.get(r.soda_id) ?? 0) + 1),
-    );
-
-    const result: Soda[] = (sodaRows ?? []).map((s) => {
-      const ratings = (ratingRows ?? []).filter((r) => r.soda_id === s.id).map(ratingFromDb);
-      const avgScore = ratings.length
-        ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
-        : null;
-      const myRating = ratings.find((r) => r.userId === userId) ?? null;
-      return { ...sodaFromDb(s), ratings, avgScore, myRating, commentCount: commentCountMap.get(s.id) ?? 0 };
-    });
-
-    setSodas(result);
-    setLoading(false);
-    initialFetched.current = true;
-  }, [stashId, userId]);
-
-  useEffect(() => { fetchSodas(); }, [fetchSodas]);
-
-  // Real-time: re-fetch silently whenever any member changes sodas or ratings in this stash
+  // Real-time: invalidate the query on any DB change so RQ refetches in the background
   useEffect(() => {
     if (!stashId || !userId) return;
 
     let timer: ReturnType<typeof setTimeout>;
     const silentRefetch = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => fetchSodas(true), 150);
+      timer = setTimeout(
+        () => queryClient.invalidateQueries({ queryKey: ['stash-sodas', stashId, userId] }),
+        150,
+      );
     };
 
     const channel = supabase
@@ -98,21 +108,21 @@ export function useStashSodas(
       clearTimeout(timer);
       supabase.removeChannel(channel);
     };
-  }, [stashId, userId, fetchSodas]);
+  }, [stashId, userId, queryClient]);
 
   async function act(params: Parameters<typeof logActivity>[0]) {
     if (!stashId || !userId) return;
     await logActivity(params);
   }
 
-  const addSoda = useCallback(async (
+  async function addSoda(
     name: string,
     brand: string,
     score: number | null,
     dn: string,
     imageFile?: File | null,
     externalImageUrl?: string | null,
-  ) => {
+  ) {
     if (!stashId || !userId) return null;
 
     const { data: soda, error } = await supabase
@@ -146,11 +156,11 @@ export function useStashSodas(
     }
 
     await act({ stashId, userId, displayName: dn, action: 'soda_added', sodaId: soda.id, sodaName: name });
-    await fetchSodas(true);
+    await invalidate();
     return { sodaId: soda.id as string };
-  }, [stashId, userId, fetchSodas]);
+  }
 
-  const updateSodaImage = useCallback(async (sodaId: string, file: File): Promise<string | null> => {
+  async function updateSodaImage(sodaId: string, file: File): Promise<string | null> {
     if (!stashId) return 'No stash';
     const path = `${stashId}/${sodaId}`;
     const { error } = await supabase.storage
@@ -161,37 +171,37 @@ export function useStashSodas(
     const url = `${publicUrl}?t=${Date.now()}`;
     const { error: dbErr } = await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
     if (dbErr) return dbErr.message;
-    setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
+    patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
     return null;
-  }, [stashId]);
+  }
 
-  const editSoda = useCallback(async (sodaId: string, updates: { name?: string; brand?: string }) => {
+  async function editSoda(sodaId: string, updates: { name?: string; brand?: string }) {
     const soda = sodas.find((s) => s.id === sodaId);
     const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
     if (!error) {
       await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
-      await fetchSodas(true);
+      await invalidate();
     }
-  }, [fetchSodas, sodas, stashId, userId, displayName]);
+  }
 
-  const removeSoda = useCallback(async (sodaId: string) => {
+  async function removeSoda(sodaId: string) {
     const soda = sodas.find((s) => s.id === sodaId);
     await supabase.from('stash_sodas').delete().eq('id', sodaId);
     if (soda) {
       await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_removed', sodaId, sodaName: soda.name });
     }
-    setSodas((prev) => prev.filter((s) => s.id !== sodaId));
-  }, [sodas, stashId, userId, displayName]);
+    patch((prev) => prev.filter((s) => s.id !== sodaId));
+  }
 
-  const setFridgeStatus = useCallback(async (sodaId: string, inFridge: boolean, quantity: number) => {
+  async function setFridgeStatus(sodaId: string, inFridge: boolean, quantity: number) {
     await supabase
       .from('stash_sodas')
       .update({ in_fridge: inFridge, quantity })
       .eq('id', sodaId);
-    setSodas((prev) => prev.map((s) => s.id === sodaId ? { ...s, inFridge, quantity } : s));
-  }, []);
+    patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, inFridge, quantity } : s));
+  }
 
-  const saveRating = useCallback(async (sodaId: string, score: number, dn: string) => {
+  async function saveRating(sodaId: string, score: number, dn: string) {
     if (!userId) return;
     const soda = sodas.find((s) => s.id === sodaId);
     const isUpdate = !!soda?.myRating;
@@ -200,19 +210,19 @@ export function useStashSodas(
       { onConflict: 'soda_id,user_id' },
     );
     await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
-    await fetchSodas(true);
-  }, [userId, sodas, fetchSodas, stashId]);
+    await invalidate();
+  }
 
-  const deleteRating = useCallback(async (ratingId: string, sodaId: string) => {
+  async function deleteRating(ratingId: string, sodaId: string) {
     const soda = sodas.find((s) => s.id === sodaId);
     await supabase.from('stash_soda_ratings').delete().eq('id', ratingId);
     await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'rating_removed', sodaId, sodaName: soda?.name });
-    await fetchSodas(true);
-  }, [fetchSodas, sodas, stashId, userId, displayName]);
+    await invalidate();
+  }
 
   return {
     sodas,
-    loading,
+    loading: isLoading,
     addSoda,
     editSoda,
     removeSoda,
@@ -220,6 +230,6 @@ export function useStashSodas(
     updateSodaImage,
     saveRating,
     deleteRating,
-    refresh: fetchSodas,
+    refresh: invalidate,
   };
 }

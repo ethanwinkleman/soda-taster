@@ -1,5 +1,22 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Keep unused query data for 24 h so the persisted cache survives app relaunches
+      gcTime: 24 * 60 * 60 * 1000,
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: 'soda-taster-rq',
+});
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
 import { useStashes } from './hooks/useStashes';
@@ -85,21 +102,26 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/u/:username" element={<PublicProfilePage />} />
-          <Route path="/join/:code" element={<JoinStashPage />} />
-          <Route
-            path="/*"
-            element={
-              <AuthGate>
-                <AppRoutes />
-              </AuthGate>
-            }
-          />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: 'v1' }}
+    >
+      <BrowserRouter>
+        <AuthProvider>
+          <Routes>
+            <Route path="/u/:username" element={<PublicProfilePage />} />
+            <Route path="/join/:code" element={<JoinStashPage />} />
+            <Route
+              path="/*"
+              element={
+                <AuthGate>
+                  <AppRoutes />
+                </AuthGate>
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </PersistQueryClientProvider>
   );
 }
