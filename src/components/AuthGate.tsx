@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
+import { Layers, Users, Refrigerator, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
@@ -44,23 +45,17 @@ function FillingBeer() {
             <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5Z" />
           </clipPath>
         </defs>
-
-        {/* Liquid */}
         <rect
           ref={liquidRef}
           x="2" y="19" width="14" height="0"
           fill="#b45309"
           clipPath="url(#mug-fill-clip)"
         />
-
-        {/* Foam — outer bubbles poof 1.5 units past each mug wall, centre dome is tallest */}
         <g ref={foamRef} opacity="0">
-          {/* White fill so the foam is opaque over the liquid */}
           <path
             d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5 Z"
             fill="white"
           />
-          {/* Stroke outline on the bubble tops only */}
           <path
             d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5"
             stroke="currentColor"
@@ -68,17 +63,36 @@ function FillingBeer() {
             fill="none"
           />
         </g>
-
-        {/* Handle */}
         <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
-        {/* Body */}
         <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
       </motion.svg>
-
       <Logo size="md" />
     </div>
   );
 }
+
+const FEATURES = [
+  {
+    icon: Star,
+    title: 'Rate Every Sip',
+    desc: 'Score each soda 1–5 and build a permanent, searchable record of everything you\'ve tasted.',
+  },
+  {
+    icon: Layers,
+    title: 'Unlimited Collections',
+    desc: 'Organise sodas into as many collections as you like — by style, region, occasion, or anything else.',
+  },
+  {
+    icon: Users,
+    title: 'Shared Verdicts',
+    desc: 'Invite friends or family to a collection. Everyone\'s scores are pooled into a single averaged rating.',
+  },
+  {
+    icon: Refrigerator,
+    title: 'Fridge Inventory',
+    desc: 'Mark sodas as in stock and track quantities so you always know what\'s waiting in the fridge.',
+  },
+];
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithGoogle } = useAuth();
@@ -99,22 +113,56 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
-        <div className="text-center max-w-sm">
-          <div className="flex justify-center mb-8">
-            <Logo size="lg" />
+      <div className="min-h-dvh bg-gray-950 text-gray-100 overflow-y-auto">
+        <div className="max-w-sm mx-auto px-6 pt-14 pb-12 flex flex-col gap-10">
+
+          {/* Masthead */}
+          <div>
+            <div className="flex justify-center mb-8">
+              <Logo size="lg" />
+            </div>
+            <div className="border-t-2 border-b border-gray-700 pt-4 pb-5">
+              <h1 className="font-display text-4xl font-black italic text-white leading-tight mb-3">
+                The soda journal for the serious enthusiast.
+              </h1>
+              <p className="font-sans text-sm text-gray-400 leading-relaxed">
+                Rate every soda you try, build shared collections, and never forget what's in your fridge.
+              </p>
+            </div>
           </div>
-          <p className="text-gray-500 dark:text-gray-400 mb-8">
-            Rate and track every soda you try. Sign in to save your ratings to the cloud.
-          </p>
-          <button
-            type="button"
-            onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 font-medium shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all"
-          >
-            <GoogleIcon />
-            Continue with Google
-          </button>
+
+          {/* Feature list */}
+          <div className="space-y-5">
+            {FEATURES.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex gap-4">
+                <div className="mt-0.5 shrink-0 w-8 h-8 flex items-center justify-center border border-amber-700/60 text-amber-500">
+                  <Icon size={15} />
+                </div>
+                <div>
+                  <p className="font-display font-bold text-white text-sm leading-snug">{title}</p>
+                  <p className="font-sans text-xs text-gray-400 mt-1 leading-relaxed">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div>
+            <div className="border-t border-gray-800 mb-6" />
+            <motion.button
+              type="button"
+              onClick={signInWithGoogle}
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white text-gray-900 font-sans text-sm font-semibold hover:bg-gray-100 transition-colors"
+              whileTap={{ scale: 0.98 }}
+            >
+              <GoogleIcon />
+              Continue with Google
+            </motion.button>
+            <p className="text-center font-sans text-[11px] text-gray-600 mt-3 tracking-wide">
+              FREE · NO CREDIT CARD REQUIRED
+            </p>
+          </div>
+
         </div>
       </div>
     );
