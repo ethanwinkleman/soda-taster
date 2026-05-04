@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Plus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
+  Plus, Minus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
   ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
@@ -49,7 +49,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const isOwner = stash?.ownerId === user?.id;
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
-  const { sodas, loading } = useStashSodas(stashId, user?.id, displayName);
+  const { sodas, loading, setFridgeStatus } = useStashSodas(stashId, user?.id, displayName);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [topOpen, setTopOpen] = useState(false);
@@ -139,6 +139,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   }
 
   const fridgeSodas = sodas.filter((s) => s.inFridge);
+  const totalUnits = fridgeSodas.reduce((sum, s) => sum + s.quantity, 0);
   const ratedSodas = sodas.filter((s) => s.avgScore !== null);
   const overallAvg = ratedSodas.length
     ? Math.round(ratedSodas.reduce((sum, s) => sum + (s.avgScore ?? 0), 0) / ratedSodas.length * 10) / 10
@@ -662,7 +663,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <div className="flex items-center gap-2">
                 <Refrigerator size={16} className="text-gray-700 dark:text-gray-300" />
                 <h2 className="font-display font-bold text-gray-900 dark:text-white">Stock Inventory</h2>
-                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">({fridgeSodas.length})</span>
+                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
+                  {fridgeSodas.length} {fridgeSodas.length === 1 ? 'soda' : 'sodas'}{totalUnits > 0 ? ` · ${totalUnits} units` : ''}
+                </span>
               </div>
               <button
                 type="button"
@@ -684,32 +687,60 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               ) : (
                 <div className="divide-y divide-gray-200 dark:divide-gray-800">
                   {fridgeSodas.map((soda) => (
-                    <button
-                      key={soda.id}
-                      type="button"
-                      onClick={() => { setInventoryOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
-                      className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
-                    >
-                      {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
-                      ) : (
-                        <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
-                          <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
-                        {soda.brand && (
-                          <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                    <div key={soda.id} className="flex items-center gap-2 px-4 py-2.5">
+                      {/* Tappable left region: thumb + name */}
+                      <button
+                        type="button"
+                        onClick={() => { setInventoryOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
+                        className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
+                      >
+                        {soda.imageUrl ? (
+                          <img src={soda.imageUrl} alt="" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                        ) : (
+                          <div className="w-9 h-9 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
+                            <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
+                          </div>
                         )}
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="font-display text-sm font-black text-gray-700 dark:text-gray-300 tabular-nums">
-                          ×{soda.quantity}
+                        <div className="min-w-0">
+                          <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{soda.name}</p>
+                          {soda.brand && (
+                            <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate leading-tight">{soda.brand}</p>
+                          )}
+                        </div>
+                      </button>
+                      {/* Stepper */}
+                      <div className="flex items-center shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setFridgeStatus(soda.id, soda.quantity > 1, soda.quantity > 1 ? soda.quantity - 1 : 0)}
+                          className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          aria-label="Decrease"
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="w-8 h-7 flex items-center justify-center font-display font-black text-sm text-gray-900 dark:text-white tabular-nums border-y border-gray-300 dark:border-gray-600">
+                          {soda.quantity}
                         </span>
-                        {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}
+                        <button
+                          type="button"
+                          onClick={() => setFridgeStatus(soda.id, true, soda.quantity + 1)}
+                          className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          aria-label="Increase"
+                        >
+                          <Plus size={11} />
+                        </button>
+                        {/* Remove from stock */}
+                        <button
+                          type="button"
+                          onClick={() => setFridgeStatus(soda.id, false, 0)}
+                          className="ml-2.5 w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          aria-label="Remove from stock"
+                          title="Remove from stock"
+                        >
+                          <X size={13} />
+                        </button>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               )}
