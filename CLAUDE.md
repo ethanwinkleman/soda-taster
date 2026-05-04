@@ -55,6 +55,12 @@ Supabase DB
 
 No global state manager. State lives in hooks called at the relevant level and props are drilled down.
 
+### Known performance debt
+
+Both `useStashes` and `useStashSodas` do a cold Supabase fetch on every mount — no caching, no persistence, no stale-while-revalidate. The UI blocks on a loading skeleton until the round-trip completes. This is acceptable now but will degrade noticeably as collections grow.
+
+**Planned fix:** Introduce React Query (or SWR) to get stale-while-revalidate behaviour, plus optional localStorage hydration for instant first paint. Prioritise `useStashes` first (fetched on every app launch) then `useStashSodas` (fetched on every stash visit).
+
 ### Routing
 
 ```
