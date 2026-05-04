@@ -79,7 +79,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       {/* Page masthead */}
       <div className="mb-8">
         <div className="flex items-baseline justify-between gap-4">
-          <h1 className="font-display text-3xl font-black italic text-gray-900 dark:text-white tracking-tight">
+          <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
             My Collections
           </h1>
           <div className="flex gap-2 shrink-0">
