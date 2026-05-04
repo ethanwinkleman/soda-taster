@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://soda-taster.vercel.app/sitemap.xml
