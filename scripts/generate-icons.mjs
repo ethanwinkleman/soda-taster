@@ -13,3 +13,10 @@ console.log('✓ apple-touch-icon.png (180×180)');
 // Standard favicon PNG fallback — 32×32
 await sharp(svg).resize(32, 32).png().toFile(join(__dirname, '../public/favicon-32x32.png'));
 console.log('✓ favicon-32x32.png (32×32)');
+
+// PWA icons required by Android install prompt
+await sharp(svg).resize(192, 192).png().toFile(join(__dirname, '../public/icon-192.png'));
+console.log('✓ icon-192.png (192×192)');
+
+await sharp(svg).resize(512, 512).png().toFile(join(__dirname, '../public/icon-512.png'));
+console.log('✓ icon-512.png (512×512)');
