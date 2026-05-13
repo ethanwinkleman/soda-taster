@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { QueryClient } from '@tanstack/react-query';
@@ -17,6 +18,16 @@ const persister = createSyncStoragePersister({
   storage: window.localStorage,
   key: 'soda-taster-rq',
 });
+
+const StashesPage       = lazy(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
+const StashPage         = lazy(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
+const AddSodaPage       = lazy(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
+const SodaDetailPage    = lazy(() => import('./pages/SodaDetailPage').then(m => ({ default: m.SodaDetailPage })));
+const StashActivityPage = lazy(() => import('./pages/StashActivityPage').then(m => ({ default: m.StashActivityPage })));
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
+const JoinStashPage     = lazy(() => import('./pages/JoinStashPage').then(m => ({ default: m.JoinStashPage })));
+const BarcodeScanPage   = lazy(() => import('./pages/BarcodeScanPage').then(m => ({ default: m.BarcodeScanPage })));
+const BarcodeResultPage = lazy(() => import('./pages/BarcodeResultPage').then(m => ({ default: m.BarcodeResultPage })));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
 import { useStashes } from './hooks/useStashes';
@@ -24,15 +35,6 @@ import { Sidebar } from './components/Sidebar';
 import { MobileHeader } from './components/MobileHeader';
 import { BottomNav } from './components/BottomNav';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
-import { StashesPage } from './pages/StashesPage';
-import { StashPage } from './pages/StashPage';
-import { AddSodaPage } from './pages/AddSodaPage';
-import { SodaDetailPage } from './pages/SodaDetailPage';
-import { StashActivityPage } from './pages/StashActivityPage';
-import { PublicProfilePage } from './pages/PublicProfilePage';
-import { JoinStashPage } from './pages/JoinStashPage';
-import { BarcodeScanPage } from './pages/BarcodeScanPage';
-import { BarcodeResultPage } from './pages/BarcodeResultPage';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -66,6 +68,7 @@ function AppRoutes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
+            <Suspense>
             <Routes location={location}>
               <Route
                 path="/"
@@ -92,6 +95,7 @@ function AppRoutes() {
               <Route path="/stash/:id/activity" element={<StashActivityPage />} />
               <Route path="/stash/:id/soda/:sodaId" element={<SodaDetailPage />} />
             </Routes>
+            </Suspense>
           </motion.div>
         </main>
       </div>
@@ -108,6 +112,7 @@ export default function App() {
     >
       <BrowserRouter>
         <AuthProvider>
+          <Suspense>
           <Routes>
             <Route path="/u/:username" element={<PublicProfilePage />} />
             <Route path="/join/:code" element={<JoinStashPage />} />
@@ -120,6 +125,7 @@ export default function App() {
               }
             />
           </Routes>
+          </Suspense>
         </AuthProvider>
       </BrowserRouter>
     </PersistQueryClientProvider>
