@@ -5,8 +5,10 @@ import { motion } from 'framer-motion';
 import { StashIcon } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { ScoreBadge } from '../components/ScoreBadge';
+import { TasteProfile } from '../components/TasteProfile';
 import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
+import { useMyRatings } from '../hooks/useMyRatings';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -68,6 +70,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
     if (stashId) navigate(`/stash/${stashId}`);
   }
 
+  const { data: myRatings = [] } = useMyRatings(user?.id);
   const firstName = (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0];
 
   // Build a stashId → stash name lookup for the Recently Tasted section
@@ -263,6 +266,9 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           ))}
         </div>
       )}
+
+      {/* Taste profile */}
+      {!loading && <TasteProfile ratings={myRatings} />}
 
       {/* Recently Tasted supplemental section */}
       {!loading && recentActivity.length > 0 && (
