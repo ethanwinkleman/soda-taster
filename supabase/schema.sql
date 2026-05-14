@@ -239,3 +239,7 @@ CREATE POLICY "own_delete_comment" ON soda_comments FOR DELETE
 -- Per-collection accent colour set by the proprietor; displayed as a left
 -- border tint on collection cards.  Stored as a CSS hex string, e.g. '#7f1d1d'.
 ALTER TABLE stashes ADD COLUMN IF NOT EXISTS accent_color TEXT;
+
+-- ── Tasting notes on ratings ──────────────────────────────────────────────────
+-- Optional free-text note (max 300 chars) attached to a member's score.
+ALTER TABLE stash_soda_ratings ADD COLUMN IF NOT EXISTS notes TEXT CHECK (notes IS NULL OR char_length(notes) <= 300);

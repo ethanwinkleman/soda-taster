@@ -50,6 +50,7 @@ export interface SodaRating {
   userId: string;
   displayName: string;
   score: number;
+  notes: string | null;
   createdAt: string;
 }
 
