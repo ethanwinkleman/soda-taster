@@ -1,6 +1,6 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
@@ -39,9 +39,16 @@ import { MobileHeader } from './components/MobileHeader';
 import { BottomNav } from './components/BottomNav';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [pathname]);
+  return null;
+}
+
 function AppRoutes() {
   const { user } = useAuth();
   const location = useLocation();
+  const navType = useNavigationType();
   const {
     stashes,
     loading: stashesLoading,
@@ -65,12 +72,15 @@ function AppRoutes() {
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
         <MobileHeader />
         <main className="flex-1 pb-20 md:pb-0">
+          <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            initial={{ opacity: 0, x: navType === 'POP' ? -20 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: navType === 'POP' ? 20 : -20 }}
+            transition={{ duration: 0.18, ease: 'easeInOut' }}
           >
+            <ScrollToTop />
             <Suspense>
             <Routes location={location}>
               <Route
@@ -101,6 +111,7 @@ function AppRoutes() {
             </Routes>
             </Suspense>
           </motion.div>
+          </AnimatePresence>
         </main>
       </div>
       <BottomNav />
