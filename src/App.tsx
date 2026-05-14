@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Toaster } from 'sonner';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
@@ -28,8 +29,10 @@ const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage').then(m 
 const JoinStashPage     = lazy(() => import('./pages/JoinStashPage').then(m => ({ default: m.JoinStashPage })));
 const BarcodeScanPage   = lazy(() => import('./pages/BarcodeScanPage').then(m => ({ default: m.BarcodeScanPage })));
 const BarcodeResultPage = lazy(() => import('./pages/BarcodeResultPage').then(m => ({ default: m.BarcodeResultPage })));
+const NotFoundPage      = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
+import { ConfirmProvider } from './contexts/ConfirmContext';
 import { useStashes } from './hooks/useStashes';
 import { Sidebar } from './components/Sidebar';
 import { MobileHeader } from './components/MobileHeader';
@@ -94,6 +97,7 @@ function AppRoutes() {
               <Route path="/stash/:id/scan/result" element={<BarcodeResultPage />} />
               <Route path="/stash/:id/activity" element={<StashActivityPage />} />
               <Route path="/stash/:id/soda/:sodaId" element={<SodaDetailPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
             </Suspense>
           </motion.div>
@@ -112,20 +116,32 @@ export default function App() {
     >
       <BrowserRouter>
         <AuthProvider>
-          <Suspense>
-          <Routes>
-            <Route path="/u/:username" element={<PublicProfilePage />} />
-            <Route path="/join/:code" element={<JoinStashPage />} />
-            <Route
-              path="/*"
-              element={
-                <AuthGate>
-                  <AppRoutes />
-                </AuthGate>
-              }
+          <ConfirmProvider>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                classNames: {
+                  toast: 'font-sans text-sm !rounded-none !border !border-gray-800 dark:!border-gray-200 !shadow-lg',
+                  success: '!bg-white dark:!bg-gray-900 !text-gray-900 dark:!text-gray-100',
+                  error: '!bg-white dark:!bg-gray-900 !text-red-600 dark:!text-red-400',
+                },
+              }}
             />
-          </Routes>
-          </Suspense>
+            <Suspense>
+            <Routes>
+              <Route path="/u/:username" element={<PublicProfilePage />} />
+              <Route path="/join/:code" element={<JoinStashPage />} />
+              <Route
+                path="/*"
+                element={
+                  <AuthGate>
+                    <AppRoutes />
+                  </AuthGate>
+                }
+              />
+            </Routes>
+            </Suspense>
+          </ConfirmProvider>
         </AuthProvider>
       </BrowserRouter>
     </PersistQueryClientProvider>

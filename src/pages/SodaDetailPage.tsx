@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
@@ -15,6 +17,7 @@ export function SodaDetailPage() {
   const navigate = useNavigate();
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
+  const confirm = useConfirm();
   const { sodas, loading, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating } =
     useStashSodas(stashId, user?.id, displayName);
 
@@ -54,13 +57,16 @@ export function SodaDetailPage() {
       brand: editBrand.trim(),
     });
     setEditing(false);
+    toast.success('Record updated.');
   }
 
   async function handleSaveRating() {
     if (!soda || !ratingVal) return;
+    const isUpdate = !!soda.myRating;
     setSavingRating(true);
     await saveRating(soda.id, ratingVal, displayName, noteVal);
     setSavingRating(false);
+    toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
   }
 
   async function handleDeleteRating() {
@@ -68,6 +74,7 @@ export function SodaDetailPage() {
     await deleteRating(soda.myRating.id, soda.id);
     setRatingVal(0);
     setNoteVal('');
+    toast.success('Rating retracted.');
   }
 
   async function handleFridgeToggle() {
@@ -90,11 +97,19 @@ export function SodaDetailPage() {
     setUploadingImage(true);
     const err = await updateSodaImage(soda.id, file);
     setUploadingImage(false);
-    if (err) setImageError(err);
+    if (err) { setImageError(err); toast.error(err); return; }
+    toast.success('Photo updated.');
   }
 
   async function handleDelete() {
-    if (!soda || !confirm(`Remove "${soda.name}" from this collection?`)) return;
+    if (!soda) return;
+    const ok = await confirm({
+      title: `Remove "${soda.name}"?`,
+      body: 'This will remove the soda and all its ratings from the collection.',
+      confirmLabel: 'Remove',
+      destructive: true,
+    });
+    if (!ok) return;
     await removeSoda(soda.id);
     navigate(`/stash/${stashId}`);
   }
