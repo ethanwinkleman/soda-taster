@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, NavLink } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { toast } from 'sonner';
 import {
   Plus, Minus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
   ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
 import { SodaCard } from '../components/SodaCard';
@@ -47,6 +49,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   const stash = stashes.find((s) => s.id === stashId);
   const isOwner = stash?.ownerId === user?.id;
+  const confirm = useConfirm();
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
   const { sodas, loading, setFridgeStatus } = useStashSodas(stashId, user?.id, displayName);
@@ -83,26 +86,49 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     setRenaming(true);
     const err = await onRename(stashId, renameVal.trim());
     setRenaming(false);
-    if (err) setSettingsError(err);
+    if (err) { setSettingsError(err); return; }
+    toast.success('Collection renamed.');
   }
 
   async function handleDelete() {
-    if (!stashId || !confirm(`Delete "${stash?.name}"? This cannot be undone.`)) return;
+    if (!stashId) return;
+    const ok = await confirm({
+      title: `Delete "${stash?.name}"?`,
+      body: 'All sodas and ratings will be permanently removed. This cannot be undone.',
+      confirmLabel: 'Delete',
+      destructive: true,
+    });
+    if (!ok) return;
     const err = await onDelete(stashId);
     if (err) { setSettingsError(err); return; }
     navigate('/', { replace: true });
   }
 
-  function handleLeave() {
-    if (!stashId || !confirm(`Leave "${stash?.name}"?`)) return;
+  async function handleLeave() {
+    if (!stashId) return;
+    const ok = await confirm({
+      title: `Leave "${stash?.name}"?`,
+      body: 'You will lose access to this collection and its sodas.',
+      confirmLabel: 'Leave',
+      destructive: true,
+    });
+    if (!ok) return;
     onLeave(stashId);
     navigate('/', { replace: true });
   }
 
   async function handleRemoveMember(memberId: string) {
-    if (!stashId || !confirm('Remove this member from the stash?')) return;
+    if (!stashId) return;
+    const ok = await confirm({
+      title: 'Remove member?',
+      body: 'They will lose access to this collection immediately.',
+      confirmLabel: 'Remove',
+      destructive: true,
+    });
+    if (!ok) return;
     await removeMember(stashId, memberId);
     setMembers((prev) => prev.filter((m) => m.userId !== memberId));
+    toast.success('Member removed.');
   }
 
   function copyCode() {
@@ -137,6 +163,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     a.download = `${stash.name.replace(/[^a-z0-9]/gi, '_')}_sodas.csv`;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('Export downloaded.');
   }
 
   const fridgeSodas = sodas.filter((s) => s.inFridge);

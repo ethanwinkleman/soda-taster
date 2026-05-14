@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, Camera, X, Barcode } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
@@ -54,6 +55,7 @@ export function AddSodaPage() {
     if (!name.trim()) return;
     setSaving(true);
     await addSoda(name.trim(), brand.trim(), score > 0 ? score : null, displayName, imageFile);
+    toast.success(`"${name.trim()}" added to collection.`);
     navigate(`/stash/${stashId}`);
   }
 
