@@ -27,6 +27,7 @@ function ratingFromDb(row: any): SodaRating {
     userId: row.user_id,
     displayName: row.display_name ?? '',
     score: Number(row.score),
+    notes: row.notes ?? null,
     createdAt: row.created_at,
   };
 }
@@ -201,12 +202,12 @@ export function useStashSodas(
     patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, inFridge, quantity } : s));
   }
 
-  async function saveRating(sodaId: string, score: number, dn: string) {
+  async function saveRating(sodaId: string, score: number, dn: string, notes?: string) {
     if (!userId) return;
     const soda = sodas.find((s) => s.id === sodaId);
     const isUpdate = !!soda?.myRating;
     await supabase.from('stash_soda_ratings').upsert(
-      { soda_id: sodaId, user_id: userId, display_name: dn, score },
+      { soda_id: sodaId, user_id: userId, display_name: dn, score, notes: notes?.trim() || null },
       { onConflict: 'soda_id,user_id' },
     );
     await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });

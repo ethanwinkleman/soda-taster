@@ -26,6 +26,7 @@ export function SodaDetailPage() {
   const [editName, setEditName] = useState('');
   const [editBrand, setEditBrand] = useState('');
   const [ratingVal, setRatingVal] = useState(0);
+  const [noteVal, setNoteVal] = useState('');
   const [initialized, setInitialized] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -34,6 +35,7 @@ export function SodaDetailPage() {
   useEffect(() => {
     if (!loading && soda && !initialized) {
       setRatingVal(soda.myRating?.score ?? 0);
+      setNoteVal(soda.myRating?.notes ?? '');
       setInitialized(true);
     }
   }, [loading, soda, initialized]);
@@ -57,7 +59,7 @@ export function SodaDetailPage() {
   async function handleSaveRating() {
     if (!soda || !ratingVal) return;
     setSavingRating(true);
-    await saveRating(soda.id, ratingVal, displayName);
+    await saveRating(soda.id, ratingVal, displayName, noteVal);
     setSavingRating(false);
   }
 
@@ -65,6 +67,7 @@ export function SodaDetailPage() {
     if (!soda?.myRating) return;
     await deleteRating(soda.myRating.id, soda.id);
     setRatingVal(0);
+    setNoteVal('');
   }
 
   async function handleFridgeToggle() {
@@ -151,7 +154,7 @@ export function SodaDetailPage() {
     );
   }
 
-  const ratingChanged = ratingVal !== (soda.myRating?.score ?? 0);
+  const ratingChanged = ratingVal !== (soda.myRating?.score ?? 0) || noteVal.trim() !== (soda.myRating?.notes ?? '');
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
@@ -319,7 +322,15 @@ export function SodaDetailPage() {
           My Rating
         </p>
         <StarRating value={ratingVal} onChange={setRatingVal} size="lg" />
-        <div className="flex gap-2 mt-3">
+        <textarea
+          value={noteVal}
+          onChange={(e) => setNoteVal(e.target.value)}
+          maxLength={300}
+          rows={3}
+          placeholder="Tasting notes (optional)…"
+          className="mt-3 w-full px-3 py-2 font-sans text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none"
+        />
+        <div className="flex gap-2 mt-2">
           {ratingChanged && ratingVal > 0 && (
             <button
               type="button"
@@ -374,8 +385,13 @@ export function SodaDetailPage() {
             <tbody>
               {soda.ratings.map((r) => (
                 <tr key={r.id} className="border-b border-gray-100 dark:border-gray-700/50 last:border-0">
-                  <td className="px-4 py-2.5 font-sans text-sm text-gray-900 dark:text-gray-100">{r.displayName}</td>
-                  <td className="px-4 py-2.5 text-right font-display font-bold text-gray-900 dark:text-gray-100">
+                  <td className="px-4 pt-2.5 pb-2 font-sans text-sm text-gray-900 dark:text-gray-100 align-top">
+                    {r.displayName}
+                    {r.notes && (
+                      <p className="mt-0.5 text-xs italic text-gray-500 dark:text-gray-400 font-normal leading-snug">{r.notes}</p>
+                    )}
+                  </td>
+                  <td className="px-4 pt-2.5 pb-2 text-right font-display font-bold text-gray-900 dark:text-gray-100 align-top whitespace-nowrap">
                     <span className="text-amber-500 mr-1">★</span>
                     {r.score.toFixed(1)}
                   </td>
