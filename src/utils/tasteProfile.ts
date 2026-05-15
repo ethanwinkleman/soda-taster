@@ -85,22 +85,51 @@ export function generateProfile(ratings: RatingInput[]): string | null {
   const topBrand = brandStats[0] ?? null;
   const adventurousness = uniqueBrands / total;
 
+  // Highest-rated soda — only worth naming if it earned a genuinely high mark
+  const topSoda = [...ratings].sort((a, b) => b.score - a.score)[0];
+  const namedTopSoda = topSoda && topSoda.score >= 4.0 ? topSoda : null;
+
+  // Cross-signal: how does the leading flavor's avg compare to the overall avg?
+  const flavorScoreDelta = topByCount ? round1(topByCount.avg - avg) : 0;
+
   const sentences: string[] = [];
 
-  // — Sentence 1: flavor identity —
+  // — Sentence 1: flavor identity, optionally fused with score cross-signal —
   if (topByCount && topByCount.count >= Math.ceil(total * 0.25)) {
     const pct = Math.round((topByCount.count / total) * 100);
-    sentences.push(flavorLeadSentence(topByCount.category, pct, total));
+    const base = flavorLeadSentence(topByCount.category, pct, total);
+
+    if (flavorScoreDelta > 0.4) {
+      // They try it most AND score it highest — mutual confirmation
+      const stripped = base.replace(/\.$/, '');
+      sentences.push(
+        `${stripped} — and your scores there, averaging ${topByCount.avg}, confirm the relationship is mutual.`
+      );
+    } else if (flavorScoreDelta < -0.4) {
+      // They try it most but score it below their own average — complicated loyalty
+      const stripped = base.replace(/\.$/, '');
+      sentences.push(
+        `${stripped}, though your scores in that category — ${topByCount.avg} on average — tell a more complicated story.`
+      );
+    } else {
+      sentences.push(base);
+    }
   } else if (flavorStats.length >= 3) {
     const top3 = flavorStats.slice(0, 3).map((f) => f.category).join(', ');
-    sentences.push(`Your palate ranges broadly — ${top3} each have a foothold in your records, with no single style claiming dominance.`);
+    sentences.push(
+      `Your palate ranges broadly — ${top3} each have a foothold in your records, with no single style claiming dominance.`
+    );
   } else if (topByCount) {
-    sentences.push(`Your collection is still finding its shape, with early entries leaning toward ${topByCount.category}.`);
+    sentences.push(
+      `Your collection is still finding its shape, with early entries leaning toward ${topByCount.category}.`
+    );
   } else {
-    sentences.push(`Your collection covers ground that defies easy categorization — a sign of genuine curiosity.`);
+    sentences.push(
+      `Your collection covers ground that defies easy categorization — a sign of genuine curiosity.`
+    );
   }
 
-  // — Sentence 2: the hidden preference reveal (most revelatory) —
+  // — Sentence 2: hidden preference reveal (cross-category, different from lead) —
   if (
     topByScore &&
     topByCount &&
@@ -117,12 +146,31 @@ export function generateProfile(ratings: RatingInput[]): string | null {
 
   // — Sentence 4: adventurousness / loyalty —
   if (topBrand && topBrand.count >= 3) {
-    const earnedIt = topBrand.avg >= 4.0 ? `, and earns it — your scores there average ${topBrand.avg}` : '';
+    const earnedIt = topBrand.avg >= 4.0
+      ? `, and earns it — your scores there average ${topBrand.avg}`
+      : '';
     sentences.push(`${topBrand.name} appears in your record more than any other producer${earnedIt}.`);
   } else if (adventurousness > 0.75) {
-    sentences.push(`You drink wide rather than deep — ${uniqueBrands} brands across ${total} sodas, rarely returning to the same label twice.`);
+    sentences.push(
+      `You drink wide rather than deep — ${uniqueBrands} brands across ${total} sodas, rarely returning to the same label twice.`
+    );
   } else if (adventurousness < 0.35 && topBrand) {
-    sentences.push(`You are a loyal drinker: ${topBrand.name} has earned more of your attention than any other producer in the record.`);
+    sentences.push(
+      `You are a loyal drinker: ${topBrand.name} has earned more of your attention than any other producer in the record.`
+    );
+  }
+
+  // — Sentence 5: named top soda — always personal, always specific —
+  if (namedTopSoda) {
+    const name = namedTopSoda.sodaName;
+    const score = namedTopSoda.score;
+    if (score === 5.0) {
+      sentences.push(`The top of your record belongs to ${name} — a perfect 5.0, the rarest mark in any serious collection.`);
+    } else if (score >= 4.5) {
+      sentences.push(`At the peak of your record sits ${name}, at ${score} — the standard your palate keeps returning to.`);
+    } else {
+      sentences.push(`Your highest-rated soda, ${name}, earned a ${score}.`);
+    }
   }
 
   return sentences.join(' ');
