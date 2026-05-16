@@ -24,7 +24,7 @@ function FillingBeer() {
   }, [fillLevel]);
 
   useEffect(() => {
-    animate(fillLevel, 1, { duration: 1.6, ease: [0.4, 0, 0.2, 1] });
+    animate(fillLevel, 1, { duration: 1.2, ease: [0.4, 0, 0.2, 1] });
   }, [fillLevel]);
 
   return (
@@ -99,7 +99,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [minElapsed, setMinElapsed] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setMinElapsed(true), 3000);
+    const t = setTimeout(() => setMinElapsed(true), 1800);
     return () => clearTimeout(t);
   }, []);
 
