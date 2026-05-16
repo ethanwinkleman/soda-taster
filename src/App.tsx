@@ -71,7 +71,7 @@ function AppRoutes() {
       <Sidebar stashes={stashes} loading={stashesLoading} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
         <MobileHeader />
-        <main className="flex-1 pb-20 md:pb-0">
+        <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain">
           <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
