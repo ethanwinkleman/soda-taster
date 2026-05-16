@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, LogIn, Layers, Users, CupSoda } from 'lucide-react';
+import { Plus, LogIn, Users, CupSoda } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { StashIcon } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -202,10 +202,35 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           ))}
         </div>
       ) : stashes.length === 0 ? (
-        <div className="text-center py-20 border border-dashed border-gray-300 dark:border-gray-700">
-          <Layers size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
-          <p className="font-display italic text-gray-500 dark:text-gray-400">No collections yet</p>
-          <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mt-1">Create one to begin tracking sodas</p>
+        <div className="border border-dashed border-gray-300 dark:border-gray-700 py-14">
+          <div className="max-w-xs mx-auto px-6 text-center">
+            <CupSoda size={32} className="mx-auto mb-5 text-gray-300 dark:text-gray-600" />
+            <h2 className="font-display text-xl font-black italic text-gray-800 dark:text-gray-200 mb-2">
+              Your records start here.
+            </h2>
+            <p className="font-sans text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
+              Create a collection, add every soda you try, and rate each one.
+              Your palate profile builds itself.
+            </p>
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => { setCreating(true); setJoining(false); setError(null); }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+              >
+                <Plus size={13} />
+                Create your first collection
+              </button>
+              <button
+                type="button"
+                onClick={() => { setJoining(true); setCreating(false); setError(null); }}
+                className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <LogIn size={13} />
+                Join an existing one
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">

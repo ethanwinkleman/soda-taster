@@ -305,8 +305,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       </div>
 
-      {/* Metrics row */}
-      {!loading && sodas.length > 0 && (
+      {/* Metrics row — skeleton while loading, real data once ready */}
+      {loading ? (
+        <div className="grid grid-cols-3 gap-0 mb-5 border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
+              <Skeleton className="h-2 w-14" />
+              <Skeleton className="h-6 w-10 mt-0.5" />
+              <Skeleton className="h-2 w-12" />
+            </div>
+          ))}
+        </div>
+      ) : sodas.length > 0 && (
         <div className="grid grid-cols-3 gap-0 mb-5 border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
           <button
             type="button"
@@ -366,8 +376,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
-      {/* Search + sort + filter */}
-      <div className="flex gap-2 mb-2">
+      {/* Search + sort + filter — only shown once data has loaded */}
+      {!loading && <div className="flex gap-2 mb-2">
         <div className="flex-1 relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
@@ -402,10 +412,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <ListFilter size={13} />
           <span className="hidden sm:inline">Restock</span>
         </button>
-      </div>
+      </div>}
 
       {/* Active filter banner */}
-      {restockFilter && (
+      {!loading && restockFilter && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 border border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-800">
           <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
             Not in stock · ★ 4+ avg · sorted by your rating
@@ -424,7 +434,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
-      {!restockFilter && <div className="mb-3" />}
+      {!loading && !restockFilter && <div className="mb-3" />}
 
       {/* Soda list */}
       {loading ? (
@@ -442,30 +452,47 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           ))}
         </div>
       ) : sorted.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-gray-300 dark:border-gray-700">
-          <CupSoda size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+        <div className="border border-dashed border-gray-300 dark:border-gray-700">
           {restockFilter ? (
-            <>
-              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-1">
-                Larder fully supplied!
-              </p>
-              <p className="font-sans text-xs text-gray-400 dark:text-gray-500 italic">
-                All your rated sodas are currently in stock.
-              </p>
-            </>
+            <div className="text-center py-12">
+              <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
+              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-1">Larder fully supplied!</p>
+              <p className="font-sans text-xs text-gray-400 dark:text-gray-500 italic">All your rated sodas are currently in stock.</p>
+            </div>
           ) : search ? (
-            <p className="font-sans italic text-gray-500 dark:text-gray-400">No records match "{search}"</p>
+            <div className="text-center py-12">
+              <p className="font-sans italic text-gray-500 dark:text-gray-400">No records match "{search}"</p>
+            </div>
           ) : (
-            <>
-              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-2">No sodas recorded yet</p>
-              <button
-                type="button"
-                onClick={() => navigate(`/stash/${stashId}/add`)}
-                className="mt-1 px-4 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
-              >
-                File the first record
-              </button>
-            </>
+            <div className="py-14">
+              <div className="max-w-xs mx-auto px-6 text-center">
+                <CupSoda size={32} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+                <h2 className="font-display text-lg font-black italic text-gray-800 dark:text-gray-200 mb-1.5">
+                  Nothing on the record yet.
+                </h2>
+                <p className="font-sans text-sm text-gray-400 dark:text-gray-500 leading-relaxed mb-5">
+                  Add your first soda. Rate it. Never forget what it tasted like.
+                </p>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/stash/${stashId}/add`)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+                  >
+                    <Plus size={13} />
+                    File the first record
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/stash/${stashId}/scan`)}
+                    className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Barcode size={13} />
+                    Scan a barcode
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       ) : (
