@@ -178,10 +178,17 @@ export function useStashSodas(
 
   async function editSoda(sodaId: string, updates: { name?: string; brand?: string }) {
     const soda = sodas.find((s) => s.id === sodaId);
-    const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
-    if (!error) {
-      await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
+    const previous = queryClient.getQueryData<Soda[]>(queryKey);
+    patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, ...updates } : s));
+    try {
+      const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
+      if (!error) {
+        await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
+      }
       await invalidate();
+    } catch {
+      if (previous) queryClient.setQueryData(queryKey, previous);
+      throw new Error('Failed to update soda');
     }
   }
 
@@ -206,19 +213,55 @@ export function useStashSodas(
     if (!userId) return;
     const soda = sodas.find((s) => s.id === sodaId);
     const isUpdate = !!soda?.myRating;
-    await supabase.from('stash_soda_ratings').upsert(
-      { soda_id: sodaId, user_id: userId, display_name: dn, score, notes: notes?.trim() || null },
-      { onConflict: 'soda_id,user_id' },
-    );
-    await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
-    await invalidate();
+    const previous = queryClient.getQueryData<Soda[]>(queryKey);
+    const trimmedNotes = notes?.trim() || null;
+
+    patch((prev) => prev.map((s) => {
+      if (s.id !== sodaId) return s;
+      const optimistic: SodaRating = s.myRating
+        ? { ...s.myRating, score, notes: trimmedNotes }
+        : { id: 'optimistic', sodaId, userId: userId!, displayName: dn, score, notes: trimmedNotes, createdAt: new Date().toISOString() };
+      const ratings = isUpdate
+        ? s.ratings.map((r) => r.userId === userId ? optimistic : r)
+        : [...s.ratings, optimistic];
+      const avgScore = Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10;
+      return { ...s, ratings, avgScore, myRating: optimistic };
+    }));
+
+    try {
+      await supabase.from('stash_soda_ratings').upsert(
+        { soda_id: sodaId, user_id: userId, display_name: dn, score, notes: trimmedNotes },
+        { onConflict: 'soda_id,user_id' },
+      );
+      await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
+      await invalidate();
+    } catch {
+      if (previous) queryClient.setQueryData(queryKey, previous);
+      throw new Error('Failed to save rating');
+    }
   }
 
   async function deleteRating(ratingId: string, sodaId: string) {
     const soda = sodas.find((s) => s.id === sodaId);
-    await supabase.from('stash_soda_ratings').delete().eq('id', ratingId);
-    await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'rating_removed', sodaId, sodaName: soda?.name });
-    await invalidate();
+    const previous = queryClient.getQueryData<Soda[]>(queryKey);
+
+    patch((prev) => prev.map((s) => {
+      if (s.id !== sodaId) return s;
+      const ratings = s.ratings.filter((r) => r.id !== ratingId);
+      const avgScore = ratings.length
+        ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
+        : null;
+      return { ...s, ratings, avgScore, myRating: null };
+    }));
+
+    try {
+      await supabase.from('stash_soda_ratings').delete().eq('id', ratingId);
+      await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'rating_removed', sodaId, sodaName: soda?.name });
+      await invalidate();
+    } catch {
+      if (previous) queryClient.setQueryData(queryKey, previous);
+      throw new Error('Failed to delete rating');
+    }
   }
 
   return {

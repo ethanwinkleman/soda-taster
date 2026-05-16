@@ -31,7 +31,6 @@ export function SodaDetailPage() {
   const [ratingVal, setRatingVal] = useState(0);
   const [noteVal, setNoteVal] = useState('');
   const [initialized, setInitialized] = useState(false);
-  const [savingRating, setSavingRating] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
 
@@ -52,29 +51,41 @@ export function SodaDetailPage() {
 
   async function handleEditSave() {
     if (!soda) return;
-    await editSoda(soda.id, {
-      name: editName.trim() || soda.name,
-      brand: editBrand.trim(),
-    });
+    const name = editName.trim() || soda.name;
+    const brand = editBrand.trim();
     setEditing(false);
     toast.success('Record updated.');
+    try {
+      await editSoda(soda.id, { name, brand });
+    } catch {
+      toast.error('Update failed — changes reverted.');
+    }
   }
 
   async function handleSaveRating() {
     if (!soda || !ratingVal) return;
     const isUpdate = !!soda.myRating;
-    setSavingRating(true);
-    await saveRating(soda.id, ratingVal, displayName, noteVal);
-    setSavingRating(false);
-    toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
+    try {
+      await saveRating(soda.id, ratingVal, displayName, noteVal);
+      toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
+    } catch {
+      toast.error('Failed to save rating.');
+    }
   }
 
   async function handleDeleteRating() {
     if (!soda?.myRating) return;
-    await deleteRating(soda.myRating.id, soda.id);
+    const { id: ratingId, score: prevScore, notes: prevNotes } = soda.myRating;
     setRatingVal(0);
     setNoteVal('');
-    toast.success('Rating retracted.');
+    try {
+      await deleteRating(ratingId, soda.id);
+      toast.success('Rating retracted.');
+    } catch {
+      setRatingVal(prevScore);
+      setNoteVal(prevNotes ?? '');
+      toast.error('Failed to retract rating.');
+    }
   }
 
   async function handleFridgeToggle() {
@@ -350,10 +361,9 @@ export function SodaDetailPage() {
             <button
               type="button"
               onClick={handleSaveRating}
-              disabled={savingRating}
-              className="flex-1 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 transition-colors"
+              className="flex-1 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
             >
-              {savingRating ? 'Filing…' : soda.myRating ? 'Update' : 'Submit'}
+              {soda.myRating ? 'Update' : 'Submit'}
             </button>
           )}
           {soda.myRating && (
