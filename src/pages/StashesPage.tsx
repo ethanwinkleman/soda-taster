@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, LogIn, Users, CupSoda } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useQueryClient } from '@tanstack/react-query';
 import { StashIcon } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { TasteProfile } from '../components/TasteProfile';
+import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useMyRatings } from '../hooks/useMyRatings';
@@ -73,11 +76,21 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
   const { data: myRatings = [] } = useMyRatings(user?.id);
   const firstName = (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0];
 
+  const queryClient = useQueryClient();
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['stashes', user?.id] }),
+      queryClient.invalidateQueries({ queryKey: ['my-ratings', user?.id] }),
+    ]);
+  }, [queryClient, user?.id]);
+  const { pullDistance, refreshing } = usePullToRefresh(handleRefresh);
+
   // Build a stashId → stash name lookup for the Recently Tasted section
   const stashNameMap = new Map(stashes.map((s) => [s.id, s.name]));
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      <PullToRefreshIndicator pullDistance={pullDistance} refreshing={refreshing} />
 
       {/* Page masthead */}
       <div className="mb-8">

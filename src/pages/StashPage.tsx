@@ -11,10 +11,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
+import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
   { label: 'None', value: null },
@@ -52,7 +54,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const confirm = useConfirm();
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
-  const { sodas, loading, setFridgeStatus } = useStashSodas(stashId, user?.id, displayName);
+  const { sodas, loading, setFridgeStatus, refresh } = useStashSodas(stashId, user?.id, displayName);
+  const { pullDistance, refreshing } = usePullToRefresh(refresh, !!stashId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
@@ -211,6 +214,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
+      <PullToRefreshIndicator pullDistance={pullDistance} refreshing={refreshing} />
       {/* Section masthead */}
       <div className="mb-6">
         <div className="flex items-start gap-2">
