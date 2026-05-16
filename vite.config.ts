@@ -1,7 +1,37 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/__/, /^\/api/],
+        cleanupOutdatedCaches: true,
+      },
+      manifest: {
+        name: 'Soda Taster',
+        short_name: 'Soda Taster',
+        description: "The soda enthusiast's journal. Rate every soda you try, build unlimited shared collections, and track your fridge inventory.",
+        start_url: '/',
+        display: 'standalone',
+        orientation: 'portrait',
+        background_color: '#0c0a09',
+        theme_color: '#1a0e06',
+        categories: ['food', 'lifestyle', 'utilities'],
+        icons: [
+          { src: '/favicon-32x32.png',   sizes: '32x32',   type: 'image/png' },
+          { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+          { src: '/icon-192.png',         sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icon-512.png',         sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+        ],
+      },
+    }),
+  ],
 })
