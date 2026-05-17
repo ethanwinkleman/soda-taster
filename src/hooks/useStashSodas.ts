@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
@@ -67,6 +67,7 @@ export function useStashSodas(
 ) {
   const queryClient = useQueryClient();
   const queryKey = ['stash-sodas', stashId, userId] as const;
+  const uid = useId().replace(/:/g, '');
 
   const { data, isLoading } = useQuery({
     queryKey,
@@ -99,7 +100,7 @@ export function useStashSodas(
     };
 
     const channel = supabase
-      .channel(`stash-sodas-rt-${stashId}`)
+      .channel(`stash-sodas-rt-${stashId}-${uid}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_sodas' }, silentRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_soda_ratings' }, silentRefetch)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'soda_comments' }, silentRefetch)
