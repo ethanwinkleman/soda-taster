@@ -71,14 +71,14 @@ function AppRoutes() {
       <Sidebar stashes={stashes} loading={stashesLoading} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
         <MobileHeader />
-        <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain">
-          <AnimatePresence mode="wait" initial={false}>
+        <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain relative">
+          <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={location.pathname}
             initial={{ opacity: 0, x: navType === 'POP' ? -20 : 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: navType === 'POP' ? 20 : -20 }}
-            transition={{ duration: 0.18, ease: 'easeInOut' }}
+            transition={{ duration: 0.15, ease: 'easeInOut' }}
           >
             <ScrollToTop />
             <Suspense>
