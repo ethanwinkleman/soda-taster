@@ -6,9 +6,10 @@ import { ScoreBadge } from './ScoreBadge';
 interface Props {
   soda: Soda;
   stashId: string;
+  scoreView?: 'group' | 'mine';
 }
 
-export function SodaCard({ soda, stashId }: Props) {
+export function SodaCard({ soda, stashId, scoreView = 'group' }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -62,11 +63,14 @@ export function SodaCard({ soda, stashId }: Props) {
       </div>
 
       {/* Score seal */}
-      {soda.avgScore !== null ? (
-        <ScoreBadge score={soda.avgScore} size="sm" />
-      ) : (
-        <span className="text-xs text-gray-300 dark:text-gray-600 shrink-0 font-sans">—</span>
-      )}
+      {(() => {
+        const score = scoreView === 'mine' ? (soda.myRating?.score ?? null) : soda.avgScore;
+        return score !== null ? (
+          <ScoreBadge score={score} size="sm" />
+        ) : (
+          <span className="text-xs text-gray-300 dark:text-gray-600 shrink-0 font-sans">—</span>
+        );
+      })()}
     </div>
   );
 }
