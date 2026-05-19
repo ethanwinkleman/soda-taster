@@ -86,6 +86,13 @@ export function useStashSodas(
     return queryClient.invalidateQueries({ queryKey: ['stash-sodas', stashId, userId] });
   }
 
+  function invalidateRatings() {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['stash-sodas', stashId, userId] }),
+      queryClient.invalidateQueries({ queryKey: ['my-ratings', userId] }),
+    ]);
+  }
+
   // Real-time: invalidate the query on any DB change so RQ refetches in the background
   useEffect(() => {
     if (!stashId || !userId) return;
@@ -235,7 +242,7 @@ export function useStashSodas(
         { onConflict: 'soda_id,user_id' },
       );
       await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
-      await invalidate();
+      await invalidateRatings();
     } catch {
       if (previous) queryClient.setQueryData(queryKey, previous);
       throw new Error('Failed to save rating');
@@ -258,7 +265,7 @@ export function useStashSodas(
     try {
       await supabase.from('stash_soda_ratings').delete().eq('id', ratingId);
       await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'rating_removed', sodaId, sodaName: soda?.name });
-      await invalidate();
+      await invalidateRatings();
     } catch {
       if (previous) queryClient.setQueryData(queryKey, previous);
       throw new Error('Failed to delete rating');

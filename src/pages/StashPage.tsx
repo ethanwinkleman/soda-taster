@@ -67,6 +67,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [copied, setCopied] = useState(false);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('newest');
+  const [scoreView, setScoreView] = useState<'group' | 'mine'>('group');
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -171,6 +172,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   const fridgeSodas = sodas.filter((s) => s.inFridge);
   const totalUnits = fridgeSodas.reduce((sum, s) => sum + s.quantity, 0);
+
+  // Group metrics
   const ratedSodas = sodas.filter((s) => s.avgScore !== null);
   const overallAvg = ratedSodas.length
     ? Math.round(ratedSodas.reduce((sum, s) => sum + (s.avgScore ?? 0), 0) / ratedSodas.length * 10) / 10
@@ -179,9 +182,27 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))
     .slice(0, 3);
 
+  // Mine metrics
+  const myRatedSodas = sodas.filter((s) => s.myRating !== null);
+  const myOverallAvg = myRatedSodas.length
+    ? Math.round(myRatedSodas.reduce((sum, s) => sum + (s.myRating?.score ?? 0), 0) / myRatedSodas.length * 10) / 10
+    : null;
+  const myTopThree = [...myRatedSodas]
+    .sort((a, b) => (b.myRating?.score ?? 0) - (a.myRating?.score ?? 0))
+    .slice(0, 3);
+
+  // Show toggle only when the stash has any soda with more than one rating (group view is meaningful)
+  const showScoreToggle = sodas.some((s) => s.ratings.length > 1);
+
+  const activeAvg = scoreView === 'mine' ? myOverallAvg : overallAvg;
+  const activeTopThree = scoreView === 'mine' ? myTopThree : topThree;
+
   const filtered = sodas.filter((s) => {
     if (restockFilter && s.inFridge) return false;
-    if (restockFilter && (s.avgScore === null || s.avgScore < 4)) return false;
+    if (restockFilter) {
+      const score = scoreView === 'mine' ? (s.myRating?.score ?? null) : s.avgScore;
+      if (score === null || score < 4) return false;
+    }
     if (!search) return true;
     return (
       s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -191,13 +212,24 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   const sorted = [...filtered].sort((a, b) => {
     if (restockFilter) {
-      // Personal rating first, fall back to avg, unrated last
-      const aScore = a.myRating?.score ?? a.avgScore ?? -1;
-      const bScore = b.myRating?.score ?? b.avgScore ?? -1;
+      const aScore = scoreView === 'mine'
+        ? (a.myRating?.score ?? -1)
+        : (a.myRating?.score ?? a.avgScore ?? -1);
+      const bScore = scoreView === 'mine'
+        ? (b.myRating?.score ?? -1)
+        : (b.myRating?.score ?? b.avgScore ?? -1);
       return bScore - aScore;
     }
-    if (sort === 'highest') return (b.avgScore ?? -1) - (a.avgScore ?? -1);
-    if (sort === 'lowest') return (a.avgScore ?? 999) - (b.avgScore ?? 999);
+    if (sort === 'highest') {
+      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? -1) : (a.avgScore ?? -1);
+      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? -1) : (b.avgScore ?? -1);
+      return bScore - aScore;
+    }
+    if (sort === 'lowest') {
+      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? 999) : (a.avgScore ?? 999);
+      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? 999) : (b.avgScore ?? 999);
+      return aScore - bScore;
+    }
     if (sort === 'name') return a.name.localeCompare(b.name);
     if (sort === 'oldest') return a.createdAt.localeCompare(b.createdAt);
     return b.createdAt.localeCompare(a.createdAt);
@@ -348,13 +380,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
               <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
             </div>
-            {topThree.length > 0 ? (
+            {activeTopThree.length > 0 ? (
               <>
                 <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
-                  {topThree[0].avgScore?.toFixed(1)}
+                  {scoreView === 'mine'
+                    ? activeTopThree[0].myRating?.score.toFixed(1)
+                    : activeTopThree[0].avgScore?.toFixed(1)}
                 </span>
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                  {topThree[0].name}
+                  {activeTopThree[0].name}
                 </span>
               </>
             ) : (
@@ -371,12 +405,40 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
             </div>
             <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
-              {overallAvg !== null ? overallAvg.toFixed(1) : '—'}
+              {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
             </span>
             <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-              {ratedSodas.length} rated
+              {(scoreView === 'mine' ? myRatedSodas : ratedSodas).length} rated
             </span>
           </div>
+        </div>
+      )}
+
+      {/* Group / Mine score toggle — only when multiple people have rated */}
+      {!loading && showScoreToggle && (
+        <div className="flex mb-3 border border-gray-300 dark:border-gray-600">
+          <button
+            type="button"
+            onClick={() => setScoreView('group')}
+            className={`flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              scoreView === 'group'
+                ? 'bg-gray-900 dark:bg-gray-100 text-gray-50 dark:text-gray-900'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            Group
+          </button>
+          <button
+            type="button"
+            onClick={() => setScoreView('mine')}
+            className={`flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-300 dark:border-gray-600 ${
+              scoreView === 'mine'
+                ? 'bg-gray-900 dark:bg-gray-100 text-gray-50 dark:text-gray-900'
+                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            Mine
+          </button>
         </div>
       )}
 
@@ -502,7 +564,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {sorted.map((soda) => (
-            <SodaCard key={soda.id} soda={soda} stashId={stashId!} />
+            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} />
           ))}
         </div>
       )}
