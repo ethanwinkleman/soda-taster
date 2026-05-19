@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera } from 'lucide-react';
+import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
@@ -22,6 +22,18 @@ export function SodaDetailPage() {
     useStashSodas(stashId, user?.id, displayName);
 
   const soda = sodas.find((s) => s.id === sodaId);
+
+  const isControversial = (() => {
+    const candidates = sodas.filter((s) => s.ratings.length >= 2);
+    if (!candidates.length) return false;
+    const variance = (s: typeof candidates[0]) => {
+      const scores = s.ratings.map((r) => r.score);
+      const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
+    };
+    const best = candidates.reduce((a, b) => variance(a) >= variance(b) ? a : b);
+    return variance(best) > 0 && best.id === sodaId;
+  })();
 
   const imgInputRef = useRef<HTMLInputElement>(null);
 
@@ -222,6 +234,12 @@ export function SodaDetailPage() {
                 <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 italic break-words">
                   {soda.brand}
                 </p>
+              )}
+              {isControversial && (
+                <span className="inline-flex items-center gap-1 mt-1.5 font-sans text-[10px] font-bold uppercase tracking-wider text-orange-500 dark:text-orange-400">
+                  <Flame size={10} />
+                  Most Controversial
+                </span>
               )}
             </>
           )}

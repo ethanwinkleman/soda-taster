@@ -182,6 +182,19 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))
     .slice(0, 3);
 
+  // Most controversial: soda with highest rating variance (requires 2+ ratings, variance > 0)
+  const controversialSodaId = (() => {
+    const candidates = sodas.filter((s) => s.ratings.length >= 2);
+    if (!candidates.length) return null;
+    const variance = (s: typeof candidates[0]) => {
+      const scores = s.ratings.map((r) => r.score);
+      const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
+    };
+    const best = candidates.reduce((a, b) => variance(a) >= variance(b) ? a : b);
+    return variance(best) > 0 ? best.id : null;
+  })();
+
   // Mine metrics
   const myRatedSodas = sodas.filter((s) => s.myRating !== null);
   const myOverallAvg = myRatedSodas.length
@@ -564,7 +577,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {sorted.map((soda) => (
-            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} />
+            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} isControversial={soda.id === controversialSodaId} />
           ))}
         </div>
       )}

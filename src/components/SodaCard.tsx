@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Refrigerator, CupSoda, MessageSquare } from 'lucide-react';
+import { Refrigerator, CupSoda, MessageSquare, Flame } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { ScoreBadge } from './ScoreBadge';
 
@@ -7,9 +7,10 @@ interface Props {
   soda: Soda;
   stashId: string;
   scoreView?: 'group' | 'mine';
+  isControversial?: boolean;
 }
 
-export function SodaCard({ soda, stashId, scoreView = 'group' }: Props) {
+export function SodaCard({ soda, stashId, scoreView = 'group', isControversial = false }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -56,6 +57,15 @@ export function SodaCard({ soda, stashId, scoreView = 'group' }: Props) {
               <span className="flex items-center gap-0.5">
                 <MessageSquare size={9} />
                 {soda.commentCount}
+              </span>
+            </>
+          )}
+          {isControversial && (
+            <>
+              <span className="text-gray-300 dark:text-gray-600">·</span>
+              <span className="flex items-center gap-0.5 text-orange-500 dark:text-orange-400 font-bold">
+                <Flame size={9} />
+                Most Controversial
               </span>
             </>
           )}
