@@ -182,6 +182,19 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     .sort((a, b) => (b.avgScore ?? 0) - (a.avgScore ?? 0))
     .slice(0, 3);
 
+  // Most controversial: soda with highest rating variance (requires 2+ ratings, variance > 0)
+  const controversialSodaId = (() => {
+    const candidates = sodas.filter((s) => s.ratings.length >= 2);
+    if (!candidates.length) return null;
+    const variance = (s: typeof candidates[0]) => {
+      const scores = s.ratings.map((r) => r.score);
+      const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+      return scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
+    };
+    const best = candidates.reduce((a, b) => variance(a) >= variance(b) ? a : b);
+    return variance(best) > 0 ? best.id : null;
+  })();
+
   // Mine metrics
   const myRatedSodas = sodas.filter((s) => s.myRating !== null);
   const myOverallAvg = myRatedSodas.length
@@ -378,7 +391,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
             </div>
             {activeTopThree.length > 0 ? (
               <>
@@ -402,7 +415,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5 mb-1">
               <Star size={12} className="text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
             </div>
             <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
               {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
@@ -564,7 +577,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       ) : (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
           {sorted.map((soda) => (
-            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} />
+            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} isControversial={soda.id === controversialSodaId} />
           ))}
         </div>
       )}
@@ -822,7 +835,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 <X size={16} />
               </button>
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto pb-10">
               {fridgeSodas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Refrigerator size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
@@ -935,7 +948,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 <X size={16} />
               </button>
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto pb-10">
               {topThree.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Trophy size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
