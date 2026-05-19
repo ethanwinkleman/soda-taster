@@ -49,7 +49,7 @@ export function SodaCard({ soda, stashId, scoreView = 'group' }: Props) {
           )}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 font-sans uppercase tracking-wide">
-          <span>{soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}</span>
+          <span>{scoreView === 'mine' ? (soda.myRating ? 'My rating' : 'Not rated') : `${soda.ratings.length} rating${soda.ratings.length !== 1 ? 's' : ''}`}</span>
           {soda.commentCount > 0 && (
             <>
               <span className="text-gray-300 dark:text-gray-600">·</span>

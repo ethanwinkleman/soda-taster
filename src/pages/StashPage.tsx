@@ -378,7 +378,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Top Rated</span>
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
             </div>
             {activeTopThree.length > 0 ? (
               <>
@@ -402,7 +402,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
             <div className="flex items-center gap-1.5 mb-1">
               <Star size={12} className="text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">Avg Score</span>
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
             </div>
             <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
               {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
