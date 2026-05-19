@@ -822,7 +822,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 <X size={16} />
               </button>
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto pb-10">
               {fridgeSodas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Refrigerator size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
@@ -935,7 +935,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 <X size={16} />
               </button>
             </div>
-            <div className="overflow-y-auto">
+            <div className="overflow-y-auto pb-10">
               {topThree.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Trophy size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
