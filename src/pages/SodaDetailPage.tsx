@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame } from 'lucide-react';
+import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
+import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
 
 export function SodaDetailPage() {
   const { id: stashId, sodaId } = useParams<{ id: string; sodaId: string }>();
@@ -21,7 +23,22 @@ export function SodaDetailPage() {
   const { sodas, loading, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating } =
     useStashSodas(stashId, user?.id, displayName);
 
-  const soda = sodas.find((s) => s.id === sodaId);
+  const sodaIndex = sodas.findIndex((s) => s.id === sodaId);
+  const soda = sodaIndex >= 0 ? sodas[sodaIndex] : undefined;
+  const prevSoda = sodaIndex > 0 ? sodas[sodaIndex - 1] : null;
+  const nextSoda = sodaIndex >= 0 && sodaIndex < sodas.length - 1 ? sodas[sodaIndex + 1] : null;
+
+  function handleSwipeEnd(_: unknown, info: PanInfo) {
+    const past = Math.abs(info.offset.x) > 90 || Math.abs(info.velocity.x) > 500;
+    if (!past) return;
+    if (info.offset.x < 0 && nextSoda) {
+      hapticTap();
+      navigate(`/stash/${stashId}/soda/${nextSoda.id}`);
+    } else if (info.offset.x > 0 && prevSoda) {
+      hapticTap();
+      navigate(`/stash/${stashId}/soda/${prevSoda.id}`);
+    }
+  }
 
   const isControversial = (() => {
     const candidates = sodas.filter((s) => s.ratings.length >= 2);
@@ -77,10 +94,12 @@ export function SodaDetailPage() {
   async function handleSaveRating() {
     if (!soda || !ratingVal) return;
     const isUpdate = !!soda.myRating;
+    hapticSuccess();
     try {
       await saveRating(soda.id, ratingVal, displayName, noteVal);
       toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
     } catch {
+      hapticError();
       toast.error('Failed to save rating.');
     }
   }
@@ -88,6 +107,7 @@ export function SodaDetailPage() {
   async function handleDeleteRating() {
     if (!soda?.myRating) return;
     const { id: ratingId, score: prevScore, notes: prevNotes } = soda.myRating;
+    hapticMedium();
     setRatingVal(0);
     setNoteVal('');
     try {
@@ -96,18 +116,21 @@ export function SodaDetailPage() {
     } catch {
       setRatingVal(prevScore);
       setNoteVal(prevNotes ?? '');
+      hapticError();
       toast.error('Failed to retract rating.');
     }
   }
 
   async function handleFridgeToggle() {
     if (!soda) return;
+    hapticMedium();
     const newInFridge = !soda.inFridge;
     await setFridgeStatus(soda.id, newInFridge, newInFridge ? Math.max(soda.quantity, 1) : 0);
   }
 
   async function handleQtyChange(delta: number) {
     if (!soda) return;
+    hapticTap();
     const newQty = Math.max(0, soda.quantity + delta);
     await setFridgeStatus(soda.id, soda.inFridge, newQty);
   }
@@ -195,7 +218,14 @@ export function SodaDetailPage() {
   const ratingChanged = ratingVal !== (soda.myRating?.score ?? 0) || noteVal.trim() !== (soda.myRating?.notes ?? '');
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
+    <motion.div
+      className="max-w-md mx-auto px-4 py-8"
+      drag="x"
+      dragDirectionLock
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.15}
+      onDragEnd={handleSwipeEnd}
+    >
 
       {/* Article header */}
       <div className="flex items-start gap-2 mb-6">
@@ -227,9 +257,12 @@ export function SodaDetailPage() {
             </div>
           ) : (
             <>
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight break-words">
+              <motion.h1
+                layoutId={`soda-${soda.id}-name`}
+                className="font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight break-words"
+              >
                 {soda.name}
-              </h1>
+              </motion.h1>
               {soda.brand && (
                 <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 italic break-words">
                   {soda.brand}
@@ -288,7 +321,8 @@ export function SodaDetailPage() {
           />
           {soda.imageUrl ? (
             <>
-              <img
+              <motion.img
+                layoutId={`soda-${soda.id}-thumb`}
                 src={soda.imageUrl}
                 alt={soda.name}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -306,16 +340,19 @@ export function SodaDetailPage() {
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={() => imgInputRef.current?.click()}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors border-r border-dashed border-gray-300 dark:border-gray-600"
-            >
-              <Camera size={16} />
-              <span className="text-[9px] font-sans uppercase tracking-wider text-center leading-tight px-1">
-                Add photo
-              </span>
-            </button>
+            <motion.div layoutId={`soda-${soda.id}-thumb`} className="absolute inset-0">
+              <button
+                type="button"
+                onClick={() => imgInputRef.current?.click()}
+                className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 transition-colors border-r border-dashed border-gray-300 dark:border-gray-600"
+              >
+                <CupSoda size={20} className="text-gray-300 dark:text-gray-600" />
+                <span className="flex items-center gap-1 text-[9px] font-sans uppercase tracking-wider text-center leading-tight px-1">
+                  <Camera size={10} />
+                  Add photo
+                </span>
+              </button>
+            </motion.div>
           )}
         </div>
 
@@ -324,7 +361,7 @@ export function SodaDetailPage() {
           <AnimatePresence mode="wait">
             {soda.avgScore !== null ? (
               <motion.div
-                key={soda.avgScore}
+                key="rated"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
@@ -334,7 +371,7 @@ export function SodaDetailPage() {
                 <ScoreBadge score={soda.avgScore} size="lg" />
                 <div>
                   <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
-                    {soda.avgScore.toFixed(1)}
+                    <AnimatedNumber value={soda.avgScore} decimals={1} />
                   </p>
                   <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-1">
                     {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
@@ -365,7 +402,7 @@ export function SodaDetailPage() {
         <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
           My Rating
         </p>
-        <StarRating value={ratingVal} onChange={setRatingVal} size="lg" />
+        <StarRating value={ratingVal} onChange={(v) => { hapticTap(); setRatingVal(v); }} size="lg" />
         <textarea
           value={noteVal}
           onChange={(e) => setNoteVal(e.target.value)}
@@ -522,6 +559,6 @@ export function SodaDetailPage() {
         <Trash2 size={13} />
         Remove from Collection
       </button>
-    </div>
+    </motion.div>
   );
 }

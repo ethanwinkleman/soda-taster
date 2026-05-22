@@ -1,6 +1,10 @@
+import { motion } from 'framer-motion';
+import { AnimatedNumber } from './AnimatedNumber';
+
 interface Props {
   score: number;
   size?: 'sm' | 'md' | 'lg';
+  layoutId?: string;
 }
 
 function getSealColor(score: number) {
@@ -11,18 +15,22 @@ function getSealColor(score: number) {
   return                    'bg-red-900     text-red-50     border-red-950';
 }
 
-export function ScoreBadge({ score, size = 'md' }: Props) {
+export function ScoreBadge({ score, size = 'md', layoutId }: Props) {
   const sizeClass =
     size === 'sm' ? 'w-10 h-10 text-xs border-2' :
     size === 'lg' ? 'w-20 h-20 text-2xl border-4' :
                    'w-14 h-14 text-lg border-[3px]';
 
   return (
-    <div
-      className={`${sizeClass} ${getSealColor(score)} rounded-full flex items-center justify-center font-display font-black shrink-0 shadow-md`}
+    <motion.div
+      layoutId={layoutId}
+      initial={{ scale: 0.6, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+      className={`${sizeClass} ${getSealColor(score)} rounded-full flex items-center justify-center font-display font-black shrink-0 shadow-md tabular-nums`}
       title={`Overall score: ${score.toFixed(1)}`}
     >
-      {score.toFixed(1)}
-    </div>
+      <AnimatedNumber value={score} decimals={1} />
+    </motion.div>
   );
 }
