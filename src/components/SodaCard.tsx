@@ -54,13 +54,14 @@ export function SodaCard({
       </div>
 
       <motion.div
+        layoutId={`soda-${soda.id}-card`}
         drag={onToggleFridge ? 'x' : false}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.35}
         onDragStart={() => setDragged(true)}
         onDragEnd={handleDragEnd}
         whileTap={{ scale: 0.985 }}
-        className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-3 p-3 relative"
+        className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 p-3 relative"
         onClick={handleClick}
       >
         {/* Thumbnail */}
@@ -126,7 +127,7 @@ export function SodaCard({
 
         {/* Score seal */}
         {score !== null ? (
-          <ScoreBadge score={score} size="sm" />
+          <ScoreBadge score={score} size="sm" layoutId={`soda-${soda.id}-score`} />
         ) : (
           <span className="text-xs text-gray-300 dark:text-gray-600 shrink-0 font-sans">—</span>
         )}
