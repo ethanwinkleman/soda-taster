@@ -12,8 +12,13 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/__/, /^\/api/],
+        // Never fall back to index.html for asset / API requests — that's what
+        // caused "text/html is not a valid JavaScript MIME type" when a stale
+        // client requested a chunk filename that no longer exists.
+        navigateFallbackDenylist: [/^\/__/, /^\/api/, /^\/assets\//, /\.\w+$/],
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         name: 'Soda Taster',

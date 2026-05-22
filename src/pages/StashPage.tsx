@@ -171,6 +171,43 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     toast.success('Export downloaded.');
   }
 
+  async function copyAsJson() {
+    if (!stash || sodas.length === 0) return;
+
+    // Collect unique rater display names for the summary
+    const raterNames = [...new Set(
+      sodas.flatMap((s) => s.ratings.map((r) => r.displayName)).filter(Boolean)
+    )];
+
+    const payload = {
+      collection: stash.name,
+      exported: new Date().toISOString().slice(0, 10),
+      summary: {
+        totalSodas: sodas.length,
+        ratedSodas: sodas.filter((s) => s.avgScore !== null).length,
+        overallAvgScore: overallAvg,
+        raters: raterNames,
+      },
+      sodas: [...sodas]
+        .sort((a, b) => (b.avgScore ?? -1) - (a.avgScore ?? -1))
+        .map((s) => ({
+          name: s.name,
+          ...(s.brand ? { brand: s.brand } : {}),
+          avgScore: s.avgScore,
+          ratings: s.ratings.map((r) => ({
+            rater: r.displayName,
+            score: r.score,
+            ...(r.notes ? { notes: r.notes } : {}),
+          })),
+          ...(s.inFridge ? { inStock: true, quantity: s.quantity } : {}),
+          ...(s.commentCount > 0 ? { commentCount: s.commentCount } : {}),
+        })),
+    };
+
+    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    toast.success('Copied — paste into any AI to analyse your collection.');
+  }
+
   const fridgeSodas = sodas.filter((s) => s.inFridge);
   const totalUnits = fridgeSodas.reduce((sum, s) => sum + s.quantity, 0);
 
@@ -324,6 +361,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                           >
                             <Download size={14} />
                             Export CSV
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); copyAsJson(); }}
+                            disabled={sodas.length === 0}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            <Copy size={14} />
+                            Copy as JSON for AI
                           </button>
                           <div className="border-t border-gray-200 dark:border-gray-700" />
                           <button

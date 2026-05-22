@@ -8,7 +8,6 @@ import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
-import { AnimatedNumber } from '../components/AnimatedNumber';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
@@ -359,38 +358,79 @@ export function SodaDetailPage() {
           )}
         </div>
 
-        {/* Score column */}
-        <div className="flex-1 p-4 flex flex-col justify-center gap-0.5 min-h-[11rem]">
+        {/* Score column — Average (group) on the left, Mine on the right */}
+        <div className="flex-1 min-h-[11rem] grid grid-cols-2 divide-x divide-gray-200 dark:divide-gray-700">
           <AnimatePresence mode="wait">
             {soda.avgScore !== null ? (
               <motion.div
-                key="rated"
+                key="avg-rated"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.25 }}
-                className="flex items-center gap-3"
+                className="p-4 flex flex-col justify-center items-center gap-2 text-center"
               >
+                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+                  Average
+                </span>
                 <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} />
-                <div>
-                  <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
-                    <AnimatedNumber value={soda.avgScore} decimals={1} />
-                  </p>
-                  <p className="font-sans text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-1">
-                    {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                  {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
+                </span>
               </motion.div>
             ) : (
-              <motion.p
-                key="unrated"
+              <motion.div
+                key="avg-unrated"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="font-sans text-xs italic text-gray-400 dark:text-gray-500"
+                className="p-4 flex flex-col justify-center items-center gap-2 text-center"
               >
-                Not yet rated
-              </motion.p>
+                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+                  Average
+                </span>
+                <span className="font-display text-4xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
+                  Not yet rated
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence mode="wait">
+            {soda.myRating ? (
+              <motion.div
+                key="mine-rated"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.25 }}
+                className="p-4 flex flex-col justify-center items-center gap-2 text-center"
+              >
+                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+                  Mine
+                </span>
+                <ScoreBadge score={soda.myRating.score} size="lg" />
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                  Filed
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="mine-unrated"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="p-4 flex flex-col justify-center items-center gap-2 text-center"
+              >
+                <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+                  Mine
+                </span>
+                <span className="font-display text-4xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
+                  Rate below
+                </span>
+              </motion.div>
             )}
           </AnimatePresence>
         </div>
