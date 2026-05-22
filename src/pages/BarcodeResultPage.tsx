@@ -120,6 +120,7 @@ export function BarcodeResultPage() {
 
     if (sodaId && barcode) {
       sessionStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+      localStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
     }
 
     navigate(`/stash/${stashId}`);
