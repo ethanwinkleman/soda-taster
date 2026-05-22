@@ -36,6 +36,15 @@ window.addEventListener('unhandledrejection', (e) => {
   if (isChunkLoadError(msg)) reloadOnce();
 });
 
+// When a new service worker takes control (skipWaiting + clientsClaim), reload
+// the page so the browser fetches the new JS chunk filenames. This makes every
+// deployment apply silently — no manual reload or force-quit needed.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
