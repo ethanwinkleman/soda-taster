@@ -24,8 +24,8 @@ export function ScoreBadge({ score, size = 'md', layoutId }: Props) {
   return (
     <motion.div
       layoutId={layoutId}
-      initial={{ scale: 0.6, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
+      initial={layoutId ? false : { scale: 0.6, opacity: 0 }}
+      animate={layoutId ? undefined : { scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 380, damping: 22 }}
       className={`${sizeClass} ${getSealColor(score)} rounded-full flex items-center justify-center font-display font-black shrink-0 shadow-md tabular-nums`}
       title={`Overall score: ${score.toFixed(1)}`}
