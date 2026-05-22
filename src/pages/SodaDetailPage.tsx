@@ -309,7 +309,10 @@ export function SodaDetailPage() {
       </div>
 
       {/* Hero — image (left ⅓) + avg score (right ⅔) */}
-      <div className="mb-5 flex border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-800">
+      <motion.div
+        layoutId={`soda-${soda.id}-card`}
+        className="mb-5 flex border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-800"
+      >
         {/* Image column */}
         <div className="w-1/3 shrink-0 relative min-h-[11rem] self-stretch">
           <input
@@ -368,7 +371,7 @@ export function SodaDetailPage() {
                 transition={{ duration: 0.25 }}
                 className="flex items-center gap-3"
               >
-                <ScoreBadge score={soda.avgScore} size="lg" />
+                <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} />
                 <div>
                   <p className="font-display text-3xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
                     <AnimatedNumber value={soda.avgScore} decimals={1} />
@@ -391,7 +394,7 @@ export function SodaDetailPage() {
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
 
       {imageError && (
         <p className="mb-4 -mt-3 text-xs font-sans text-red-600 dark:text-red-400 italic">{imageError}</p>
