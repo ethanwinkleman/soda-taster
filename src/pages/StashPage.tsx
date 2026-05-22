@@ -17,6 +17,7 @@ import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
+import { hapticTap, hapticMedium } from '../lib/haptics';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
   { label: 'None', value: null },
@@ -432,25 +433,39 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         <div className="flex mb-3 border border-gray-300 dark:border-gray-600">
           <button
             type="button"
-            onClick={() => setScoreView('group')}
-            className={`flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
+            onClick={() => { hapticTap(); setScoreView('group'); }}
+            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
               scoreView === 'group'
-                ? 'bg-gray-900 dark:bg-gray-100 text-gray-50 dark:text-gray-900'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'text-gray-50 dark:text-gray-900'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            Group
+            {scoreView === 'group' && (
+              <motion.span
+                layoutId="scoreview-pill"
+                className="absolute inset-0 bg-gray-900 dark:bg-gray-100"
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span className="relative">Group</span>
           </button>
           <button
             type="button"
-            onClick={() => setScoreView('mine')}
-            className={`flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-300 dark:border-gray-600 ${
+            onClick={() => { hapticTap(); setScoreView('mine'); }}
+            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-300 dark:border-gray-600 ${
               scoreView === 'mine'
-                ? 'bg-gray-900 dark:bg-gray-100 text-gray-50 dark:text-gray-900'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'text-gray-50 dark:text-gray-900'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
-            Mine
+            {scoreView === 'mine' && (
+              <motion.span
+                layoutId="scoreview-pill"
+                className="absolute inset-0 bg-gray-900 dark:bg-gray-100"
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span className="relative">Mine</span>
           </button>
         </div>
       )}
@@ -575,11 +590,23 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           )}
         </div>
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+        <motion.div
+          className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600"
+          initial="hidden"
+          animate="visible"
+          variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
+        >
           {sorted.map((soda) => (
-            <SodaCard key={soda.id} soda={soda} stashId={stashId!} scoreView={scoreView} isControversial={soda.id === controversialSodaId} />
+            <SodaCard
+              key={soda.id}
+              soda={soda}
+              stashId={stashId!}
+              scoreView={scoreView}
+              isControversial={soda.id === controversialSodaId}
+              onToggleFridge={(s) => setFridgeStatus(s.id, !s.inFridge, !s.inFridge ? Math.max(s.quantity, 1) : 0)}
+            />
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Settings modal */}
@@ -872,7 +899,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       <div className="flex items-center shrink-0">
                         <button
                           type="button"
-                          onClick={() => setFridgeStatus(soda.id, soda.quantity > 1, soda.quantity > 1 ? soda.quantity - 1 : 0)}
+                          onClick={() => { hapticTap(); setFridgeStatus(soda.id, soda.quantity > 1, soda.quantity > 1 ? soda.quantity - 1 : 0); }}
                           className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Decrease"
                         >
@@ -883,7 +910,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         </span>
                         <button
                           type="button"
-                          onClick={() => setFridgeStatus(soda.id, true, soda.quantity + 1)}
+                          onClick={() => { hapticTap(); setFridgeStatus(soda.id, true, soda.quantity + 1); }}
                           className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Increase"
                         >
@@ -892,7 +919,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         {/* Remove from stock */}
                         <button
                           type="button"
-                          onClick={() => setFridgeStatus(soda.id, false, 0)}
+                          onClick={() => { hapticMedium(); setFridgeStatus(soda.id, false, 0); }}
                           className="ml-2.5 w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                           aria-label="Remove from stock"
                           title="Remove from stock"
