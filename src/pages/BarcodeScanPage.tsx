@@ -1,32 +1,36 @@
 import { useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast as sonnerToast } from 'sonner';
 import { ChevronLeft, Keyboard, AlertCircle, Settings, Loader2 } from 'lucide-react';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { lookupBarcode } from '../lib/barcodeApi';
 import type { BarcodeResult } from '../lib/barcodeApi';
+import { useAuth } from '../contexts/AuthContext';
+import { useStashSodas } from '../hooks/useStashSodas';
+import { hapticMedium } from '../lib/haptics';
+
+const normalize = (s: string) => s.toLowerCase().trim().replace(/\s+/g, ' ');
 
 export function BarcodeScanPage() {
   const { id: stashId } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { sodas } = useStashSodas(stashId, user?.id);
 
   const [scanActive, setScanActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualValue, setManualValue] = useState('');
   const [manualBusy, setManualBusy] = useState(false);
-  const [toast, setToast] = useState<{ message: string; sodaId: string } | null>(null);
 
   const processingRef = useRef(false);
 
-  const handleDuplicate = useCallback((sodaId: string) => {
-    setToast({ message: 'Already in your collection', sodaId });
-    setScanActive(false);
-    setTimeout(() => {
-      setToast(null);
-      setScanActive(true);
-    }, 4000);
-  }, []);
+  const openExisting = useCallback((sodaId: string) => {
+    hapticMedium();
+    sonnerToast.success('Already in your collection.');
+    navigate(`/stash/${stashId}/soda/${sodaId}`);
+  }, [navigate, stashId]);
 
   const navigateToResult = useCallback((result: BarcodeResult) => {
     navigate(`/stash/${stashId}/scan/result`, { state: result });
@@ -38,24 +42,41 @@ export function BarcodeScanPage() {
     setScanActive(false);
     setLoading(true);
 
-    // Duplicate check (session-scoped)
-    const existingSodaId = sessionStorage.getItem(`scanned_${stashId}_${barcode}`);
-    if (existingSodaId) {
+    // 1) Cached barcode → soda mapping (persistent localStorage, plus
+    //    legacy sessionStorage from older versions). Only honor it if the
+    //    soda still exists in the current stash.
+    const cacheKey = `scanned_${stashId}_${barcode}`;
+    const cachedId = localStorage.getItem(cacheKey) ?? sessionStorage.getItem(cacheKey);
+    if (cachedId && sodas.some((s) => s.id === cachedId)) {
       setLoading(false);
       processingRef.current = false;
-      handleDuplicate(existingSodaId);
+      openExisting(cachedId);
       return;
     }
 
     try {
       const result = await lookupBarcode(barcode);
+
+      // 2) Name-match fallback — catches sodas added by other members or
+      //    on other devices, where this device has no cache entry.
+      const matched = sodas.find((s) =>
+        result.candidates.some((c) => c.name && normalize(c.name) === normalize(s.name)),
+      );
+      if (matched) {
+        localStorage.setItem(cacheKey, matched.id);
+        setLoading(false);
+        processingRef.current = false;
+        openExisting(matched.id);
+        return;
+      }
+
       navigateToResult(result);
     } catch {
       setLoading(false);
       setScanActive(true);
       processingRef.current = false;
     }
-  }, [stashId, handleDuplicate, navigateToResult]);
+  }, [stashId, sodas, openExisting, navigateToResult]);
 
   const { videoRef, status, errorType, showHint, showProminentManual } = useBarcodeScanner(
     processBarcode,
@@ -270,27 +291,6 @@ export function BarcodeScanPage() {
         )}
       </AnimatePresence>
 
-      {/* Duplicate toast */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            className="fixed bottom-24 left-4 right-4 z-50 bg-gray-800 border border-gray-600 px-4 py-3 flex items-center justify-between gap-3 shadow-xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="font-sans text-sm text-white">{toast.message}</p>
-            <button
-              type="button"
-              onClick={() => navigate(`/stash/${stashId}/soda/${toast.sodaId}`)}
-              className="shrink-0 font-sans text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 transition-colors"
-            >
-              View
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
