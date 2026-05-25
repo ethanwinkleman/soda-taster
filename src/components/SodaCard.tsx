@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { Refrigerator, CupSoda, MessageSquare, Flame } from 'lucide-react';
 import type { Soda } from '../types/stash';
-import { ScoreBadge } from './ScoreBadge';
 import { hapticTap } from '../lib/haptics';
 
 interface Props {
@@ -46,14 +45,14 @@ export function SodaCard({
             layoutId={`soda-${soda.id}-thumb`}
             src={soda.imageUrl}
             alt=""
-            className="w-12 h-12 object-cover shrink-0 border border-gray-200 dark:border-gray-600"
+            className="w-16 h-16 object-cover shrink-0 border border-gray-200 dark:border-gray-600"
           />
         ) : (
           <motion.div
             layoutId={`soda-${soda.id}-thumb`}
-            className="w-12 h-12 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-700"
+            className="w-16 h-16 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-700"
           >
-            <CupSoda size={20} className="text-gray-400 dark:text-gray-500" />
+            <CupSoda size={24} className="text-gray-400 dark:text-gray-500" />
           </motion.div>
         )}
 
@@ -61,7 +60,7 @@ export function SodaCard({
         <div className="flex-1 min-w-0">
           <motion.p
             layoutId={`soda-${soda.id}-name`}
-            className="font-display font-bold text-gray-900 dark:text-gray-100 truncate leading-tight"
+            className="font-display font-bold text-base text-gray-900 dark:text-gray-100 truncate leading-snug"
           >
             {soda.name}
           </motion.p>
@@ -101,12 +100,10 @@ export function SodaCard({
           </div>
         </div>
 
-        {/* Score seal */}
-        {score !== null ? (
-          <ScoreBadge score={score} size="sm" layoutId={`soda-${soda.id}-score`} />
-        ) : (
-          <span className="text-xs text-gray-300 dark:text-gray-600 shrink-0 font-sans">—</span>
-        )}
+        {/* Score */}
+        <span className="shrink-0 w-9 text-right font-display font-black text-lg tabular-nums text-gray-800 dark:text-gray-200">
+          {score !== null ? score.toFixed(1) : <span className="text-gray-300 dark:text-gray-600 text-sm">—</span>}
+        </span>
       </motion.div>
     </motion.div>
   );

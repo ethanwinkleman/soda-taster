@@ -7,14 +7,6 @@ interface Props {
   layoutId?: string;
 }
 
-function getSealColor(score: number) {
-  if (score >= 4.25) return 'bg-emerald-800 text-emerald-50 border-emerald-900';
-  if (score >= 3.5)  return 'bg-lime-700    text-lime-50    border-lime-800';
-  if (score >= 2.75) return 'bg-amber-700   text-amber-50   border-amber-800';
-  if (score >= 2)    return 'bg-orange-800  text-orange-50  border-orange-900';
-  return                    'bg-red-900     text-red-50     border-red-950';
-}
-
 export function ScoreBadge({ score, size = 'md', layoutId }: Props) {
   const sizeClass =
     size === 'sm' ? 'w-10 h-10 text-xs border-2' :
@@ -27,7 +19,7 @@ export function ScoreBadge({ score, size = 'md', layoutId }: Props) {
       initial={layoutId ? false : { scale: 0.6, opacity: 0 }}
       animate={layoutId ? undefined : { scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 380, damping: 22 }}
-      className={`${sizeClass} ${getSealColor(score)} rounded-full flex items-center justify-center font-display font-black shrink-0 shadow-md tabular-nums`}
+      className={`${sizeClass} bg-gray-900 text-gray-100 border-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:border-gray-300 rounded-full flex items-center justify-center font-display font-black shrink-0 shadow-md tabular-nums`}
       title={`Overall score: ${score.toFixed(1)}`}
     >
       <AnimatedNumber value={score} decimals={1} />
