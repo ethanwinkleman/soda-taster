@@ -217,6 +217,7 @@ export function SodaDetailPage() {
   const ratingChanged = ratingVal !== (soda.myRating?.score ?? 0) || noteVal.trim() !== (soda.myRating?.notes ?? '');
 
   return (
+    <div className="overflow-x-hidden">
     <motion.div
       className="max-w-md mx-auto px-4 py-8"
       drag="x"
@@ -603,5 +604,6 @@ export function SodaDetailPage() {
         Remove from Collection
       </button>
     </motion.div>
+    </div>
   );
 }
