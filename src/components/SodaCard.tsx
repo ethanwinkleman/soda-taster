@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, type PanInfo, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { Refrigerator, CupSoda, MessageSquare, Flame } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { ScoreBadge } from './ScoreBadge';
-import { hapticTap, hapticMedium } from '../lib/haptics';
+import { hapticTap } from '../lib/haptics';
 
 interface Props {
   soda: Soda;
@@ -24,44 +23,21 @@ export function SodaCard({
   stashId,
   scoreView = 'group',
   isControversial = false,
-  onToggleFridge,
 }: Props) {
   const navigate = useNavigate();
-  const [dragged, setDragged] = useState(false);
   const score = scoreView === 'mine' ? (soda.myRating?.score ?? null) : soda.avgScore;
 
   function handleClick() {
-    if (dragged) return;
     hapticTap();
     navigate(`/stash/${stashId}/soda/${soda.id}`);
   }
 
-  function handleDragEnd(_: unknown, info: PanInfo) {
-    const triggered = Math.abs(info.offset.x) > 70 || Math.abs(info.velocity.x) > 500;
-    if (triggered && onToggleFridge) {
-      hapticMedium();
-      onToggleFridge(soda);
-    }
-    setTimeout(() => setDragged(false), 0);
-  }
-
   return (
-    <motion.div variants={cardVariants} className="relative bg-gray-100 dark:bg-gray-900 overflow-hidden">
-      {/* Swipe-reveal background — refrigerator icon on both sides */}
-      <div className="absolute inset-0 flex items-center justify-between px-6 pointer-events-none text-gray-400 dark:text-gray-500">
-        <Refrigerator size={18} />
-        <Refrigerator size={18} />
-      </div>
-
+    <motion.div variants={cardVariants}>
       <motion.div
         layoutId={`soda-${soda.id}-card`}
-        drag={onToggleFridge ? 'x' : false}
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.35}
-        onDragStart={() => setDragged(true)}
-        onDragEnd={handleDragEnd}
         whileTap={{ scale: 0.985 }}
-        className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 p-3 relative"
+        className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 p-3"
         onClick={handleClick}
       >
         {/* Thumbnail */}
