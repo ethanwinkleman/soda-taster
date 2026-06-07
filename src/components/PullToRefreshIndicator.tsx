@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { CupSoda } from 'lucide-react';
 import { PTR_VISUAL_MAX } from '../hooks/usePullToRefresh';
 
 interface Props {
@@ -8,6 +8,12 @@ interface Props {
 }
 
 const TRIGGER_DISTANCE = PTR_VISUAL_MAX * 0.8;
+
+const bubbles = [
+  { dx: -7, delay: 0 },
+  { dx: 0, delay: 0.15 },
+  { dx: 7, delay: 0.3 },
+];
 
 export function PullToRefreshIndicator({ pullDistance, refreshing }: Props) {
   const height = refreshing ? PTR_VISUAL_MAX : pullDistance;
@@ -23,18 +29,36 @@ export function PullToRefreshIndicator({ pullDistance, refreshing }: Props) {
       }}
       className="flex items-center justify-center"
     >
-      <motion.div
-        animate={{ rotate: refreshing ? 360 : progress * 200 }}
-        transition={
-          refreshing
-            ? { repeat: Infinity, duration: 0.7, ease: 'linear' }
-            : { duration: 0 }
-        }
-        className="text-gray-400 dark:text-gray-500"
-        style={{ opacity: Math.max(0.3, progress) }}
-      >
-        <RotateCcw size={15} strokeWidth={2} />
-      </motion.div>
+      <div className="relative flex items-center justify-center" style={{ opacity: Math.max(0.3, progress) }}>
+        {/* Rising bubbles — only animate while actively refreshing */}
+        {refreshing && bubbles.map((b, i) => (
+          <motion.span
+            key={i}
+            className="absolute w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-500"
+            style={{ left: '50%', marginLeft: b.dx }}
+            initial={{ y: 6, opacity: 0 }}
+            animate={{ y: -16, opacity: [0, 1, 0] }}
+            transition={{ repeat: Infinity, duration: 1.1, delay: b.delay, ease: 'easeOut' }}
+          />
+        ))}
+
+        {/* Soda cup — tilts to "pour" as you pull, gentle bob while refreshing */}
+        <motion.div
+          className="text-gray-400 dark:text-gray-500"
+          animate={
+            refreshing
+              ? { y: [0, -2, 0], rotate: [-12, 12, -12] }
+              : { rotate: progress * -28 }
+          }
+          transition={
+            refreshing
+              ? { repeat: Infinity, duration: 1.2, ease: 'easeInOut' }
+              : { duration: 0 }
+          }
+        >
+          <CupSoda size={16} strokeWidth={2} />
+        </motion.div>
+      </div>
     </div>
   );
 }
