@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/profile';
 import { Logo } from '../components/Logo';
 import { ScoreBadge } from '../components/ScoreBadge';
+import { Skeleton } from '../components/Skeleton';
 
 interface PublicRating {
   soda_id: string;
@@ -61,8 +62,33 @@ export function PublicProfilePage() {
 
       <main className="max-w-xl mx-auto px-4 py-10">
         {status === 'loading' && (
-          <div className="flex justify-center py-24">
-            <div className="w-5 h-5 border-2 border-gray-700 dark:border-gray-300 border-t-transparent rounded-full animate-spin" />
+          <div>
+            {/* Profile header */}
+            <div className="mb-8">
+              <div className="border-t-2 border-gray-800 dark:border-gray-200 mb-2" />
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-14 h-14 rounded-full shrink-0" />
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-36" />
+                  <Skeleton className="h-2.5 w-28" />
+                </div>
+              </div>
+              <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
+            </div>
+
+            {/* Ratings list */}
+            <Skeleton className="h-2.5 w-32 mb-3" />
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 py-3 px-1">
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                  <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
