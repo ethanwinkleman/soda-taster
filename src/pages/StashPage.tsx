@@ -17,6 +17,7 @@ import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
+import { FloatingBubbles } from '../components/FloatingBubbles';
 import { hapticTap, hapticMedium } from '../lib/haptics';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
@@ -606,7 +607,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           ) : (
             <div className="py-14">
               <div className="max-w-xs mx-auto px-6 text-center">
-                <CupSoda size={32} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
+                <div className="relative inline-flex items-center justify-center mb-4">
+                  <CupSoda size={32} className="text-gray-300 dark:text-gray-700" />
+                  <FloatingBubbles size={32} className="absolute inset-0" />
+                </div>
                 <h2 className="font-display text-lg font-black italic text-gray-800 dark:text-gray-200 mb-1.5">
                   Nothing on the record yet.
                 </h2>
