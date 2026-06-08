@@ -69,7 +69,7 @@ export function useStashSodas(
   const queryKey = ['stash-sodas', stashId, userId] as const;
   const uid = useId().replace(/:/g, '');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: () => loadSodas(stashId!, userId!),
     enabled: !!(stashId && userId),
@@ -202,19 +202,32 @@ export function useStashSodas(
 
   async function removeSoda(sodaId: string) {
     const soda = sodas.find((s) => s.id === sodaId);
-    await supabase.from('stash_sodas').delete().eq('id', sodaId);
-    if (soda) {
-      await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_removed', sodaId, sodaName: soda.name });
-    }
+    const previous = queryClient.getQueryData<Soda[]>(queryKey);
     patch((prev) => prev.filter((s) => s.id !== sodaId));
+    try {
+      const { error } = await supabase.from('stash_sodas').delete().eq('id', sodaId);
+      if (error) throw error;
+      if (soda) {
+        await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_removed', sodaId, sodaName: soda.name });
+      }
+      await invalidate();
+    } catch {
+      if (previous) queryClient.setQueryData(queryKey, previous);
+      throw new Error('Failed to remove soda');
+    }
   }
 
   async function setFridgeStatus(sodaId: string, inFridge: boolean, quantity: number) {
-    await supabase
+    const previous = queryClient.getQueryData<Soda[]>(queryKey);
+    patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, inFridge, quantity } : s));
+    const { error } = await supabase
       .from('stash_sodas')
       .update({ in_fridge: inFridge, quantity })
       .eq('id', sodaId);
-    patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, inFridge, quantity } : s));
+    if (error) {
+      if (previous) queryClient.setQueryData(queryKey, previous);
+      throw new Error('Failed to update stock status');
+    }
   }
 
   async function saveRating(sodaId: string, score: number, dn: string, notes?: string) {
@@ -275,6 +288,7 @@ export function useStashSodas(
   return {
     sodas,
     loading: isLoading,
+    error: isError,
     addSoda,
     editSoda,
     removeSoda,

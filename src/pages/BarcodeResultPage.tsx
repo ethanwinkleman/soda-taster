@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft, CupSoda, Check, Pencil, Camera, X, Scan,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import type { BarcodeResult } from '../lib/barcodeApi';
@@ -109,21 +110,26 @@ export function BarcodeResultPage() {
     const finalManufacturer = editedManufacturer.trim() || selected.manufacturer;
     const externalImageUrl = imageFile ? null : (selected.imageUrl ?? null);
 
-    const { sodaId } = await addSoda(
-      finalName,
-      finalManufacturer,
-      null,
-      displayName,
-      imageFile,
-      externalImageUrl,
-    ) ?? {};
-
-    if (sodaId && barcode) {
-      sessionStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
-      localStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+    try {
+      const result = await addSoda(
+        finalName,
+        finalManufacturer,
+        null,
+        displayName,
+        imageFile,
+        externalImageUrl,
+      );
+      if (!result) throw new Error();
+      const { sodaId } = result;
+      if (sodaId && barcode) {
+        sessionStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+        localStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+      }
+      navigate(`/stash/${stashId}`);
+    } catch {
+      toast.error('Failed to save — please try again.');
+      setSaving(false);
     }
-
-    navigate(`/stash/${stashId}`);
   }
 
   // ── NOT FOUND ───────────────────────────────────────────────────────────────

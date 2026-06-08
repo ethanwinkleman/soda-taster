@@ -124,14 +124,24 @@ export function SodaDetailPage() {
     if (!soda) return;
     hapticMedium();
     const newInFridge = !soda.inFridge;
-    await setFridgeStatus(soda.id, newInFridge, newInFridge ? Math.max(soda.quantity, 1) : 0);
+    try {
+      await setFridgeStatus(soda.id, newInFridge, newInFridge ? Math.max(soda.quantity, 1) : 0);
+    } catch {
+      hapticError();
+      toast.error('Failed to update stock status.');
+    }
   }
 
   async function handleQtyChange(delta: number) {
     if (!soda) return;
     hapticTap();
     const newQty = Math.max(0, soda.quantity + delta);
-    await setFridgeStatus(soda.id, soda.inFridge, newQty);
+    try {
+      await setFridgeStatus(soda.id, soda.inFridge, newQty);
+    } catch {
+      hapticError();
+      toast.error('Failed to update quantity.');
+    }
   }
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -155,8 +165,13 @@ export function SodaDetailPage() {
       destructive: true,
     });
     if (!ok) return;
-    await removeSoda(soda.id);
-    navigate(`/stash/${stashId}`);
+    try {
+      await removeSoda(soda.id);
+      navigate(`/stash/${stashId}`);
+    } catch {
+      hapticError();
+      toast.error('Failed to remove soda.');
+    }
   }
 
   if (loading) {

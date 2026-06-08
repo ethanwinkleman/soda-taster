@@ -94,11 +94,13 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
       body: body.trim(),
       parent_id: parentId ?? null,
     });
-    if (!error) await fetchComments();
+    if (error) throw new Error('Failed to post comment');
+    await fetchComments();
   }, [sodaId, stashId, fetchComments]);
 
   const deleteComment = useCallback(async (commentId: string) => {
-    await supabase.from('soda_comments').delete().eq('id', commentId);
+    const { error } = await supabase.from('soda_comments').delete().eq('id', commentId);
+    if (error) throw new Error('Failed to delete comment');
     await fetchComments();
   }, [fetchComments]);
 
