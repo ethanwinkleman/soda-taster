@@ -19,7 +19,7 @@ export function SodaDetailPage() {
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
   const confirm = useConfirm();
-  const { sodas, loading, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating } =
+  const { sodas, loading, error, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating, refresh } =
     useStashSodas(stashId, user?.id, displayName);
 
   const sodaIndex = sodas.findIndex((s) => s.id === sodaId);
@@ -172,6 +172,23 @@ export function SodaDetailPage() {
       hapticError();
       toast.error('Failed to remove soda.');
     }
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 text-center">
+        <p className="font-display italic text-gray-500 dark:text-gray-400 mb-4">
+          Failed to load soda.
+        </p>
+        <button
+          type="button"
+          onClick={refresh}
+          className="text-sm font-sans font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline"
+        >
+          Try Again
+        </button>
+      </div>
+    );
   }
 
   if (loading) {
