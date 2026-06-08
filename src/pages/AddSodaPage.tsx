@@ -54,9 +54,15 @@ export function AddSodaPage() {
     e.preventDefault();
     if (!name.trim()) return;
     setSaving(true);
-    await addSoda(name.trim(), brand.trim(), score > 0 ? score : null, displayName, imageFile);
-    toast.success(`"${name.trim()}" added to collection.`);
-    navigate(`/stash/${stashId}`);
+    try {
+      const result = await addSoda(name.trim(), brand.trim(), score > 0 ? score : null, displayName, imageFile);
+      if (!result) throw new Error();
+      toast.success(`"${name.trim()}" added to collection.`);
+      navigate(`/stash/${stashId}`);
+    } catch {
+      toast.error('Failed to save — please try again.');
+      setSaving(false);
+    }
   }
 
   return (

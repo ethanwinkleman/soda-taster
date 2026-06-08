@@ -56,7 +56,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const confirm = useConfirm();
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
-  const { sodas, loading, setFridgeStatus, refresh } = useStashSodas(stashId, user?.id, displayName);
+  const { sodas, loading, error, setFridgeStatus, refresh } = useStashSodas(stashId, user?.id, displayName);
   const { pullDistance, refreshing } = usePullToRefresh(refresh, !!stashId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -292,6 +292,23 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="font-sans italic text-gray-400 dark:text-gray-500">Collection not found.</p>
         <NavLink to="/" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <p className="font-display italic text-gray-500 dark:text-gray-400 mb-4">
+          Failed to load collection.
+        </p>
+        <button
+          type="button"
+          onClick={refresh}
+          className="text-sm font-sans font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 underline"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
