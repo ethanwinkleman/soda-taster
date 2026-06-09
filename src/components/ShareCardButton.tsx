@@ -5,6 +5,7 @@ import html2canvas from 'html2canvas';
 import type { Soda } from '../types/stash';
 import { TastingCard } from './TastingCard';
 import { hapticSuccess, hapticError } from '../lib/haptics';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Props {
   soda: Soda;
@@ -13,6 +14,9 @@ interface Props {
 export function ShareCardButton({ soda }: Props) {
   const [generating, setGenerating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const sharedBy = (user?.user_metadata?.full_name ?? user?.email ?? null) as string | null;
+  const sharedAt = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   async function handleShare() {
     if (!cardRef.current || generating) return;
@@ -67,7 +71,7 @@ export function ShareCardButton({ soda }: Props) {
     <>
       {createPortal(
         <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
-          <TastingCard soda={soda} cardRef={cardRef} />
+          <TastingCard soda={soda} cardRef={cardRef} sharedBy={sharedBy} sharedAt={sharedAt} />
         </div>,
         document.body,
       )}

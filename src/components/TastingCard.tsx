@@ -3,6 +3,8 @@ import type { Soda } from '../types/stash';
 interface Props {
   soda: Soda;
   cardRef: React.RefObject<HTMLDivElement | null>;
+  sharedBy?: string | null;
+  sharedAt?: string | null;
 }
 
 const CARD_W = 600;
@@ -14,7 +16,7 @@ const gold = '#c4a96a';
 const muted = '#7a6548';
 const rule = '#2e1f10';
 
-export function TastingCard({ soda, cardRef }: Props) {
+export function TastingCard({ soda, cardRef, sharedBy, sharedAt }: Props) {
   const topNote = soda.ratings.find((r) => r.notes)?.notes ?? null;
   const hasImage = !!soda.imageUrl;
   const imgH = hasImage ? 280 : 0;
@@ -160,14 +162,27 @@ export function TastingCard({ soda, cardRef }: Props) {
           paddingTop: 16,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
-          <div style={{ width: 24, height: 1, background: gold }} />
+          <div style={{
+            fontFamily: "'Libre Baskerville', Georgia, serif",
+            fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: muted,
+            flex: 1,
+          }}>
+            {sharedBy ? `Shared by ${sharedBy}` : ''}
+          </div>
           <div style={{
             fontFamily: "'Libre Baskerville', Georgia, serif",
             fontSize: 9, letterSpacing: '0.35em', textTransform: 'uppercase', color: muted,
+            flexShrink: 0,
           }}>
             Soda Taster
           </div>
-          <div style={{ width: 24, height: 1, background: gold }} />
+          <div style={{
+            fontFamily: "'Libre Baskerville', Georgia, serif",
+            fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: muted,
+            flex: 1, textAlign: 'right',
+          }}>
+            {sharedAt ?? ''}
+          </div>
         </div>
       </div>
     </div>
