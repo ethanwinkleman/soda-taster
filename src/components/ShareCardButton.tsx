@@ -15,7 +15,8 @@ export function ShareCardButton({ soda }: Props) {
   const [generating, setGenerating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
-  const sharedBy = (user?.user_metadata?.full_name ?? user?.email ?? null) as string | null;
+  const sharedBy = soda.myRating?.displayName
+    ?? (user?.user_metadata?.full_name ?? user?.email ?? null) as string | null;
   const sharedAt = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   async function handleShare() {
