@@ -10,6 +10,7 @@ import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
+import { ShareCardButton } from '../components/ShareCardButton';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
 
 export function SodaDetailPage() {
@@ -625,6 +626,11 @@ export function SodaDetailPage() {
           displayName={displayName}
         />
       )}
+
+      {/* Share tasting card */}
+      <div className="mb-3">
+        <ShareCardButton soda={soda} />
+      </div>
 
       {/* Remove */}
       <button
