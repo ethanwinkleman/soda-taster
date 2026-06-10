@@ -1,18 +1,22 @@
-import { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronLeft, Camera, X, Barcode } from 'lucide-react';
+import { ChevronLeft, Camera, X, Barcode, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { StarRating } from '../components/StarRating';
+
+function normalize(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
 
 export function AddSodaPage() {
   const { id: stashId } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { addSoda } = useStashSodas(stashId, user?.id);
+  const { sodas, addSoda } = useStashSodas(stashId, user?.id);
 
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
@@ -49,6 +53,15 @@ export function AddSodaPage() {
   }
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
+
+  const duplicate = useMemo(() => {
+    const q = normalize(name);
+    if (q.length < 3) return null;
+    return sodas.find((s) => {
+      const n = normalize(s.name);
+      return n === q || n.includes(q) || q.includes(n);
+    }) ?? null;
+  }, [name, sodas]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -115,6 +128,32 @@ export function AddSodaPage() {
             placeholder="e.g. Boylan Cane Cola"
             className="w-full px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 font-sans text-sm"
           />
+          <AnimatePresence>
+          {duplicate && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="mt-2 px-3 py-2.5 border border-amber-500/60 bg-amber-50 dark:bg-amber-950/30 flex items-start gap-2.5">
+                <AlertTriangle size={14} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                <div className="font-sans text-xs text-gray-700 dark:text-gray-300">
+                  <span className="font-bold">"{duplicate.name}"</span>
+                  {duplicate.brand && <span className="text-gray-500 dark:text-gray-400"> ({duplicate.brand})</span>}
+                  {' '}is already in this collection.{' '}
+                  <Link
+                    to={`/stash/${stashId}/soda/${duplicate.id}`}
+                    className="font-bold underline text-gray-900 dark:text-gray-100 hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
+                  >
+                    {duplicate.myRating ? 'View it' : 'Rate it instead'}
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          )}
+          </AnimatePresence>
         </div>
 
         {/* Brand */}
