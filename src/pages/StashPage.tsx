@@ -534,8 +534,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
-      {/* Search + sort + filter — only shown once data has loaded */}
-      {!loading && <div className="flex gap-2 mb-2">
+      {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
+      {!loading && <div className="flex gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-30 bg-gray-50 dark:bg-gray-950 py-2 -my-2">
         <div className="flex-1 relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <input
@@ -568,7 +568,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           }`}
         >
           <ListFilter size={13} />
-          <span className="hidden sm:inline">Restock</span>
+          <span>Restock</span>
         </button>
       </div>}
 
@@ -576,7 +576,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       {!loading && restockFilter && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 border border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-800">
           <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
-            Not in stock · ★ 4+ avg · sorted by your rating
+            Worth buying again — top-rated sodas you're out of
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
             </span>

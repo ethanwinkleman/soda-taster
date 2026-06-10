@@ -104,6 +104,23 @@ export function SodaDetailPage() {
     }
   }
 
+  // Tapping a star saves immediately — no separate submit step
+  async function handleStarTap(v: number) {
+    if (!soda) return;
+    hapticTap();
+    const prevScore = soda.myRating?.score ?? 0;
+    const isUpdate = !!soda.myRating;
+    setRatingVal(v);
+    try {
+      await saveRating(soda.id, v, displayName, noteVal);
+      toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
+    } catch {
+      setRatingVal(prevScore);
+      hapticError();
+      toast.error('Failed to save rating.');
+    }
+  }
+
   async function handleDeleteRating() {
     if (!soda?.myRating) return;
     const { id: ratingId, score: prevScore, notes: prevNotes } = soda.myRating;
@@ -247,7 +264,7 @@ export function SodaDetailPage() {
     );
   }
 
-  const ratingChanged = ratingVal !== (soda.myRating?.score ?? 0) || noteVal.trim() !== (soda.myRating?.notes ?? '');
+  const noteChanged = noteVal.trim() !== (soda.myRating?.notes ?? '');
 
   return (
     <div className="overflow-x-hidden">
@@ -479,7 +496,7 @@ export function SodaDetailPage() {
         <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
           My Rating
         </p>
-        <StarRating value={ratingVal} onChange={(v) => { hapticTap(); setRatingVal(v); }} size="lg" />
+        <StarRating value={ratingVal} onChange={handleStarTap} size="lg" />
         <textarea
           value={noteVal}
           onChange={(e) => setNoteVal(e.target.value)}
@@ -489,13 +506,13 @@ export function SodaDetailPage() {
           className="mt-3 w-full px-3 py-2 font-sans text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none"
         />
         <div className="flex gap-2 mt-2">
-          {ratingChanged && ratingVal > 0 && (
+          {noteChanged && ratingVal > 0 && (
             <button
               type="button"
               onClick={handleSaveRating}
               className="flex-1 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
             >
-              {soda.myRating ? 'Update' : 'Submit'}
+              Save Notes
             </button>
           )}
           {soda.myRating && (
@@ -510,7 +527,7 @@ export function SodaDetailPage() {
         </div>
         {!soda.myRating && ratingVal === 0 && (
           <p className="mt-2 text-[10px] font-sans italic text-gray-400 dark:text-gray-500">
-            Tap a star to record your rating
+            Tap a star — your rating saves instantly
           </p>
         )}
       </div>
