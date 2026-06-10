@@ -70,7 +70,7 @@ function AppRoutes() {
       <PendingJoinHandler onJoined={joinStash} />
       <Sidebar stashes={stashes} loading={stashesLoading} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
-        <MobileHeader />
+        <MobileHeader stashes={stashes} />
         <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain relative">
           <AnimatePresence mode="popLayout" initial={false}>
           <motion.div

@@ -25,17 +25,15 @@ export function JoinStashPage() {
       });
   }, [code]);
 
-  // Already logged in — stash code and let PendingJoinHandler process it
-  useEffect(() => {
-    if (!authLoading && user && code) {
-      localStorage.setItem(PENDING_KEY, code.toUpperCase());
-      navigate('/', { replace: true });
-    }
-  }, [authLoading, user, code, navigate]);
-
   function handleSignIn() {
     if (code) localStorage.setItem(PENDING_KEY, code.toUpperCase());
     signInWithGoogle();
+  }
+
+  // Signed-in users confirm explicitly; PendingJoinHandler completes the join after redirect
+  function handleConfirmJoin() {
+    if (code) localStorage.setItem(PENDING_KEY, code.toUpperCase());
+    navigate('/', { replace: true });
   }
 
   if (authLoading) {
@@ -85,18 +83,42 @@ export function JoinStashPage() {
           </div>
         )}
 
-        <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">
-          Sign in to accept this invite and start rating sodas together.
-        </p>
-
-        <button
-          type="button"
-          onClick={handleSignIn}
-          className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 font-medium shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
+        {user ? (
+          <>
+            <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">
+              Join this collection to rate sodas together.
+            </p>
+            <button
+              type="button"
+              onClick={handleConfirmJoin}
+              disabled={!stashName}
+              className="w-full px-6 py-3 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold rounded-xl transition-colors"
+            >
+              Join {stashName ?? 'Collection'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/', { replace: true })}
+              className="mt-3 w-full px-6 py-3 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              Not now
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="text-gray-500 dark:text-gray-400 mb-8 text-sm">
+              Sign in to accept this invite and start rating sodas together.
+            </p>
+            <button
+              type="button"
+              onClick={handleSignIn}
+              className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 font-medium shadow-sm hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
