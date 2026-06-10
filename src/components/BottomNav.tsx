@@ -3,7 +3,7 @@ import { Layers } from 'lucide-react';
 
 export function BottomNav() {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-50 dark:bg-gray-950 border-t-[5px] border-double border-gray-800 dark:border-gray-200">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 border-t-[5px] border-double border-gray-800 dark:border-gray-200">
       <div className="flex items-center justify-center h-16 pb-safe">
         <NavLink
           to="/"
