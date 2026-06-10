@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, History, RefreshCw } from 'lucide-react';
+import { History, RefreshCw } from 'lucide-react';
 import { useStashActivity, type ActivityEntry } from '../hooks/useStashActivity';
 import { Skeleton } from '../components/Skeleton';
+import { PageHeader, FieldLabel } from '../components/ui';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -50,38 +51,27 @@ export function StashActivityPage() {
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate(`/stash/${stashId}`)}
-          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <div className="flex-1 min-w-0">
-          <div className="border-t border-gray-800 dark:border-gray-200 mb-1.5" />
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <History size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
-              <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
-                Activity
-              </h1>
-            </div>
-            <motion.button
-              type="button"
-              onClick={handleRefresh}
-              disabled={refreshing || loading}
-              animate={{ rotate: refreshing ? 360 : 0 }}
-              transition={{ duration: 0.6, ease: 'linear', repeat: refreshing ? Infinity : 0 }}
-              className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
-              aria-label="Refresh activity"
-            >
-              <RefreshCw size={14} />
-            </motion.button>
+      <PageHeader onBack={() => navigate(`/stash/${stashId}`)} className="mb-6">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <History size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
+            <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
+              Activity
+            </h1>
           </div>
-          <div className="border-b border-gray-400 dark:border-gray-600 mt-1.5" />
+          <motion.button
+            type="button"
+            onClick={handleRefresh}
+            disabled={refreshing || loading}
+            animate={{ rotate: refreshing ? 360 : 0 }}
+            transition={{ duration: 0.6, ease: 'linear', repeat: refreshing ? Infinity : 0 }}
+            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+            aria-label="Refresh activity"
+          >
+            <RefreshCw size={14} />
+          </motion.button>
         </div>
-      </div>
+      </PageHeader>
 
       {/* Content */}
       {loading ? (
@@ -103,9 +93,9 @@ export function StashActivityPage() {
         </div>
       ) : (
         <>
-          <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
+          <FieldLabel as="p" className="mb-3">
             {entries.length} event{entries.length !== 1 ? 's' : ''}
-          </p>
+          </FieldLabel>
           <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700">
             {entries.map((entry) => (
               <div key={entry.id} className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800">

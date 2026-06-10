@@ -18,6 +18,7 @@ import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { FloatingBubbles } from '../components/FloatingBubbles';
+import { Button, Input, FieldLabel, Modal } from '../components/ui';
 import { hapticTap, hapticMedium } from '../lib/haptics';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
@@ -406,14 +407,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               </div>
             </div>
             {/* Full-width primary CTA */}
-            <button
-              type="button"
+            <Button
               onClick={() => navigate(`/stash/${stashId}/add`)}
-              className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 text-xs font-sans font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+              className="w-full mt-3 py-2.5"
             >
               <Plus size={13} />
               Record Soda
-            </button>
+            </Button>
             <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
           </div>
         </div>
@@ -535,14 +535,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       )}
 
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
-      {!loading && <div className="flex gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-30 bg-gray-50 dark:bg-gray-950 py-2 -my-2">
+      {!loading && <div className="flex gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
         <div className="flex-1 relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search records…"
-            className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
+            className="pl-9 pr-4"
           />
         </div>
         <select
@@ -635,22 +635,21 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   Add your first soda. Rate it. Never forget what it tasted like.
                 </p>
                 <div className="space-y-2">
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => navigate(`/stash/${stashId}/add`)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+                    className="w-full py-2.5"
                   >
                     <Plus size={13} />
                     File the first record
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
+                    variant="secondary"
                     onClick={() => navigate(`/stash/${stashId}/scan`)}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="w-full py-2.5 dark:hover:bg-gray-800"
                   >
                     <Barcode size={13} />
                     Scan a barcode
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -677,42 +676,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       )}
 
       {/* Settings modal */}
-      <AnimatePresence>
-      {settingsOpen && (
-        <motion.div
-          className="fixed inset-0 z-[100] bg-black/60 overflow-y-auto"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={() => setSettingsOpen(false)}
-        >
-          <div className="flex min-h-full items-center justify-center p-6">
-            <motion.div
-              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-200 overflow-hidden shadow-2xl"
-              initial={{ opacity: 0, scale: 0.95, y: 8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200">
-                <h2 className="font-display font-bold text-gray-900 dark:text-white">Collection Settings</h2>
-                <button
-                  type="button"
-                  onClick={() => setSettingsOpen(false)}
-                  className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
+      <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Collection Settings" variant="dialog">
               <div className="px-5 py-5 space-y-5">
                 {/* Icon picker — any member can set the icon */}
                 <div>
-                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                  <FieldLabel className="mb-2">
                     Icon
-                  </label>
+                  </FieldLabel>
                   <div className="grid grid-cols-6 gap-1 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
                     <button
                       type="button"
@@ -744,9 +714,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
                 {isOwner && (
                   <div>
-                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                    <FieldLabel className="mb-2">
                       Accent Colour
-                    </label>
+                    </FieldLabel>
                     <div className="flex flex-wrap gap-1.5">
                       {ACCENT_COLORS.map(({ label, value }) => (
                         <button
@@ -776,30 +746,29 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
                 {isOwner && (
                   <form onSubmit={handleRename}>
-                    <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+                    <FieldLabel className="mb-1.5">
                       Collection Name
-                    </label>
+                    </FieldLabel>
                     <div className="flex gap-2">
-                      <input
+                      <Input
                         value={renameVal}
                         onChange={(e) => setRenameVal(e.target.value)}
-                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
+                        className="flex-1 py-2"
                       />
-                      <button
+                      <Button
                         type="submit"
                         disabled={renaming || !renameVal.trim()}
-                        className="px-3 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 disabled:opacity-40 transition-colors"
                       >
                         {renaming ? '…' : 'Save'}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 )}
 
                 <div>
-                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+                  <FieldLabel className="mb-1.5">
                     Invite Code
-                  </label>
+                  </FieldLabel>
                   <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2.5">
                     <span className="flex-1 font-mono text-xl tracking-[0.3em] text-gray-900 dark:text-gray-100">
                       {stash.joinCode}
@@ -823,9 +792,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 </div>
 
                 <div>
-                  <label className="block font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-2">
+                  <FieldLabel className="mb-2">
                     Correspondents
-                  </label>
+                  </FieldLabel>
                   <div className="space-y-1">
                     {members.map((m) => (
                       <div key={m.userId} className="flex items-center gap-2 py-1.5">
@@ -882,54 +851,23 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   )}
                 </div>
               </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Inventory panel */}
-      <AnimatePresence>
-      {inventoryOpen && (
-        <motion.div
-          className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={() => setInventoryOpen(false)}
-        >
-          <motion.div
-            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            drag="y"
-            dragConstraints={{ top: 0 }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={(_, info) => {
-              if (info.velocity.y > 400 || info.offset.y > 120) setInventoryOpen(false);
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
-              <div className="flex items-center gap-2">
-                <Refrigerator size={16} className="text-gray-700 dark:text-gray-300" />
-                <h2 className="font-display font-bold text-gray-900 dark:text-white">Stock Inventory</h2>
-                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
-                  {fridgeSodas.length} {fridgeSodas.length === 1 ? 'soda' : 'sodas'}{totalUnits > 0 ? ` · ${totalUnits} units` : ''}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setInventoryOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="overflow-y-auto pb-10">
+      <Modal
+        open={inventoryOpen}
+        onClose={() => setInventoryOpen(false)}
+        variant="sheet"
+        title={
+          <div className="flex items-center gap-2">
+            <Refrigerator size={16} className="text-gray-700 dark:text-gray-300" />
+            <h2 className="font-display font-bold text-gray-900 dark:text-white">Stock Inventory</h2>
+            <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
+              {fridgeSodas.length} {fridgeSodas.length === 1 ? 'soda' : 'sodas'}{totalUnits > 0 ? ` · ${totalUnits} units` : ''}
+            </span>
+          </div>
+        }
+      >
               {fridgeSodas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Refrigerator size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
@@ -998,51 +936,20 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   ))}
                 </div>
               )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-      </AnimatePresence>
+      </Modal>
 
       {/* Top rated panel */}
-      <AnimatePresence>
-      {topOpen && (
-        <motion.div
-          className="fixed inset-0 z-[100] bg-black/60 flex items-end sm:items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-          onClick={() => setTopOpen(false)}
-        >
-          <motion.div
-            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            drag="y"
-            dragConstraints={{ top: 0 }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={(_, info) => {
-              if (info.velocity.y > 400 || info.offset.y > 120) setTopOpen(false);
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
-              <div className="flex items-center gap-2">
-                <Trophy size={16} className="text-amber-600 dark:text-amber-500" />
-                <h2 className="font-display font-bold text-gray-900 dark:text-white">Distinguished Sodas</h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTopOpen(false)}
-                className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="overflow-y-auto pb-10">
+      <Modal
+        open={topOpen}
+        onClose={() => setTopOpen(false)}
+        variant="sheet"
+        title={
+          <div className="flex items-center gap-2">
+            <Trophy size={16} className="text-amber-600 dark:text-amber-500" />
+            <h2 className="font-display font-bold text-gray-900 dark:text-white">Distinguished Sodas</h2>
+          </div>
+        }
+      >
               {topThree.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Trophy size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
@@ -1085,11 +992,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   ))}
                 </div>
               )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-      </AnimatePresence>
+      </Modal>
     </div>
   );
 }

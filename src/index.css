@@ -51,6 +51,18 @@
   --radius-3xl: 6px;
 }
 
+/* ── Z-index scale — use via z-(--z-*), never raw numbers ──────────
+   sticky   in-page sticky bars (below the app header)
+   header   app chrome (MobileHeader, BottomNav)
+   modal    dialogs and bottom sheets
+   confirm  confirmation dialog — must sit above any open modal      */
+:root {
+  --z-sticky: 30;
+  --z-header: 50;
+  --z-modal: 100;
+  --z-confirm: 300;
+}
+
 * {
   box-sizing: border-box;
 }

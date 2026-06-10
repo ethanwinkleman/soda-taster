@@ -11,6 +11,7 @@ import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
 import { ShareCardButton } from '../components/ShareCardButton';
+import { Button, Textarea, FieldLabel } from '../components/ui';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
 
 export function SodaDetailPage() {
@@ -493,36 +494,29 @@ export function SodaDetailPage() {
 
       {/* My Rating */}
       <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
-        <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
+        <FieldLabel as="p" className="mb-3">
           My Rating
-        </p>
+        </FieldLabel>
         <StarRating value={ratingVal} onChange={handleStarTap} size="lg" />
-        <textarea
+        <Textarea
           value={noteVal}
           onChange={(e) => setNoteVal(e.target.value)}
           maxLength={300}
           rows={3}
           placeholder="Tasting notes (optional)…"
-          className="mt-3 w-full px-3 py-2 font-sans text-sm bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none"
+          tone="inset"
+          className="mt-3 py-2"
         />
         <div className="flex gap-2 mt-2">
           {noteChanged && ratingVal > 0 && (
-            <button
-              type="button"
-              onClick={handleSaveRating}
-              className="flex-1 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
-            >
+            <Button onClick={handleSaveRating} className="flex-1">
               Save Notes
-            </button>
+            </Button>
           )}
           {soda.myRating && (
-            <button
-              type="button"
-              onClick={handleDeleteRating}
-              className="py-2 px-4 font-sans text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-red-600 border border-gray-300 dark:border-gray-600 hover:border-red-300 transition-colors"
-            >
+            <Button variant="danger" onClick={handleDeleteRating} className="px-4">
               Retract
-            </button>
+            </Button>
           )}
         </div>
         {!soda.myRating && ratingVal === 0 && (
@@ -542,9 +536,9 @@ export function SodaDetailPage() {
           transition={{ duration: 0.2 }}
           className="mb-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 overflow-hidden"
         >
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <FieldLabel as="p" className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
             Correspondent Ratings
-          </p>
+          </FieldLabel>
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-200 dark:border-gray-700">
