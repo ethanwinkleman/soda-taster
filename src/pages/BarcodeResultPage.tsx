@@ -7,6 +7,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
+import { Button, PageHeader } from '../components/ui';
 import type { BarcodeResult } from '../lib/barcodeApi';
 
 function ProductImage({
@@ -136,22 +137,7 @@ export function BarcodeResultPage() {
   if (view === 'not_found') {
     return (
       <div className="max-w-md mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            type="button"
-            onClick={() => navigate(`/stash/${stashId}/scan`)}
-            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <div className="flex-1">
-            <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
-            <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white">
-              Soda Not Found
-            </h1>
-            <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
-          </div>
-        </div>
+        <PageHeader title="Soda Not Found" onBack={() => navigate(`/stash/${stashId}/scan`)} />
 
         <div className="text-center py-10 border border-dashed border-gray-300 dark:border-gray-700 mb-6">
           <Scan size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
@@ -164,20 +150,21 @@ export function BarcodeResultPage() {
         </div>
 
         <div className="space-y-3">
-          <button
-            type="button"
+          <Button
+            size="md"
             onClick={() => navigate(`/stash/${stashId}/add`)}
-            className="w-full py-3 font-sans text-sm font-bold uppercase tracking-[0.15em] text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+            className="w-full tracking-[0.15em]"
           >
             Add It Manually
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
             onClick={() => navigate(`/stash/${stashId}/scan`)}
-            className="w-full py-3 font-sans text-sm font-medium uppercase tracking-wider border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="w-full dark:hover:bg-gray-800"
           >
             Try Scanning Again
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -187,22 +174,12 @@ export function BarcodeResultPage() {
   if (view === 'disambiguation') {
     return (
       <div className="max-w-md mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-6">
-          <button
-            type="button"
-            onClick={() => navigate(`/stash/${stashId}/scan`)}
-            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <X size={18} />
-          </button>
-          <div className="flex-1">
-            <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
-            <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
-              Which soda did you scan?
-            </h1>
-            <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
-          </div>
-        </div>
+        <PageHeader
+          title="Which soda did you scan?"
+          size="md"
+          onBack={() => navigate(`/stash/${stashId}/scan`)}
+          className="mb-6"
+        />
 
         {barcode && (
           <p className="font-mono text-[10px] text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-wide">
@@ -270,13 +247,13 @@ export function BarcodeResultPage() {
               exit={{ opacity: 0, y: 10 }}
               className="sticky bottom-4"
             >
-              <button
-                type="button"
+              <Button
+                size="md"
                 onClick={handleConfirmDisambiguation}
-                className="w-full py-3 font-sans text-sm font-bold uppercase tracking-[0.15em] text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors shadow-lg"
+                className="w-full tracking-[0.15em] shadow-lg"
               >
                 Confirm Selection
-              </button>
+              </Button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -414,14 +391,14 @@ export function BarcodeResultPage() {
         )}
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-5 space-y-3">
-          <button
-            type="button"
+          <Button
+            size="md"
             disabled={saving}
             onClick={handleSave}
-            className="w-full py-3 font-sans text-sm font-bold uppercase tracking-[0.15em] text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="w-full tracking-[0.15em]"
           >
             {saving ? 'Filing…' : 'Add to My Collection'}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={() => navigate(`/stash/${stashId}/scan`)}

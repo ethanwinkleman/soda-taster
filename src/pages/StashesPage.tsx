@@ -12,6 +12,7 @@ import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useMyRatings } from '../hooks/useMyRatings';
+import { Button, Input, FieldLabel } from '../components/ui';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -128,32 +129,33 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       {/* Create form */}
       {creating && (
         <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1">
+          <FieldLabel as="p" className="mb-1">
             — New Collection —
-          </p>
+          </FieldLabel>
           <form onSubmit={handleCreate}>
-            <input
+            <Input
               autoFocus
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="Collection name"
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 mb-3 font-sans text-sm"
+              tone="inset"
+              className="mb-3"
             />
             <div className="flex gap-2">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => setCreating(false)}
-                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={busy || !newName.trim()}
-                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 transition-colors"
+                className="flex-1 font-medium"
               >
                 {busy ? 'Creating…' : 'Create'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -162,36 +164,37 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       {/* Join form */}
       {joining && (
         <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1">
+          <FieldLabel as="p" className="mb-1">
             — Join a Collection —
-          </p>
+          </FieldLabel>
           <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3 italic">
             Enter the 6-character invite code
           </p>
           <form onSubmit={handleJoin}>
-            <input
+            <Input
               autoFocus
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
               placeholder="XXXXXX"
               maxLength={6}
-              className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 mb-3 font-mono tracking-[0.4em] text-center text-xl uppercase"
+              tone="inset"
+              className="mb-3 font-mono tracking-[0.4em] text-center text-xl uppercase"
             />
             <div className="flex gap-2">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => setJoining(false)}
-                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={busy || joinCode.length < 4}
-                className="flex-1 py-2 font-sans text-xs font-medium uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 disabled:opacity-40 transition-colors"
+                className="flex-1 font-medium"
               >
                 {busy ? 'Joining…' : 'Join'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -226,22 +229,21 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               Your palate profile builds itself.
             </p>
             <div className="space-y-2">
-              <button
-                type="button"
+              <Button
                 onClick={() => { setCreating(true); setJoining(false); setError(null); }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+                className="w-full py-2.5"
               >
                 <Plus size={13} />
                 Create your first collection
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => { setJoining(true); setCreating(false); setError(null); }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="w-full py-2.5 dark:hover:bg-gray-800"
               >
                 <LogIn size={13} />
                 Join an existing one
-              </button>
+              </Button>
             </div>
           </div>
         </div>
