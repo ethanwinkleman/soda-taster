@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Soda Taster — Palette Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Libre Baskerville', Georgia, serif;
+    background: #e9e9ea;
+    color: #222;
+    padding: 24px;
+  }
+  h1 { font-family: 'Playfair Display', Georgia, serif; text-align: center; margin-bottom: 4px; }
+  .sub { text-align: center; color: #666; margin-bottom: 32px; font-size: 14px; }
+  .palette-block {
+    max-width: 1100px;
+    margin: 0 auto 56px auto;
+  }
+  .palette-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 2px;
+  }
+  .palette-vibe { color: #555; font-size: 13px; margin-bottom: 14px; font-style: italic; }
+
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .swatch {
+    width: 76px; height: 56px; border-radius: 6px;
+    display: flex; align-items: flex-end; justify-content: center;
+    font-size: 9px; font-family: monospace; padding: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .swatch.light-label { color: #333; text-shadow: none; }
+  .swatch span.name { display:block; font-weight:bold; }
+
+  .modes { display: flex; gap: 16px; flex-wrap: wrap; }
+  .mode-card {
+    flex: 1; min-width: 320px;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .mode-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; margin-bottom: 10px; }
+
+  /* Mock components */
+  .mock-buttons { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn { padding: 8px 16px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; border: 1px solid transparent; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-secondary { background: transparent; border-color: var(--border); color: var(--text); }
+  .btn-danger { background: transparent; border-color: var(--border); color: var(--error); }
+
+  .card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .card-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 16px; margin: 0 0 2px 0; }
+  .card-sub { font-size: 12px; opacity: 0.6; margin: 0 0 10px 0; }
+  .card-row { display: flex; align-items: center; justify-content: space-between; }
+
+  .score-badge {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 13px;
+    background: var(--text); color: var(--surface);
+  }
+
+  .stars { font-size: 20px; letter-spacing: 2px; }
+  .star-filled { color: var(--accent); }
+  .star-empty { color: var(--border); }
+
+  .badge {
+    display: inline-block; font-size: 10px; font-weight: bold;
+    padding: 2px 8px; border-radius: 4px; margin-top: 8px;
+    background: var(--success-bg); color: var(--success);
+    border: 1px solid var(--success);
+  }
+  .badge.warn { background: var(--warning-bg); color: var(--warning); border-color: var(--warning); }
+  .badge.err { background: var(--error-bg); color: var(--error); border-color: var(--error); }
+
+  .rating-scale { display: flex; gap: 4px; margin-top: 12px; }
+  .rating-scale div {
+    flex: 1; height: 28px; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>Soda Taster — Palette Options</h1>
+<p class="sub">Three directions away from the current brown/sepia theme. Each shown in light &amp; dark mode with mock buttons, a soda card, badges, and a 1–5 rating scale.</p>
+
+<!-- ================= PALETTE A ================= -->
+<div class="palette-block">
+  <div class="palette-title">A — Crisp &amp; Fizzy (Recommended)</div>
+  <div class="palette-vibe">Cool teal + soda-cherry accent on near-white. Fresh, clean, still feels like a "tasting journal."</div>
+
+  <div class="swatches">
+    <div class="swatch" style="background:#0E7C7B">Primary<span class="name">#0E7C7B</span></div>
+    <div class="swatch" style="background:#E8543F">Accent<span class="name">#E8543F</span></div>
+    <div class="swatch light-label" style="background:#F7FAFA">Background<span class="name">#F7FAFA</span></div>
+    <div class="swatch light-label" style="background:#FFFFFF">Surface<span class="name">#FFFFFF</span></div>
+    <div class="swatch" style="background:#1C2B2B">Text<span class="name">#1C2B2B</span></div>
+    <div class="swatch" style="background:#2E9E5B">Success<span class="name">#2E9E5B</span></div>
+    <div class="swatch" style="background:#E2A33D">Warning<span class="name">#E2A33D</span></div>
+    <div class="swatch" style="background:#DC2626">Error<span class="name">#DC2626</span></div>
+  </div>
+
+  <div class="modes">
+    <!-- LIGHT -->
+    <div class="mode-card" style="
+      --primary:#0E7C7B; --on-primary:#FFFFFF; --accent:#E8543F;
+      --background:#F7FAFA; --surface:#FFFFFF; --border:#D7E4E3; --text:#1C2B2B;
+      --success:#2E9E5B; --success-bg:#E6F5EC; --warning:#E2A33D; --warning-bg:#FBF1E0; --error:#DC2626; --error-bg:#FBE9E9;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Light mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#D9F0EE; color:#0E7C7B">1</div>
+        <div style="background:#ADE0DC; color:#0E7C7B">2</div>
+        <div style="background:#6EC4BE; color:#08484A">3</div>
+        <div style="background:#38A39C; color:#fff">4</div>
+        <div style="background:#0E7C7B; color:#fff">5</div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="mode-card" style="
+      --primary:#2DD4C8; --on-primary:#0B1416; --accent:#FF7A63;
+      --background:#0B1416; --surface:#142325; --border:#213638; --text:#E7F3F2;
+      --success:#4ADE80; --success-bg:#1B3024; --warning:#FBBF24; --warning-bg:#332A14; --error:#F87171; --error-bg:#3A1E1E;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Dark mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#1C3A39; color:#9FE8E0">1</div>
+        <div style="background:#275A57; color:#9FE8E0">2</div>
+        <div style="background:#357F79; color:#fff">3</div>
+        <div style="background:#4FB3AA; color:#0B1416">4</div>
+        <div style="background:#2DD4C8; color:#0B1416">5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PALETTE B ================= -->
+<div class="palette-block">
+  <div class="palette-title">B — Retro Soda Shop</div>
+  <div class="palette-vibe">Cream, cherry red, mint &amp; sunshine yellow. Playful 1950s soda-fountain energy.</div>
+
+  <div class="swatches">
+    <div class="swatch" style="background:#D6453D">Primary<span class="name">#D6453D</span></div>
+    <div class="swatch light-label" style="background:#FFC857">Accent<span class="name">#FFC857</span></div>
+    <div class="swatch light-label" style="background:#FFF9F0">Background<span class="name">#FFF9F0</span></div>
+    <div class="swatch light-label" style="background:#FFFFFF">Surface<span class="name">#FFFFFF</span></div>
+    <div class="swatch" style="background:#2B2E3A">Text<span class="name">#2B2E3A</span></div>
+    <div class="swatch light-label" style="background:#8FD9C4">Success<span class="name">#8FD9C4</span></div>
+    <div class="swatch light-label" style="background:#FFC857">Warning<span class="name">#FFC857</span></div>
+    <div class="swatch" style="background:#C0392B">Error<span class="name">#C0392B</span></div>
+  </div>
+
+  <div class="modes">
+    <!-- LIGHT -->
+    <div class="mode-card" style="
+      --primary:#D6453D; --on-primary:#FFFFFF; --accent:#FFC857;
+      --background:#FFF9F0; --surface:#FFFFFF; --border:#EADFC8; --text:#2B2E3A;
+      --success:#2E9E7D; --success-bg:#E4F7F0; --warning:#B8860B; --warning-bg:#FFF3D6; --error:#C0392B; --error-bg:#FBE6E3;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Light mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#EAFBF5; color:#2E9E7D">1</div>
+        <div style="background:#C3F0E2; color:#2E9E7D">2</div>
+        <div style="background:#8FD9C4; color:#0E4F3D">3</div>
+        <div style="background:#57BFA0; color:#fff">4</div>
+        <div style="background:#2E9E7D; color:#fff">5</div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="mode-card" style="
+      --primary:#FF6F61; --on-primary:#201A14; --accent:#FFD166;
+      --background:#201A14; --surface:#2C241C; --border:#3D332A; --text:#F4EFE6;
+      --success:#6FCF97; --success-bg:#1E2E25; --warning:#FFD166; --warning-bg:#332B1A; --error:#FF6F61; --error-bg:#3A2420;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Dark mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#1E2E25; color:#A6E7C9">1</div>
+        <div style="background:#2C4A3C; color:#A6E7C9">2</div>
+        <div style="background:#3E6F5B; color:#fff">3</div>
+        <div style="background:#56977D; color:#fff">4</div>
+        <div style="background:#6FCF97; color:#1E2E25">5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= PALETTE C ================= -->
+<div class="palette-block">
+  <div class="palette-title">C — Clean Minimal</div>
+  <div class="palette-vibe">Near-white/charcoal neutrals with a single cobalt-blue accent. Modern, calm, lets soda photos &amp; ratings stand out.</div>
+
+  <div class="swatches">
+    <div class="swatch" style="background:#2563EB">Primary<span class="name">#2563EB</span></div>
+    <div class="swatch" style="background:#F59E0B">Accent<span class="name">#F59E0B</span></div>
+    <div class="swatch light-label" style="background:#FAFAFA">Background<span class="name">#FAFAFA</span></div>
+    <div class="swatch light-label" style="background:#FFFFFF">Surface<span class="name">#FFFFFF</span></div>
+    <div class="swatch" style="background:#18181B">Text<span class="name">#18181B</span></div>
+    <div class="swatch" style="background:#16A34A">Success<span class="name">#16A34A</span></div>
+    <div class="swatch" style="background:#F59E0B">Warning<span class="name">#F59E0B</span></div>
+    <div class="swatch" style="background:#DC2626">Error<span class="name">#DC2626</span></div>
+  </div>
+
+  <div class="modes">
+    <!-- LIGHT -->
+    <div class="mode-card" style="
+      --primary:#2563EB; --on-primary:#FFFFFF; --accent:#F59E0B;
+      --background:#FAFAFA; --surface:#FFFFFF; --border:#E4E4E7; --text:#18181B;
+      --success:#16A34A; --success-bg:#E7F6ED; --warning:#B45309; --warning-bg:#FEF3E2; --error:#DC2626; --error-bg:#FBE9E9;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Light mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#DBEAFE; color:#1E40AF">1</div>
+        <div style="background:#93C5FD; color:#1E3A8A">2</div>
+        <div style="background:#60A5FA; color:#fff">3</div>
+        <div style="background:#3B82F6; color:#fff">4</div>
+        <div style="background:#2563EB; color:#fff">5</div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="mode-card" style="
+      --primary:#60A5FA; --on-primary:#0F1115; --accent:#FBBF24;
+      --background:#0F1115; --surface:#1A1D23; --border:#2E323A; --text:#F4F4F5;
+      --success:#4ADE80; --success-bg:#1B2E22; --warning:#FBBF24; --warning-bg:#332A14; --error:#F87171; --error-bg:#3A1E1E;
+      background: var(--background); color: var(--text);">
+      <div class="mode-label">Dark mode</div>
+      <div class="mock-buttons">
+        <button class="btn btn-primary">Add Soda</button>
+        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-danger">Remove</button>
+      </div>
+      <div class="card">
+        <p class="card-title">Cherry Vanilla Cola</p>
+        <p class="card-sub">Acme Soda Co.</p>
+        <div class="card-row">
+          <div class="stars">
+            <span class="star-filled">★★★★</span><span class="star-empty">★</span>
+          </div>
+          <div class="score-badge">4.2</div>
+        </div>
+        <span class="badge">In stock</span>
+        <span class="badge warn">Low stock</span>
+        <span class="badge err">Out</span>
+      </div>
+      <div class="rating-scale">
+        <div style="background:#1E2A3D; color:#BFDBFE">1</div>
+        <div style="background:#2D4870; color:#BFDBFE">2</div>
+        <div style="background:#3D6AA8; color:#fff">3</div>
+        <div style="background:#5089D6; color:#fff">4</div>
+        <div style="background:#60A5FA; color:#0F1115">5</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
