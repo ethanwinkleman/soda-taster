@@ -72,7 +72,7 @@ function CommentRow({
             <button
               type="button"
               onClick={() => onDelete(comment.id)}
-              className="text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+              className="p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
               aria-label="Delete comment"
             >
               <Trash2 size={11} />
@@ -109,7 +109,7 @@ function CommentRow({
                   <button
                     type="button"
                     onClick={() => onDelete(reply.id)}
-                    className="mt-1.5 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    className="mt-1.5 p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
                     aria-label="Delete reply"
                   >
                     <Trash2 size={11} />
@@ -151,7 +151,8 @@ function CommentRow({
                 type="button"
                 onClick={() => onReplySubmit(comment.id)}
                 disabled={!replyDraft.trim() || submitting}
-                className="shrink-0 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
+                aria-label="Send reply"
+                className="shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
               >
                 <Send size={13} />
               </button>
@@ -251,7 +252,8 @@ export function SodaComments({ sodaId, stashId, userId, displayName }: Props) {
         <button
           type="submit"
           disabled={!draft.trim() || submitting}
-          className="shrink-0 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
+          aria-label="Post remark"
+          className="shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
         >
           <Send size={14} />
         </button>

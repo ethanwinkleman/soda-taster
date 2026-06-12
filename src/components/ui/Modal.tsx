@@ -72,7 +72,7 @@ export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName,
             onClick={(e) => e.stopPropagation()}
           >
             {header}
-            <div className={twMerge('overflow-y-auto pb-10', bodyClassName)}>{children}</div>
+            <div className={twMerge('overflow-y-auto pb-[calc(2.5rem+env(safe-area-inset-bottom))]', bodyClassName)}>{children}</div>
           </motion.div>
         </motion.div>
       ) : (

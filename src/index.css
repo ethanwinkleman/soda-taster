@@ -63,6 +63,11 @@
   --z-confirm: 300;
 }
 
+/* Bottom safe-area padding (iPhone home indicator). Requires viewport-fit=cover. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 * {
   box-sizing: border-box;
 }
