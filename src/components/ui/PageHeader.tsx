@@ -21,7 +21,7 @@ export function PageHeader({ title, onBack, backVisibility = 'always', size = 'l
           onClick={onBack}
           aria-label="Back"
           className={twMerge(
-            'p-1.5 mt-0.5 shrink-0 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
+            'p-3 -m-1.5 mt-[-3px] shrink-0 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
             backVisibility === 'mobile' && 'md:hidden',
           )}
         >

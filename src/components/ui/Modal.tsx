@@ -39,7 +39,7 @@ export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName,
         type="button"
         onClick={onClose}
         aria-label="Close"
-        className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="p-3 -m-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         <X size={16} />
       </button>

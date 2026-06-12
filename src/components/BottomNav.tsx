@@ -1,10 +1,15 @@
-import { NavLink } from 'react-router-dom';
-import { Layers } from 'lucide-react';
+import { NavLink, useLocation, matchPath } from 'react-router-dom';
+import { Layers, Plus } from 'lucide-react';
 
 export function BottomNav() {
+  const { pathname } = useLocation();
+  const match = matchPath('/stash/:id/*', pathname) ?? matchPath('/stash/:id', pathname);
+  const stashId = match?.params.id;
+  const onAddPage = !!matchPath('/stash/:id/add', pathname);
+
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 border-t-[5px] border-double border-gray-800 dark:border-gray-200 pb-safe">
-      <div className="flex items-center justify-center h-16">
+      <div className="flex items-center justify-around h-16">
         <NavLink
           to="/"
           end
@@ -23,6 +28,19 @@ export function BottomNav() {
             </>
           )}
         </NavLink>
+        {stashId && (
+          <NavLink
+            to={`/stash/${stashId}/add`}
+            className={`flex flex-col items-center justify-center gap-0.5 px-8 h-full transition-colors font-sans ${
+              onAddPage
+                ? 'text-gray-900 dark:text-gray-100'
+                : 'text-gray-400 dark:text-gray-500'
+            }`}
+          >
+            <Plus size={20} strokeWidth={onAddPage ? 2.5 : 1.75} />
+            <span className="text-[10px] uppercase tracking-widest">Record</span>
+          </NavLink>
+        )}
       </div>
     </nav>
   );
