@@ -69,7 +69,7 @@ export function SodaCard({
           </motion.p>
           <div className="flex items-center gap-2 mt-0.5">
             {soda.brand && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-sans italic">
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-sans">
                 {soda.brand}
               </p>
             )}

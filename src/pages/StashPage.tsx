@@ -291,7 +291,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   if (!stash) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="font-sans italic text-gray-400 dark:text-gray-500">Collection not found.</p>
+        <p className="font-sans text-gray-400 dark:text-gray-500">Collection not found.</p>
         <NavLink to="/" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
       </div>
     );
@@ -300,7 +300,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   if (error) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <p className="font-display italic text-gray-500 dark:text-gray-400 mb-4">
+        <p className="font-display text-gray-500 dark:text-gray-400 mb-4">
           Failed to load collection.
         </p>
         <button
@@ -330,7 +330,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <div className="flex-1 min-w-0">
             {/* Name row — ⋯ floats top-right, name fills remaining width */}
             <div className="relative pr-9">
-              <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2">
+              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
                 {stash.name}
               </h1>
@@ -439,7 +439,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
               <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
             </div>
-            <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
               {fridgeSodas.length}
             </span>
             <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
@@ -458,7 +458,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             </div>
             {activeTopThree.length > 0 ? (
               <>
-                <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+                <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
                   {scoreView === 'mine'
                     ? activeTopThree[0].myRating?.score.toFixed(1)
                     : activeTopThree[0].avgScore?.toFixed(1)}
@@ -469,7 +469,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               </>
             ) : (
               <>
-                <span className="font-display text-2xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-display text-2xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
               </>
             )}
@@ -480,7 +480,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <Star size={12} className="text-amber-500 shrink-0" />
               <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
             </div>
-            <span className="font-display text-2xl font-black text-gray-900 dark:text-white tabular-nums leading-none">
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
               {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
             </span>
             <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
@@ -539,7 +539,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search records…"
+            placeholder="Search sodas…"
             className="pl-9 pr-4"
           />
         </div>
@@ -612,12 +612,12 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           {restockFilter ? (
             <div className="text-center py-12">
               <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
-              <p className="font-display italic text-gray-500 dark:text-gray-400 mb-1">Larder fully supplied!</p>
-              <p className="font-sans text-xs text-gray-400 dark:text-gray-500 italic">All your rated sodas are currently in stock.</p>
+              <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Fridge fully stocked!</p>
+              <p className="font-sans text-xs text-gray-400 dark:text-gray-500">All your rated sodas are currently in stock.</p>
             </div>
           ) : search ? (
             <div className="text-center py-12">
-              <p className="font-sans italic text-gray-500 dark:text-gray-400">No records match "{search}"</p>
+              <p className="font-sans text-gray-500 dark:text-gray-400">No sodas match "{search}"</p>
             </div>
           ) : (
             <div className="py-14">
@@ -626,8 +626,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <CupSoda size={32} className="text-gray-300 dark:text-gray-700" />
                   <FloatingBubbles size={32} className="absolute inset-0" />
                 </div>
-                <h2 className="font-display text-lg font-black italic text-gray-800 dark:text-gray-200 mb-1.5">
-                  Nothing on the record yet.
+                <h2 className="font-display text-lg font-bold text-gray-800 dark:text-gray-200 mb-1.5">
+                  Nothing here yet.
                 </h2>
                 <p className="font-sans text-sm text-gray-400 dark:text-gray-500 leading-relaxed mb-5">
                   Add your first soda. Rate it. Never forget what it tasted like.
@@ -638,7 +638,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                     className="w-full py-2.5"
                   >
                     <Plus size={13} />
-                    File the first record
+                    Add your first soda
                   </Button>
                   <Button
                     variant="secondary"
@@ -791,7 +791,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
                 <div>
                   <FieldLabel className="mb-2">
-                    Correspondents
+                    Members
                   </FieldLabel>
                   <div className="space-y-1">
                     {members.map((m) => (
@@ -802,7 +802,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <span className="flex-1 font-sans text-sm text-gray-900 dark:text-gray-100 truncate">
                           {m.displayName ?? 'Unknown'}
                           {m.userId === stash.ownerId && (
-                            <span className="ml-1.5 font-sans text-[10px] uppercase tracking-wide text-gray-400 italic">proprietor</span>
+                            <span className="ml-1.5 font-sans text-[10px] uppercase tracking-wide text-gray-400">owner</span>
                           )}
                         </span>
                         {isOwner && m.userId !== user?.id && (
@@ -818,13 +818,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       </div>
                     ))}
                     {members.length === 0 && (
-                      <p className="font-sans text-xs italic text-gray-400 dark:text-gray-500">Loading correspondents…</p>
+                      <p className="font-sans text-xs text-gray-400 dark:text-gray-500">Loading members…</p>
                     )}
                   </div>
                 </div>
 
                 {settingsError && (
-                  <p className="font-sans text-sm text-red-600 dark:text-red-400 italic">{settingsError}</p>
+                  <p className="font-sans text-sm text-red-600 dark:text-red-400">{settingsError}</p>
                 )}
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
@@ -835,7 +835,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
                     >
                       <Trash2 size={13} />
-                      Dissolve Collection
+                      Delete Collection
                     </button>
                   ) : (
                     <button
@@ -844,7 +844,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-colors"
                     >
                       <LogOut size={13} />
-                      Resign from Collection
+                      Leave Collection
                     </button>
                   )}
                 </div>
@@ -869,9 +869,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               {fridgeSodas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Refrigerator size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
-                  <p className="font-display italic text-gray-500 dark:text-gray-400 text-sm">Larder is bare.</p>
-                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
-                    Open a soda record and toggle "In Stock" to track your supply.
+                  <p className="font-display text-gray-500 dark:text-gray-400 text-sm">Fridge is empty.</p>
+                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Open a soda and toggle "In Stock" to track your supply.
                   </p>
                 </div>
               ) : (
@@ -894,7 +894,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <div className="min-w-0">
                           <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">{soda.name}</p>
                           {soda.brand && (
-                            <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate leading-tight">{soda.brand}</p>
+                            <p className="font-sans text-xs text-gray-500 dark:text-gray-400 truncate leading-tight">{soda.brand}</p>
                           )}
                         </div>
                       </button>
@@ -944,16 +944,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         title={
           <div className="flex items-center gap-2">
             <Trophy size={16} className="text-amber-600 dark:text-amber-500" />
-            <h2 className="font-display font-bold text-gray-900 dark:text-white">Distinguished Sodas</h2>
+            <h2 className="font-display font-bold text-gray-900 dark:text-white">Top Rated</h2>
           </div>
         }
       >
               {topThree.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 px-5 text-center">
                   <Trophy size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
-                  <p className="font-display italic text-gray-500 dark:text-gray-400 text-sm">No verdicts rendered yet.</p>
-                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1 italic">
-                    Rate some sodas to see the most distinguished ones here.
+                  <p className="font-display text-gray-500 dark:text-gray-400 text-sm">No ratings yet.</p>
+                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    Rate some sodas to see your top picks here.
                   </p>
                 </div>
               ) : (
@@ -982,7 +982,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       <div className="flex-1 min-w-0">
                         <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate">{soda.name}</p>
                         {soda.brand && (
-                          <p className="font-sans text-xs italic text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
+                          <p className="font-sans text-xs text-gray-500 dark:text-gray-400 truncate">{soda.brand}</p>
                         )}
                       </div>
                       {soda.avgScore !== null && <ScoreBadge score={soda.avgScore} size="sm" />}

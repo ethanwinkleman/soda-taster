@@ -56,7 +56,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             onClick={handleCancel}
           >
             <motion.div
-              className="w-full max-w-sm bg-white dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-200 shadow-2xl"
+              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-2xl"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
