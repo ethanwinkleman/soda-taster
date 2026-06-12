@@ -29,7 +29,9 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
   const rowRef = useRef<HTMLDivElement>(null);
   const interactive = !readOnly && !!onChange;
   const display = interactive ? (preview || value) : value;
-  const sizeClass = size === 'sm' ? 'text-xl' : size === 'lg' ? 'text-4xl' : 'text-2xl';
+  const sizeClass = size === 'sm' ? 'text-xl' : size === 'lg' ? 'text-6xl' : 'text-2xl';
+  const gapClass = size === 'lg' ? 'gap-2' : 'gap-1';
+  const readoutClass = size === 'lg' ? 'ml-3 text-xl w-10' : 'ml-2 text-sm w-8';
 
   function getFill(star: number): 'full' | 'half' | 'empty' {
     if (display >= star) return 'full';
@@ -73,7 +75,7 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
         aria-valuemin={interactive ? 0.5 : undefined}
         aria-valuemax={interactive ? 5 : undefined}
         aria-valuenow={interactive ? (value || undefined) : undefined}
-        className={`flex items-center gap-1 ${interactive ? 'touch-none cursor-pointer py-2 -my-2 pr-2 -mr-2' : ''}`}
+        className={`flex items-center ${gapClass} ${interactive ? 'touch-none cursor-pointer py-2 -my-2 pr-2 -mr-2' : ''}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -85,7 +87,7 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
         ))}
       </div>
       {interactive && (
-        <span className="ml-2 text-sm text-gray-500 dark:text-gray-400 font-medium tabular-nums w-8">
+        <span className={`${readoutClass} text-gray-500 dark:text-gray-400 font-medium tabular-nums`}>
           {display > 0 ? display.toFixed(1) : '—'}
         </span>
       )}
