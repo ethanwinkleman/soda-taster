@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, LogOut, Share2, Star } from 'lucide-react';
@@ -6,9 +6,10 @@ import { StashIcon } from './StashIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
 import { Logo } from './Logo';
-import { ShareModal } from './ShareModal';
 import { Skeleton } from './Skeleton';
 import type { Stash } from '../types/stash';
+
+const ShareModal = lazy(() => import('./ShareModal').then((m) => ({ default: m.ShareModal })));
 
 interface Props {
   stashes: Stash[];
@@ -157,12 +158,14 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
       )}
 
       {shareOpen && user && (
-        <ShareModal
-          user={user}
-          profile={profile}
-          onSave={saveProfile}
-          onClose={() => setShareOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <ShareModal
+            user={user}
+            profile={profile}
+            onSave={saveProfile}
+            onClose={() => setShareOpen(false)}
+          />
+        </Suspense>
       )}
     </aside>
   );

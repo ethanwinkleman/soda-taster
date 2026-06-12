@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { lazy, Suspense, useState, useRef, useEffect } from 'react';
 import { LogOut, ChevronDown, Share2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ShareModal } from './ShareModal';
 import { useProfile } from '../hooks/useProfile';
+
+const ShareModal = lazy(() => import('./ShareModal').then((m) => ({ default: m.ShareModal })));
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
@@ -71,12 +72,14 @@ export function UserMenu() {
       )}
 
       {shareOpen && (
-        <ShareModal
-          user={user}
-          profile={profile}
-          onSave={saveProfile}
-          onClose={() => setShareOpen(false)}
-        />
+        <Suspense fallback={null}>
+          <ShareModal
+            user={user}
+            profile={profile}
+            onSave={saveProfile}
+            onClose={() => setShareOpen(false)}
+          />
+        </Suspense>
       )}
     </div>
   );

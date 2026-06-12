@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Share2, Download } from 'lucide-react';
-import html2canvas from 'html2canvas';
 import type { Soda } from '../types/stash';
 import { TastingCard } from './TastingCard';
 import { hapticSuccess, hapticError } from '../lib/haptics';
@@ -23,7 +22,11 @@ export function ShareCardButton({ soda }: Props) {
     if (!cardRef.current || generating) return;
     setGenerating(true);
     try {
-      await document.fonts.ready;
+      // html2canvas is ~200KB — load it only when the user actually shares
+      const [{ default: html2canvas }] = await Promise.all([
+        import('html2canvas'),
+        document.fonts.ready,
+      ]);
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
         useCORS: true,

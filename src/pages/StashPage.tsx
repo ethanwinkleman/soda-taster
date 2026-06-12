@@ -887,7 +887,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
                       >
                         {soda.imageUrl ? (
-                          <img src={soda.imageUrl} alt="" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                          <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                         ) : (
                           <div className="w-9 h-9 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
                             <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
@@ -975,7 +975,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         {i + 1}
                       </span>
                       {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                        <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                       ) : (
                         <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
                           <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />

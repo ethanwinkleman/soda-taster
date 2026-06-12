@@ -45,6 +45,8 @@ export function SodaCard({
             layoutId={`soda-${soda.id}-thumb`}
             src={soda.imageUrl}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="w-16 h-16 object-cover shrink-0 border border-gray-200 dark:border-gray-600"
           />
         ) : (
