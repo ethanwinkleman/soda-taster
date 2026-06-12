@@ -98,7 +98,7 @@ export function SodaDetailPage() {
     hapticSuccess();
     try {
       await saveRating(soda.id, ratingVal, displayName, noteVal);
-      toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
+      toast.success(isUpdate ? 'Rating updated.' : 'Rating saved.');
     } catch {
       hapticError();
       toast.error('Failed to save rating.');
@@ -114,7 +114,7 @@ export function SodaDetailPage() {
     setRatingVal(v);
     try {
       await saveRating(soda.id, v, displayName, noteVal);
-      toast.success(isUpdate ? 'Rating updated.' : 'Rating filed.');
+      toast.success(isUpdate ? 'Rating updated.' : 'Rating saved.');
     } catch {
       setRatingVal(prevScore);
       hapticError();
@@ -130,12 +130,12 @@ export function SodaDetailPage() {
     setNoteVal('');
     try {
       await deleteRating(ratingId, soda.id);
-      toast.success('Rating retracted.');
+      toast.success('Rating removed.');
     } catch {
       setRatingVal(prevScore);
       setNoteVal(prevNotes ?? '');
       hapticError();
-      toast.error('Failed to retract rating.');
+      toast.error('Failed to remove rating.');
     }
   }
 
@@ -196,7 +196,7 @@ export function SodaDetailPage() {
   if (error) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="font-display italic text-gray-500 dark:text-gray-400 mb-4">
+        <p className="font-display text-gray-500 dark:text-gray-400 mb-4">
           Failed to load soda.
         </p>
         <button
@@ -251,7 +251,7 @@ export function SodaDetailPage() {
   if (!soda) {
     return (
       <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <p className="font-sans italic text-gray-400 dark:text-gray-500">Soda not found.</p>
+        <p className="font-sans text-gray-400 dark:text-gray-500">Soda not found.</p>
         <button
           type="button"
           onClick={() => navigate(`/stash/${stashId}`)}
@@ -300,19 +300,19 @@ export function SodaDetailPage() {
                 value={editBrand}
                 onChange={(e) => setEditBrand(e.target.value)}
                 placeholder="Manufacturer (optional)"
-                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:outline-none font-sans text-sm italic"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:outline-none font-sans text-sm"
               />
             </div>
           ) : (
             <>
               <motion.h1
                 layoutId={`soda-${soda.id}-name`}
-                className="font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight break-words"
+                className="font-display text-2xl font-bold text-gray-900 dark:text-white leading-tight break-words"
               >
                 {soda.name}
               </motion.h1>
               {soda.brand && (
-                <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 italic break-words">
+                <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 break-words">
                   {soda.brand}
                 </p>
               )}
@@ -437,7 +437,7 @@ export function SodaDetailPage() {
                 <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
                   Average
                 </span>
-                <span className="font-display text-4xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-display text-4xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
                   Not yet rated
                 </span>
@@ -460,7 +460,7 @@ export function SodaDetailPage() {
                 </span>
                 <ScoreBadge score={soda.myRating.score} size="lg" />
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                  Filed
+                  Saved
                 </span>
               </motion.div>
             ) : (
@@ -474,7 +474,7 @@ export function SodaDetailPage() {
                 <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
                   Mine
                 </span>
-                <span className="font-display text-4xl font-black text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-display text-4xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
                   Rate below
                 </span>
@@ -485,7 +485,7 @@ export function SodaDetailPage() {
       </motion.div>
 
       {imageError && (
-        <p className="mb-4 -mt-3 text-xs font-sans text-red-600 dark:text-red-400 italic">{imageError}</p>
+        <p className="mb-4 -mt-3 text-xs font-sans text-red-600 dark:text-red-400">{imageError}</p>
       )}
 
       {/* My Rating */}
@@ -511,12 +511,12 @@ export function SodaDetailPage() {
           )}
           {soda.myRating && (
             <Button variant="danger" onClick={handleDeleteRating} className="px-4">
-              Retract
+              Remove
             </Button>
           )}
         </div>
         {!soda.myRating && ratingVal === 0 && (
-          <p className="mt-2 text-[10px] font-sans italic text-gray-400 dark:text-gray-500">
+          <p className="mt-2 text-[10px] font-sans text-gray-400 dark:text-gray-500">
             Tap a star — your rating saves instantly
           </p>
         )}
@@ -533,7 +533,7 @@ export function SodaDetailPage() {
           className="mb-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] overflow-hidden"
         >
           <FieldLabel as="p" className="px-4 pt-4 pb-2">
-            Correspondent Ratings
+            Everyone's Ratings
           </FieldLabel>
           <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
             {soda.ratings.map((r) => {
@@ -552,7 +552,7 @@ export function SodaDetailPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{r.displayName}</p>
                     {r.notes && (
-                      <p className="mt-0.5 text-xs italic text-gray-500 dark:text-gray-400 leading-snug">{r.notes}</p>
+                      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400 leading-snug">{r.notes}</p>
                     )}
                   </div>
                   <span
@@ -626,7 +626,7 @@ export function SodaDetailPage() {
         )}
       </div>
 
-      {/* Correspondence */}
+      {/* Comments */}
       {stashId && user && (
         <SodaComments
           sodaId={soda.id}

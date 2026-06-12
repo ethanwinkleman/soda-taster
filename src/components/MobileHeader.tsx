@@ -20,7 +20,7 @@ export function MobileHeader({ stashes }: Props) {
           <Logo size="sm" />
         </NavLink>
         {stashName && (
-          <span className="flex-1 min-w-0 truncate text-center font-display text-sm font-bold italic text-gray-700 dark:text-gray-300">
+          <span className="flex-1 min-w-0 truncate text-center font-display text-sm font-bold text-gray-700 dark:text-gray-300">
             {stashName}
           </span>
         )}

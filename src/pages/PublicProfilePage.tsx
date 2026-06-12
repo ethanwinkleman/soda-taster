@@ -93,13 +93,13 @@ export function PublicProfilePage() {
 
         {status === 'not_found' && (
           <div className="text-center py-24">
-            <p className="font-display italic text-gray-500 dark:text-gray-400">No correspondent found with that name.</p>
+            <p className="font-display text-gray-500 dark:text-gray-400">No taster found with that name.</p>
           </div>
         )}
 
         {status === 'private' && (
           <div className="text-center py-24">
-            <p className="font-display italic text-gray-500 dark:text-gray-400">This correspondent's records are private.</p>
+            <p className="font-display text-gray-500 dark:text-gray-400">This taster's ratings are private.</p>
           </div>
         )}
 
@@ -124,7 +124,7 @@ export function PublicProfilePage() {
                     {profile.display_name ?? username}
                   </h1>
                   <p className="text-xs font-sans uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mt-0.5">
-                    Soda Correspondent
+                    Soda Taster
                   </p>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export function PublicProfilePage() {
             {ratings.length === 0 ? (
               <div className="text-center py-16 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
                 <CupSoda size={36} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
-                <p className="font-display italic text-gray-500 dark:text-gray-400">No ratings on record yet.</p>
+                <p className="font-display text-gray-500 dark:text-gray-400">No ratings yet.</p>
               </div>
             ) : (
               <>
@@ -148,7 +148,7 @@ export function PublicProfilePage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-display font-bold text-gray-900 dark:text-gray-100 truncate">{r.soda_name}</p>
                         {r.soda_brand && (
-                          <p className="text-xs font-sans italic text-gray-500 dark:text-gray-400 truncate">{r.soda_brand}</p>
+                          <p className="text-xs font-sans text-gray-500 dark:text-gray-400 truncate">{r.soda_brand}</p>
                         )}
                       </div>
                       <ScoreBadge score={r.score} size="sm" />
@@ -157,7 +157,7 @@ export function PublicProfilePage() {
                 </div>
 
                 <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
-                  <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3 italic">
+                  <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3">
                     Track your own soda ratings
                   </p>
                   <button

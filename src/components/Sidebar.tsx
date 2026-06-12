@@ -36,7 +36,7 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
           <Logo size="md" />
         </NavLink>
         <p className="text-[9px] uppercase tracking-[0.25em] text-gray-500 dark:text-gray-400 font-sans">
-          The Carbonated Chronicle
+          Sip. Rate. Repeat.
         </p>
       </div>
 
@@ -106,7 +106,7 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
           </AnimatePresence>
 
           {!loading && stashes.length === 0 && (
-            <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-sans italic">No collections yet</p>
+            <p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500 font-sans">No collections yet</p>
           )}
 
           <button

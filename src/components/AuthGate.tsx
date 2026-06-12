@@ -115,8 +115,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
             <div className="flex justify-center mb-8">
               <Logo size="lg" />
             </div>
-            <div className="border-t-2 border-b border-gray-700 pt-4 pb-5">
-              <h1 className="font-display text-4xl font-black italic text-white leading-tight mb-3">
+            <div>
+              <h1 className="font-display text-4xl font-bold text-white leading-tight mb-3">
                 The soda journal for the serious enthusiast.
               </h1>
               <p className="font-sans text-sm text-gray-400 leading-relaxed">
@@ -129,7 +129,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
           <div className="space-y-5">
             {FEATURES.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="flex gap-4">
-                <div className="mt-0.5 shrink-0 w-8 h-8 flex items-center justify-center border border-amber-700/60 text-amber-500">
+                <div className="mt-0.5 shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-amber-500/15 text-amber-400">
                   <Icon size={15} />
                 </div>
                 <div>
@@ -142,11 +142,10 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
           {/* CTA */}
           <div>
-            <div className="border-t border-gray-800 mb-6" />
             <motion.button
               type="button"
               onClick={signInWithGoogle}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-white text-gray-900 font-sans text-sm font-semibold hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-white text-gray-900 font-sans text-sm font-semibold hover:bg-gray-100 transition-colors shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]"
               whileTap={{ scale: 0.98 }}
             >
               <GoogleIcon />

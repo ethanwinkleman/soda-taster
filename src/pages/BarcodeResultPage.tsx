@@ -139,9 +139,9 @@ export function BarcodeResultPage() {
       <div className="max-w-md mx-auto px-4 py-8">
         <PageHeader title="Soda Not Found" onBack={() => navigate(`/stash/${stashId}/scan`)} />
 
-        <div className="text-center py-10 border border-dashed border-gray-300 dark:border-gray-700 mb-6">
+        <div className="text-center py-10 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 mb-6">
           <Scan size={40} className="mx-auto mb-4 text-gray-300 dark:text-gray-700" />
-          <p className="font-display italic text-gray-600 dark:text-gray-400 mb-1">
+          <p className="font-display text-gray-600 dark:text-gray-400 mb-1">
             We couldn't find this soda.
           </p>
           {barcode && (
@@ -194,35 +194,35 @@ export function BarcodeResultPage() {
               type="button"
               onClick={() => setSelectedIdx(i)}
               whileTap={{ scale: 0.985 }}
-              className={`w-full flex items-center gap-3 p-3 border transition-colors text-left ${
+              className={`w-full flex items-center gap-3 p-3 rounded-2xl border transition-colors text-left ${
                 selectedIdx === i
-                  ? 'border-gray-800 dark:border-gray-200 bg-gray-50 dark:bg-gray-800'
-                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-400 dark:hover:border-gray-500'
+                  ? 'border-sky-500 dark:border-sky-400 bg-sky-50 dark:bg-gray-800'
+                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-sky-300 dark:hover:border-sky-700'
               }`}
             >
               {/* Thumbnail */}
               <ProductImage
                 src={c.imageUrl}
                 alt={c.name}
-                className="w-16 h-16 shrink-0 rounded"
+                className="w-16 h-16 shrink-0 rounded-xl"
               />
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="font-display font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight truncate max-w-[40ch]">
-                  {c.name || <span className="italic text-gray-400">Name unknown</span>}
+                  {c.name || <span className="text-gray-400">Name unknown</span>}
                 </p>
                 <p className="font-sans text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                  {c.manufacturer || <span className="italic">Manufacturer unknown</span>}
+                  {c.manufacturer || <span className="text-gray-400">Manufacturer unknown</span>}
                 </p>
-                <span className="inline-block mt-1 font-sans text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-600 border border-gray-200 dark:border-gray-700 px-1 py-px">
+                <span className="inline-block mt-1 font-sans text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-600 border border-gray-200 dark:border-gray-700 rounded-full px-2 py-px">
                   {c.source === 'open_food_facts' ? 'Open Food Facts' : 'Barcode Lookup'}
                 </span>
               </div>
 
               {selectedIdx === i && (
-                <div className="shrink-0 w-5 h-5 bg-gray-900 dark:bg-gray-100 flex items-center justify-center">
-                  <Check size={12} className="text-white dark:text-gray-900" />
+                <div className="shrink-0 w-5 h-5 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center">
+                  <Check size={12} className="text-white" />
                 </div>
               )}
             </motion.button>
@@ -232,7 +232,7 @@ export function BarcodeResultPage() {
           <button
             type="button"
             onClick={() => navigate(`/stash/${stashId}/add`)}
-            className="w-full py-3 font-sans text-xs text-gray-400 dark:text-gray-500 italic hover:text-gray-600 dark:hover:text-gray-300 transition-colors border border-dashed border-gray-300 dark:border-gray-700"
+            className="w-full py-3 font-sans text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors rounded-2xl border border-dashed border-gray-300 dark:border-gray-700"
           >
             None of these — add manually
           </button>
@@ -277,7 +277,7 @@ export function BarcodeResultPage() {
               navigate(`/stash/${stashId}/scan`);
             }
           }}
-          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
           <ChevronLeft size={20} />
         </button>
@@ -294,7 +294,7 @@ export function BarcodeResultPage() {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="absolute bottom-3 right-3 p-2 bg-black/60 text-white hover:bg-black/80 transition-colors"
+          className="absolute bottom-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
           aria-label="Replace image"
         >
           <Camera size={16} />
@@ -309,7 +309,7 @@ export function BarcodeResultPage() {
               setImagePreview(null);
               if (fileInputRef.current) fileInputRef.current.value = '';
             }}
-            className="absolute top-3 right-3 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
+            className="absolute top-3 right-3 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
             aria-label="Remove custom image"
           >
             <X size={14} />
@@ -335,12 +335,12 @@ export function BarcodeResultPage() {
                 onChange={(e) => setEditedName(e.target.value)}
                 onBlur={() => setEditingName(false)}
                 onKeyDown={(e) => e.key === 'Enter' && setEditingName(false)}
-                className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-display text-2xl font-black text-gray-900 dark:text-white focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
+                className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-300 dark:border-gray-600 font-display text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
               />
             </div>
           ) : (
             <div className="flex items-start gap-2">
-              <h1 className="flex-1 font-display text-2xl font-black italic text-gray-900 dark:text-white leading-tight">
+              <h1 className="flex-1 font-display text-2xl font-bold text-gray-900 dark:text-white leading-tight">
                 {editedName || <span className="text-gray-400">Unknown soda</span>}
               </h1>
               <button
@@ -364,11 +364,11 @@ export function BarcodeResultPage() {
               onChange={(e) => setEditedManufacturer(e.target.value)}
               onBlur={() => setEditingManufacturer(false)}
               onKeyDown={(e) => e.key === 'Enter' && setEditingManufacturer(false)}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-base text-gray-700 dark:text-gray-300 italic focus:outline-none focus:border-gray-700 dark:focus:border-gray-300"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-300 dark:border-gray-600 font-sans text-base text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
             />
           ) : (
             <div className="flex items-center gap-2">
-              <p className="flex-1 font-sans text-base text-gray-600 dark:text-gray-400 italic">
+              <p className="flex-1 font-sans text-base text-gray-600 dark:text-gray-400">
                 {editedManufacturer || <span className="text-gray-400">Manufacturer unknown</span>}
               </p>
               <button
@@ -397,7 +397,7 @@ export function BarcodeResultPage() {
             onClick={handleSave}
             className="w-full tracking-[0.15em]"
           >
-            {saving ? 'Filing…' : 'Add to My Collection'}
+            {saving ? 'Saving…' : 'Add to My Collection'}
           </Button>
           <button
             type="button"

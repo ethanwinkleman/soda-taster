@@ -29,16 +29,14 @@ export function PageHeader({ title, onBack, backVisibility = 'always', size = 'l
         </button>
       )}
       <div className="flex-1 min-w-0">
-        <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
         {children ?? (
           <h1 className={twMerge(
-            'font-display font-black italic text-gray-900 dark:text-white',
+            'font-display font-bold text-gray-900 dark:text-white',
             size === 'lg' ? 'text-2xl' : 'text-xl',
           )}>
             {title}
           </h1>
         )}
-        <div className="border-b border-gray-400 dark:border-gray-600 mt-1" />
       </div>
     </div>
   );

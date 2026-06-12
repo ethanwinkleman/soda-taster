@@ -200,15 +200,15 @@ export function SodaComments({ sodaId, stashId, userId, displayName }: Props) {
   }
 
   return (
-    <div className="mb-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+    <div className="mb-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] overflow-hidden">
       <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
         <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
-          Correspondence
+          Comments
         </p>
       </div>
 
       {comments.length === 0 && (
-        <p className="px-4 py-3 font-sans text-xs italic text-gray-400 dark:text-gray-500">
+        <p className="px-4 py-3 font-sans text-xs text-gray-400 dark:text-gray-500">
           No remarks on file yet.
         </p>
       )}

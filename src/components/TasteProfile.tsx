@@ -22,14 +22,14 @@ export function TasteProfile({ ratings }: Props) {
       className="mt-10 mb-2"
     >
       <div className="flex items-baseline gap-3 mb-3">
-        <h2 className="font-display text-sm font-bold italic text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+        <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
           Your Palate
         </h2>
-        <div className="flex-1 border-b border-gray-300 dark:border-gray-700" />
+        <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-5 py-4">
-        <p className="font-display italic text-gray-900 dark:text-gray-100 leading-relaxed text-[15px]">
+      <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] px-5 py-4">
+        <p className="font-display text-gray-900 dark:text-gray-100 leading-relaxed text-[15px]">
           {profile}
         </p>
         <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-sans uppercase tracking-wider text-gray-400 dark:text-gray-500">

@@ -96,7 +96,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       {/* Page masthead */}
       <div className="mb-8">
         <div className="flex items-baseline justify-between gap-4">
-          <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
+          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
             My Collections
           </h1>
           <div className="flex gap-2 shrink-0">
@@ -119,8 +119,8 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           </div>
         </div>
         {firstName && (
-          <p className="text-xs font-sans text-gray-500 dark:text-gray-400 mt-0.5 italic">
-            {firstName}'s soda records
+          <p className="text-xs font-sans text-gray-500 dark:text-gray-400 mt-0.5">
+            {firstName}'s soda collection
           </p>
         )}
       </div>
@@ -166,7 +166,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           <FieldLabel as="p" className="mb-1">
             — Join a Collection —
           </FieldLabel>
-          <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3 italic">
+          <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3">
             Enter the 6-character invite code
           </p>
           <form onSubmit={handleJoin}>
@@ -204,7 +204,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       )}
 
       {error && (
-        <p className="mb-4 text-sm text-red-600 dark:text-red-400 font-sans italic">{error}</p>
+        <p className="mb-4 text-sm text-red-600 dark:text-red-400 font-sans">{error}</p>
       )}
 
       {/* Stash list */}
@@ -224,8 +224,8 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
         <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-14">
           <div className="max-w-xs mx-auto px-6 text-center">
             <CupSoda size={32} className="mx-auto mb-5 text-gray-300 dark:text-gray-600" />
-            <h2 className="font-display text-xl font-black italic text-gray-800 dark:text-gray-200 mb-2">
-              Your records start here.
+            <h2 className="font-display text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+              Your collection starts here.
             </h2>
             <p className="font-sans text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-6">
               Create a collection, add every soda you try, and rate each one.
@@ -286,7 +286,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
                 <p className="font-display font-bold text-gray-900 dark:text-white truncate">{stash.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide flex-wrap">
                   <Users size={9} />
-                  <span>{stash.ownerId === user?.id ? 'Proprietor' : 'Member'}</span>
+                  <span>{stash.ownerId === user?.id ? 'Owner' : 'Member'}</span>
                   <span className="text-gray-300 dark:text-gray-600">·</span>
                   <span>{stash.sodaCount} {stash.sodaCount === 1 ? 'soda' : 'sodas'}</span>
                   {stash.lastTastedAt && (
@@ -317,7 +317,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       {!loading && recentActivity.length > 0 && (
         <div className="mt-10">
           <div className="flex items-baseline gap-3 mb-3">
-            <h2 className="font-display text-sm font-bold italic text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+            <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
               Recently Tasted
             </h2>
             <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />

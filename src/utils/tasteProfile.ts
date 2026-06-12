@@ -117,7 +117,7 @@ export function generateProfile(ratings: RatingInput[]): string | null {
   } else if (flavorStats.length >= 3) {
     const top3 = flavorStats.slice(0, 3).map((f) => f.category).join(', ');
     sentences.push(
-      `Your palate ranges broadly — ${top3} each have a foothold in your records, with no single style claiming dominance.`
+      `Your palate ranges broadly — ${top3} each have a foothold in your collection, with no single style claiming dominance.`
     );
   } else if (topByCount) {
     sentences.push(
@@ -149,14 +149,14 @@ export function generateProfile(ratings: RatingInput[]): string | null {
     const earnedIt = topBrand.avg >= 4.0
       ? `, and earns it — your scores there average ${topBrand.avg}`
       : '';
-    sentences.push(`${topBrand.name} appears in your record more than any other producer${earnedIt}.`);
+    sentences.push(`${topBrand.name} appears in your collection more than any other producer${earnedIt}.`);
   } else if (adventurousness > 0.75) {
     sentences.push(
       `You drink wide rather than deep — ${uniqueBrands} brands across ${total} sodas, rarely returning to the same label twice.`
     );
   } else if (adventurousness < 0.35 && topBrand) {
     sentences.push(
-      `You are a loyal drinker: ${topBrand.name} has earned more of your attention than any other producer in the record.`
+      `You are a loyal drinker: ${topBrand.name} has earned more of your attention than any other producer in your collection.`
     );
   }
 
@@ -165,9 +165,9 @@ export function generateProfile(ratings: RatingInput[]): string | null {
     const name = namedTopSoda.sodaName;
     const score = namedTopSoda.score;
     if (score === 5.0) {
-      sentences.push(`The top of your record belongs to ${name} — a perfect 5.0, the rarest mark in any serious collection.`);
+      sentences.push(`The top of your collection belongs to ${name} — a perfect 5.0, the rarest mark in any serious collection.`);
     } else if (score >= 4.5) {
-      sentences.push(`At the peak of your record sits ${name}, at ${score} — the standard your palate keeps returning to.`);
+      sentences.push(`At the peak of your collection sits ${name}, at ${score} — the standard your palate keeps returning to.`);
     } else {
       sentences.push(`Your highest-rated soda, ${name}, earned a ${score}.`);
     }
@@ -181,7 +181,7 @@ function flavorLeadSentence(flavor: string, pct: number, total: number): string 
   const lines: Record<string, string> = {
     'Root Beer':       `Root beer is your native territory — ${share} of your ${total} sodas, staked out with clear intention.`,
     'Birch Beer':      `Birch beer leads your collection at ${share} of your entries — an unusual centerpiece that speaks to a deliberate palate.`,
-    'Sarsaparilla':    `Sarsaparilla anchors ${share} of your collection — an old-world taste in a modern record.`,
+    'Sarsaparilla':    `Sarsaparilla anchors ${share} of your collection — an old-world taste in a modern lineup.`,
     'Ginger':          `Ginger runs through your collection like a current, accounting for ${share} of your entries.`,
     'Cream Soda':      `Cream sodas have claimed ${share} of your collection — smooth, deliberate, unhurried.`,
     'Cola':            `Cola forms the backbone of your collection, making up ${share} of your ${total} sodas.`,

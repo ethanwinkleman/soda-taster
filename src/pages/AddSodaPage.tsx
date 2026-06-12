@@ -143,7 +143,7 @@ export function AddSodaPage() {
         {/* Brand */}
         <div>
           <FieldLabel className="mb-1.5">
-            Manufacturer <span className="text-gray-400 font-normal italic">(optional)</span>
+            Manufacturer <span className="text-gray-400 font-normal">(optional)</span>
           </FieldLabel>
           <Input
             value={brand}
@@ -155,7 +155,7 @@ export function AddSodaPage() {
         {/* Photo */}
         <div>
           <FieldLabel className="mb-1.5">
-            Illustration <span className="text-gray-400 font-normal italic">(optional)</span>
+            Photo <span className="text-gray-400 font-normal">(optional)</span>
           </FieldLabel>
           <input
             ref={fileInputRef}
@@ -172,7 +172,7 @@ export function AddSodaPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="relative border border-gray-300 dark:border-gray-600 overflow-hidden"
+              className="relative rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
               <img
                 src={imagePreview}
@@ -182,7 +182,7 @@ export function AddSodaPage() {
               <button
                 type="button"
                 onClick={clearImage}
-                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
                 aria-label="Remove photo"
               >
                 <X size={14} />
@@ -190,7 +190,7 @@ export function AddSodaPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white hover:bg-black/80 transition-colors"
+                className="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
                 aria-label="Change photo"
               >
                 <Camera size={14} />
@@ -200,10 +200,10 @@ export function AddSodaPage() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full h-28 border border-dashed border-gray-400 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-gray-700 dark:hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="w-full h-28 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-sky-400 dark:hover:border-sky-500 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
             >
               <Camera size={20} />
-              <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add illustration</span>
+              <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add photo</span>
             </button>
           )}
           </AnimatePresence>
@@ -212,7 +212,7 @@ export function AddSodaPage() {
         {/* Rating */}
         <div>
           <FieldLabel className="mb-2">
-            My Rating <span className="text-gray-400 font-normal italic">(optional)</span>
+            My Rating <span className="text-gray-400 font-normal">(optional)</span>
           </FieldLabel>
           <StarRating value={score} onChange={setScore} size="lg" />
           {score > 0 && (
@@ -226,9 +226,9 @@ export function AddSodaPage() {
           )}
         </div>
 
-        <div className="border-t border-gray-300 dark:border-gray-600 pt-5">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
           <Button type="submit" size="md" disabled={saving || !name.trim()} className="w-full">
-            {saving ? 'Filing…' : 'File This Record'}
+            {saving ? 'Saving…' : 'Add to Collection'}
           </Button>
         </div>
       </form>

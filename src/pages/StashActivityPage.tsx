@@ -55,7 +55,7 @@ export function StashActivityPage() {
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <History size={15} className="text-gray-500 dark:text-gray-400 shrink-0" />
-            <h1 className="font-display text-xl font-black italic text-gray-900 dark:text-white">
+            <h1 className="font-display text-xl font-bold text-gray-900 dark:text-white">
               Activity
             </h1>
           </div>
@@ -75,10 +75,10 @@ export function StashActivityPage() {
 
       {/* Content */}
       {loading ? (
-        <div className="border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800">
+        <div className="rounded-2xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800">
-              <Skeleton className="w-7 h-7 shrink-0 mt-0.5" />
+              <Skeleton className="w-7 h-7 shrink-0 mt-0.5 rounded-full" />
               <div className="flex-1 space-y-2 pt-0.5">
                 <Skeleton className="h-3 w-3/5" />
                 <Skeleton className="h-2.5 w-1/4" />
@@ -87,19 +87,19 @@ export function StashActivityPage() {
           ))}
         </div>
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center border border-dashed border-gray-300 dark:border-gray-700">
+        <div className="flex flex-col items-center justify-center py-24 text-center rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
           <History size={36} className="text-gray-300 dark:text-gray-700 mb-3" />
-          <p className="font-display italic text-gray-500 dark:text-gray-400">No activity yet.</p>
+          <p className="font-display text-gray-500 dark:text-gray-400">No activity yet.</p>
         </div>
       ) : (
         <>
           <FieldLabel as="p" className="mb-3">
             {entries.length} event{entries.length !== 1 ? 's' : ''}
           </FieldLabel>
-          <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-200 dark:border-gray-700">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {entries.map((entry) => (
               <div key={entry.id} className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800">
-                <div className="w-7 h-7 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold font-sans shrink-0 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 mt-0.5">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white flex items-center justify-center text-[10px] font-bold font-sans shrink-0 mt-0.5">
                   {entry.displayName[0]?.toUpperCase() ?? '?'}
                 </div>
                 <div className="flex-1 min-w-0">
