@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Soda Taster — "Cherry Fizz" Identity Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFBF7; --surface: #FFFFFF; --text: #1A1523; --text-muted: #6B6478; --border: #EFE9F3;
+    --cherry: #FF3D78; --cherry-dark: #E0335A; --cyan: #00C2D1; --citrus: #FFC233;
+  }
+  .dark {
+    --bg: #15101C; --surface: #1F1729; --text: #F5EEFB; --text-muted: #A89BB8; --border: #332744;
+    --cherry: #FF6B91; --cherry-dark: #FF6B91; --cyan: #5EEAD4; --citrus: #FFD166;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #ddd; padding: 24px; }
+  h1.page-title { font-family: 'Plus Jakarta Sans', sans-serif; text-align: center; color: #333; margin-bottom: 24px; font-size: 16px; }
+  .panels { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .panel {
+    width: 380px; background: var(--bg); border-radius: 20px; padding: 24px;
+    font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text);
+  }
+  .mode-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 14px; font-weight: 600; }
+  .display { font-family: 'Fredoka', sans-serif; }
+
+  /* Stash card */
+  .stash-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 16px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 4px 16px -4px rgba(26,21,35,0.06); margin-bottom: 14px;
+  }
+  .avatar-grad {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--cherry), var(--cyan));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 18px;
+  }
+  .stash-card .meta p:first-child { font-weight: 600; font-size: 16px; margin: 0; }
+  .stash-card .meta p:last-child { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+
+  /* Soda card */
+  .soda-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 14px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 4px 16px -4px rgba(26,21,35,0.06); margin-bottom: 14px;
+  }
+  .thumb {
+    width: 56px; height: 56px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, #FFE3E8, #D6F7F9);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .soda-card .meta { flex: 1; min-width: 0; }
+  .soda-card .meta p:first-child { font-weight: 600; font-size: 15px; margin: 0; }
+  .soda-card .meta p:last-child { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+  .mini-score {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: var(--cherry); color: white; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; box-shadow: 0 0 0 4px color-mix(in srgb, var(--cherry) 18%, transparent);
+  }
+
+  /* Hero */
+  .hero {
+    background: var(--surface); border-radius: 20px; padding: 28px;
+    box-shadow: 0 8px 24px -8px rgba(255,61,120,0.18);
+    text-align: center; margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .hero h2 { margin: 0 0 18px; font-size: 18px; }
+  .burst-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto 18px; }
+  .halftone {
+    position: absolute; inset: -30%; border-radius: 50%; opacity: 0.35;
+    background-image: radial-gradient(circle, var(--cyan) 1.6px, transparent 1.6px);
+    background-size: 13px 13px;
+    -webkit-mask-image: radial-gradient(circle, black 55%, transparent 100%);
+            mask-image: radial-gradient(circle, black 55%, transparent 100%);
+    animation: spin 40s linear infinite;
+  }
+  .dark .halftone { opacity: 0.22; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .score-ring {
+    position: relative; width: 104px; height: 104px; margin: 0 auto; border-radius: 50%;
+    background: var(--surface); border: 4px solid var(--cherry);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px -8px rgba(255,61,120,0.35);
+  }
+  .score-ring span { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 34px; }
+
+  /* Rating control */
+  .rating-row { display: flex; align-items: center; justify-content: center; gap: 6px; position: relative; height: 56px; }
+  .rating-row .star { font-size: 36px; }
+  .star-filled { background: linear-gradient(135deg, var(--cherry), #FF8AA0); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 6px rgba(255,61,120,0.3)); }
+  .star-empty { color: var(--border); }
+  .bubble { position: absolute; border-radius: 50%; opacity: 0.85; animation: rise 1.4s ease-out infinite; }
+  .bubble.b1 { width: 6px; height: 6px; background: var(--cyan); left: 38%; bottom: 24px; animation-delay: 0s; }
+  .bubble.b2 { width: 4px; height: 4px; background: var(--citrus); left: 46%; bottom: 24px; animation-delay: 0.3s; }
+  .bubble.b3 { width: 5px; height: 5px; background: var(--cyan); left: 56%; bottom: 24px; animation-delay: 0.6s; }
+  .bubble.b4 { width: 3px; height: 3px; background: var(--citrus); left: 62%; bottom: 24px; animation-delay: 0.9s; }
+  @keyframes rise { 0% { transform: translateY(0) scale(0.6); opacity: 0.9; } 100% { transform: translateY(-42px) scale(1.2); opacity: 0; } }
+
+  /* Breakdown table */
+  .breakdown { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .breakdown-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-row .av {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; color: white; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--cherry), var(--cyan));
+  }
+  .breakdown-row .name { flex: 1; font-size: 13px; font-weight: 500; }
+  .breakdown-row .chip { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 999px; color: #1A1523; }
+
+  /* Sticker badge */
+  .sticker {
+    display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 9px; border-radius: 999px;
+    border: 2px solid var(--text); background: var(--citrus); color: #1A1523;
+    transform: rotate(-4deg); margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<h1 class="page-title">Soda Taster — "Cherry Fizz" identity · light &amp; dark</h1>
+
+<div class="panels">
+  <!-- LIGHT -->
+  <div class="panel">
+    <div class="mode-label">Light mode</div>
+
+    <div class="stash-card">
+      <div class="avatar-grad">M</div>
+      <div class="meta"><p>Movie Night Stash</p><p>12 sodas</p></div>
+    </div>
+
+    <div class="soda-card">
+      <div class="thumb">🥤</div>
+      <div class="meta"><p>Cherry Vanilla Cola</p><p>Acme Soda Co.</p></div>
+      <div class="mini-score">4.2</div>
+    </div>
+    <div class="soda-card">
+      <div class="thumb">🧋</div>
+      <div class="meta">
+        <p>Lemon Lime Zest</p>
+        <p>Acme Soda Co.</p>
+        <span class="sticker">🔥 Most controversial</span>
+      </div>
+      <div class="mini-score">3.1</div>
+    </div>
+
+    <div class="hero">
+      <h2 class="display">Cherry Vanilla Cola</h2>
+      <div class="burst-wrap">
+        <div class="halftone"></div>
+        <div class="score-ring"><span>4.2</span></div>
+      </div>
+      <div class="rating-row">
+        <span class="star star-filled">★</span><span class="star star-filled">★</span>
+        <span class="star star-filled">★</span><span class="star star-filled">★</span>
+        <span class="star star-empty">★</span>
+        <div class="bubble b1"></div><div class="bubble b2"></div>
+        <div class="bubble b3"></div><div class="bubble b4"></div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-row"><div class="av">E</div><div class="name">Ethan Winkleman</div><div class="chip" style="background:#FF8AA0">4.5</div></div>
+      <div class="breakdown-row"><div class="av">K</div><div class="name">Katie Winkleman</div><div class="chip" style="background:#FFB8C6">3.5</div></div>
+      <div class="breakdown-row"><div class="av">D</div><div class="name">Doug</div><div class="chip" style="background:#FF5C82">4.5</div></div>
+    </div>
+  </div>
+
+  <!-- DARK -->
+  <div class="panel dark">
+    <div class="mode-label">Dark mode</div>
+
+    <div class="stash-card">
+      <div class="avatar-grad">M</div>
+      <div class="meta"><p>Movie Night Stash</p><p>12 sodas</p></div>
+    </div>
+
+    <div class="soda-card">
+      <div class="thumb" style="background:linear-gradient(135deg,#3a1f29,#16373a)">🥤</div>
+      <div class="meta"><p>Cherry Vanilla Cola</p><p>Acme Soda Co.</p></div>
+      <div class="mini-score">4.2</div>
+    </div>
+    <div class="soda-card">
+      <div class="thumb" style="background:linear-gradient(135deg,#3a1f29,#16373a)">🧋</div>
+      <div class="meta">
+        <p>Lemon Lime Zest</p>
+        <p>Acme Soda Co.</p>
+        <span class="sticker">🔥 Most controversial</span>
+      </div>
+      <div class="mini-score">3.1</div>
+    </div>
+
+    <div class="hero">
+      <h2 class="display">Cherry Vanilla Cola</h2>
+      <div class="burst-wrap">
+        <div class="halftone"></div>
+        <div class="score-ring"><span>4.2</span></div>
+      </div>
+      <div class="rating-row">
+        <span class="star star-filled">★</span><span class="star star-filled">★</span>
+        <span class="star star-filled">★</span><span class="star star-filled">★</span>
+        <span class="star star-empty">★</span>
+        <div class="bubble b1"></div><div class="bubble b2"></div>
+        <div class="bubble b3"></div><div class="bubble b4"></div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="breakdown-row"><div class="av">E</div><div class="name">Ethan Winkleman</div><div class="chip" style="background:#FF8AA0">4.5</div></div>
+      <div class="breakdown-row"><div class="av">K</div><div class="name">Katie Winkleman</div><div class="chip" style="background:#FFB8C6">3.5</div></div>
+      <div class="breakdown-row"><div class="av">D</div><div class="name">Doug</div><div class="chip" style="background:#FF5C82">4.5</div></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
