@@ -217,17 +217,15 @@ export function SodaDetailPage() {
         <div className="flex items-start gap-2">
           <Skeleton className="w-8 h-8 shrink-0 mt-1" />
           <div className="flex-1 space-y-2 pt-1">
-            <div className="border-t border-gray-800 dark:border-gray-200 mb-2" />
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-3.5 w-1/3" />
-            <div className="border-b border-gray-400 dark:border-gray-600 mt-2" />
           </div>
         </div>
         {/* Hero (image + score) */}
-        <div className="flex border border-gray-300 dark:border-gray-600 overflow-hidden">
+        <div className="flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <Skeleton className="w-1/3 shrink-0 min-h-[11rem]" />
           <div className="flex-1 p-4 flex items-center gap-3">
-            <Skeleton className="w-12 h-12 shrink-0" />
+            <Skeleton className="w-12 h-12 shrink-0 rounded-full" />
             <div className="space-y-2">
               <Skeleton className="h-7 w-12" />
               <Skeleton className="h-2.5 w-16" />
@@ -235,15 +233,15 @@ export function SodaDetailPage() {
           </div>
         </div>
         {/* My rating */}
-        <div className="p-4 border border-gray-300 dark:border-gray-600 space-y-3">
+        <div className="p-4 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-3">
           <Skeleton className="h-2.5 w-20" />
           <Skeleton className="h-7 w-36" />
         </div>
         {/* Fridge */}
-        <div className="p-4 border border-gray-300 dark:border-gray-600">
+        <div className="p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <Skeleton className="h-3 w-20" />
-            <Skeleton className="w-11 h-6" />
+            <Skeleton className="w-11 h-6 rounded-full" />
           </div>
         </div>
       </div>
@@ -289,7 +287,6 @@ export function SodaDetailPage() {
         </button>
 
         <div className="flex-1 min-w-0">
-          <div className="border-t border-gray-800 dark:border-gray-200 mb-1.5" />
           {editing ? (
             <div className="space-y-2">
               <input
@@ -297,13 +294,13 @@ export function SodaDetailPage() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Soda name"
-                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-700 dark:border-gray-300 text-gray-900 dark:text-gray-100 focus:outline-none font-display text-lg font-bold"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-sky-500 dark:border-sky-400 text-gray-900 dark:text-gray-100 focus:outline-none font-display text-lg font-bold"
               />
               <input
                 value={editBrand}
                 onChange={(e) => setEditBrand(e.target.value)}
                 placeholder="Manufacturer (optional)"
-                className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:outline-none font-sans text-sm italic"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 focus:outline-none font-sans text-sm italic"
               />
             </div>
           ) : (
@@ -327,7 +324,6 @@ export function SodaDetailPage() {
               )}
             </>
           )}
-          <div className="border-b border-gray-400 dark:border-gray-600 mt-1.5" />
         </div>
 
         {editing ? (
@@ -362,7 +358,7 @@ export function SodaDetailPage() {
       {/* Hero — image (left ⅓) + avg score (right ⅔) */}
       <motion.div
         layoutId={`soda-${soda.id}-card`}
-        className="mb-5 flex border border-gray-300 dark:border-gray-600 overflow-hidden bg-white dark:bg-gray-800"
+        className="mb-5 flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 shadow-[0_4px_20px_-6px_rgba(255,61,120,0.12)]"
       >
         {/* Image column */}
         <div className="w-1/3 shrink-0 relative min-h-[11rem] self-stretch">
@@ -425,7 +421,7 @@ export function SodaDetailPage() {
                 <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
                   Average
                 </span>
-                <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} />
+                <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} burst />
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
                   {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
                 </span>
@@ -493,7 +489,7 @@ export function SodaDetailPage() {
       )}
 
       {/* My Rating */}
-      <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+      <div className="mb-5 p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
         <FieldLabel as="p" className="mb-3">
           My Rating
         </FieldLabel>
@@ -534,48 +530,50 @@ export function SodaDetailPage() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="mb-5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 overflow-hidden"
+          className="mb-5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] overflow-hidden"
         >
-          <FieldLabel as="p" className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <FieldLabel as="p" className="px-4 pt-4 pb-2">
             Correspondent Ratings
           </FieldLabel>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Reviewer
-                </th>
-                <th className="text-right px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                  Score
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {soda.ratings.map((r) => (
-                <tr key={r.id} className="border-b border-gray-100 dark:border-gray-700/50 last:border-0">
-                  <td className="px-4 pt-2.5 pb-2 font-sans text-sm text-gray-900 dark:text-gray-100 align-top">
-                    {r.displayName}
+          <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            {soda.ratings.map((r) => {
+              const ratingBg = [
+                'var(--color-rating-1)',
+                'var(--color-rating-2)',
+                'var(--color-rating-3)',
+                'var(--color-rating-4)',
+                'var(--color-rating-5)',
+              ][Math.max(0, Math.round(r.score) - 1)];
+              return (
+                <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                    {r.displayName[0]?.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{r.displayName}</p>
                     {r.notes && (
-                      <p className="mt-0.5 text-xs italic text-gray-500 dark:text-gray-400 font-normal leading-snug">{r.notes}</p>
+                      <p className="mt-0.5 text-xs italic text-gray-500 dark:text-gray-400 leading-snug">{r.notes}</p>
                     )}
-                  </td>
-                  <td className="px-4 pt-2.5 pb-2 text-right font-display font-bold text-gray-900 dark:text-gray-100 align-top whitespace-nowrap">
-                    <span className="text-amber-500 mr-1">★</span>
+                  </div>
+                  <span
+                    className="shrink-0 font-display font-bold text-sm tabular-nums px-2.5 py-1 rounded-full text-gray-900"
+                    style={{ background: ratingBg }}
+                  >
                     {r.score.toFixed(1)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </motion.div>
       )}
       </AnimatePresence>
 
       {/* Fridge inventory */}
-      <div className="mb-5 p-4 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+      <div className="mb-5 p-4 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <Refrigerator size={16} className={soda.inFridge ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'} />
+            <Refrigerator size={16} className={soda.inFridge ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400'} />
             <span className="font-sans text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
               In Stock
             </span>
@@ -583,15 +581,15 @@ export function SodaDetailPage() {
           <button
             type="button"
             onClick={handleFridgeToggle}
-            className={`relative w-11 h-6 transition-colors duration-200 border ${
+            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
               soda.inFridge
-                ? 'bg-gray-800 dark:bg-gray-200 border-gray-900 dark:border-gray-100'
-                : 'bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600'
+                ? 'bg-sky-600 dark:bg-sky-400'
+                : 'bg-gray-200 dark:bg-gray-700'
             }`}
             aria-label="Toggle in fridge"
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 transition-transform duration-200 ${
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${
                 soda.inFridge ? 'translate-x-5' : ''
               }`}
             />
@@ -607,11 +605,11 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(-1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-10 h-10 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Minus size={12} />
               </motion.button>
-              <span className="w-8 text-center font-display font-black text-gray-900 dark:text-gray-100 tabular-nums">
+              <span className="w-8 text-center font-display font-bold text-gray-900 dark:text-gray-100 tabular-nums">
                 {soda.quantity}
               </span>
               <motion.button
@@ -619,7 +617,7 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-10 h-10 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Plus size={12} />
               </motion.button>
@@ -647,7 +645,7 @@ export function SodaDetailPage() {
       <button
         type="button"
         onClick={handleDelete}
-        className="w-full flex items-center justify-center gap-2 py-3 font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
       >
         <Trash2 size={13} />
         Remove from Collection

@@ -1,45 +1,61 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=UnifrakturMaguntia&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @theme {
   /* ── Typefaces ────────────────────────────────────────────────── */
-  --font-sans:    'Libre Baskerville', Georgia, 'Times New Roman', serif;
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-cursive: 'UnifrakturMaguntia', 'Playfair Display', serif;
+  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-display: 'Fredoka', 'Plus Jakarta Sans', system-ui, sans-serif;
 
-  /* ── Clean neutral palette (replaces all gray-* tokens) ───────── */
-  --color-gray-50:  #fafafa;
-  --color-gray-100: #f4f4f5;
-  --color-gray-200: #e4e4e7;
-  --color-gray-300: #d4d4d8;
-  --color-gray-400: #a1a1aa;
-  --color-gray-500: #71717a;
-  --color-gray-600: #52525b;
-  --color-gray-700: #3f3f46;
-  --color-gray-800: #27272a;
-  --color-gray-900: #18181b;
-  --color-gray-950: #0f1115;
+  /* ── Cherry Fizz neutrals (replaces all gray-* tokens) ─────────── */
+  --color-gray-50:  #fffbf7;
+  --color-gray-100: #fbf1e8;
+  --color-gray-200: #efe4f0;
+  --color-gray-300: #dcd0e3;
+  --color-gray-400: #b3a6c4;
+  --color-gray-500: #8a7d9e;
+  --color-gray-600: #6b6478;
+  --color-gray-700: #4a4159;
+  --color-gray-800: #2e2440;
+  --color-gray-900: #1f1729;
+  --color-gray-950: #15101c;
 
-  /* ── Cobalt blue (replaces sky-* — CTAs, links, active states) ── */
-  --color-sky-50:  #eff6ff;
-  --color-sky-100: #dbeafe;
-  --color-sky-200: #bfdbfe;
-  --color-sky-300: #93c5fd;
-  --color-sky-400: #60a5fa;
-  --color-sky-500: #3b82f6;
-  --color-sky-600: #2563eb;
-  --color-sky-700: #1d4ed8;
-  --color-sky-900: #1e3a8a;
+  /* ── Cherry — primary brand color (replaces sky-*) ─────────────── */
+  --color-sky-50:  #fff0f3;
+  --color-sky-100: #ffe3e8;
+  --color-sky-200: #ffc2d1;
+  --color-sky-300: #ff96b0;
+  --color-sky-400: #ff6b91;
+  --color-sky-500: #ff3d78;
+  --color-sky-600: #c21f45;
+  --color-sky-700: #a01739;
+  --color-sky-900: #5c1026;
 
-  /* ── Tight border-radius — angular like newspaper columns ──────── */
-  --radius-xs:  0px;
-  --radius-sm:  1px;
-  --radius:     2px;
-  --radius-md:  2px;
-  --radius-lg:  3px;
-  --radius-xl:  3px;
-  --radius-2xl: 4px;
-  --radius-3xl: 6px;
+  /* ── Citrus pop — sparingly, for badges / trophies / warnings ──── */
+  --color-amber-400: #ffd166;
+  --color-amber-500: #ffc233;
+
+  /* ── Fizz cyan — bubbles, avatars, halftone accents ────────────── */
+  --color-cyan-100: #d6f7f9;
+  --color-cyan-400: #5eead4;
+  --color-cyan-500: #00c2d1;
+  --color-cyan-600: #009aa6;
+
+  /* ── 1–5 rating scale — sequential cherry ramp ─────────────────── */
+  --color-rating-1: #ffe3e8;
+  --color-rating-2: #ffb8c6;
+  --color-rating-3: #ff8aa0;
+  --color-rating-4: #ff5c82;
+  --color-rating-5: #ff3d78;
+
+  /* ── Generous, soft border-radius scale ─────────────────────────── */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius:     8px;
+  --radius-md:  10px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
 }
 
 /* ── Z-index scale — use via z-(--z-*), never raw numbers ──────────
@@ -65,20 +81,20 @@
 
 body {
   margin: 0;
-  font-family: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #fafafa;
+  background-color: #fffbf7;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #0f1115;
+    background-color: #15101c;
   }
 }
 
-/* Semantic headings use Playfair Display */
+/* Semantic headings use Fredoka */
 @layer base {
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Fredoka', system-ui, sans-serif;
   }
 }

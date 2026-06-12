@@ -35,8 +35,9 @@ export function SodaCard({
     <motion.div variants={cardVariants}>
       <motion.div
         layoutId={`soda-${soda.id}-card`}
+        whileHover={{ y: -2 }}
         whileTap={{ scale: 0.985 }}
-        className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 p-3"
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl cursor-pointer shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] hover:shadow-[0_8px_24px_-6px_rgba(255,61,120,0.15)] transition-shadow flex items-center gap-3 p-3"
         onClick={handleClick}
       >
         {/* Thumbnail */}
@@ -47,14 +48,14 @@ export function SodaCard({
             alt=""
             loading="lazy"
             decoding="async"
-            className="w-16 h-16 object-cover shrink-0 border border-gray-200 dark:border-gray-600"
+            className="w-16 h-16 object-cover shrink-0 rounded-xl ring-1 ring-gray-200 dark:ring-gray-700"
           />
         ) : (
           <motion.div
             layoutId={`soda-${soda.id}-thumb`}
-            className="w-16 h-16 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-700"
+            className="w-16 h-16 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-gray-700 dark:to-gray-800"
           >
-            <CupSoda size={24} className="text-gray-400 dark:text-gray-500" />
+            <CupSoda size={24} className="text-sky-400 dark:text-gray-500" />
           </motion.div>
         )}
 
@@ -103,9 +104,15 @@ export function SodaCard({
         </div>
 
         {/* Score */}
-        <span className="shrink-0 w-9 text-right font-display font-black text-lg tabular-nums text-gray-800 dark:text-gray-200">
-          {score !== null ? score.toFixed(1) : <span className="text-gray-300 dark:text-gray-600 text-sm">—</span>}
-        </span>
+        {score !== null ? (
+          <span className="shrink-0 w-11 h-11 rounded-full border-2 border-sky-500 dark:border-sky-400 bg-white dark:bg-gray-800 flex items-center justify-center font-display font-bold text-sm tabular-nums text-gray-900 dark:text-gray-50">
+            {score.toFixed(1)}
+          </span>
+        ) : (
+          <span className="shrink-0 w-11 h-11 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center font-display text-sm text-gray-300 dark:text-gray-600">
+            —
+          </span>
+        )}
       </motion.div>
     </motion.div>
   );

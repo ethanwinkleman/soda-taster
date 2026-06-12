@@ -13,7 +13,7 @@ export function MobileHeader({ stashes }: Props) {
   const stashName = match ? stashes.find((s) => s.id === match.params.id)?.name : undefined;
 
   return (
-    <header className="md:hidden sticky top-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 pt-[env(safe-area-inset-top)] border-b-[5px] border-double border-gray-800 dark:border-gray-200">
+    <header className="md:hidden sticky top-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 pt-[env(safe-area-inset-top)] border-b border-gray-200 dark:border-gray-700">
       {/* Masthead row */}
       <div className="h-12 px-4 flex items-center justify-between gap-3">
         <NavLink to="/">

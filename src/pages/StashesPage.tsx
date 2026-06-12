@@ -103,7 +103,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
             <button
               type="button"
               onClick={() => { setJoining(true); setCreating(false); setError(null); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300 border border-gray-700 dark:border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-sans font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <LogIn size={13} />
               Join
@@ -111,7 +111,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
             <button
               type="button"
               onClick={() => { setCreating(true); setJoining(false); setError(null); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-sans font-medium uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]"
             >
               <Plus size={13} />
               New
@@ -123,12 +123,11 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
             {firstName}'s soda records
           </p>
         )}
-        <div className="border-b border-gray-400 dark:border-gray-600 mt-1.5" />
       </div>
 
       {/* Create form */}
       {creating && (
-        <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] p-5">
           <FieldLabel as="p" className="mb-1">
             — New Collection —
           </FieldLabel>
@@ -163,7 +162,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
 
       {/* Join form */}
       {joining && (
-        <div className="mb-6 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 p-5">
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] p-5">
           <FieldLabel as="p" className="mb-1">
             — Join a Collection —
           </FieldLabel>
@@ -210,7 +209,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
 
       {/* Stash list */}
       {loading ? (
-        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="p-4 flex items-center gap-3 bg-white dark:bg-gray-800">
               <Skeleton className="w-10 h-10 shrink-0" />
@@ -222,7 +221,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           ))}
         </div>
       ) : stashes.length === 0 ? (
-        <div className="border border-dashed border-gray-300 dark:border-gray-700 py-14">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-14">
           <div className="max-w-xs mx-auto px-6 text-center">
             <CupSoda size={32} className="mx-auto mb-5 text-gray-300 dark:text-gray-600" />
             <h2 className="font-display text-xl font-black italic text-gray-800 dark:text-gray-200 mb-2">
@@ -252,7 +251,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           </div>
         </div>
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
           {stashes.map((stash) => (
             <motion.button
               key={stash.id}
@@ -266,18 +265,18 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               {stash.icon ? (
                 <span
                   className={stash.accentColor
-                    ? 'w-10 h-10 border-2 flex items-center justify-center shrink-0'
-                    : 'w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-300 shrink-0'}
-                  style={stash.accentColor ? { borderColor: stash.accentColor, color: stash.accentColor } : undefined}
+                    ? 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-white'
+                    : 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white'}
+                  style={stash.accentColor ? { backgroundColor: stash.accentColor } : undefined}
                 >
                   <StashIcon name={stash.icon} size={20} />
                 </span>
               ) : (
                 <span
                   className={stash.accentColor
-                    ? 'w-10 h-10 border-2 flex items-center justify-center shrink-0 text-base font-black font-display'
-                    : 'w-10 h-10 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-gray-700 dark:text-gray-200 text-base font-black shrink-0 font-display'}
-                  style={stash.accentColor ? { borderColor: stash.accentColor, color: stash.accentColor } : undefined}
+                    ? 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-base font-bold font-display text-white'
+                    : 'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white text-base font-bold font-display'}
+                  style={stash.accentColor ? { backgroundColor: stash.accentColor } : undefined}
                 >
                   {stash.name[0]?.toUpperCase() ?? '?'}
                 </span>
@@ -300,7 +299,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               </div>
 
               {stash.newActivityCount > 0 && (
-                <span className="shrink-0 font-sans text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700/60">
+                <span className="shrink-0 font-sans text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700/60">
                   {stash.newActivityCount} new
                 </span>
               )}
@@ -321,9 +320,9 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
             <h2 className="font-display text-sm font-bold italic text-gray-700 dark:text-gray-300 uppercase tracking-wide">
               Recently Tasted
             </h2>
-            <div className="flex-1 border-b border-gray-300 dark:border-gray-700" />
+            <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
           </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {recentActivity.map((entry, i) => {
               const stashName = stashNameMap.get(entry.stashId) ?? 'Unknown collection';
               return (
