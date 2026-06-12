@@ -33,7 +33,7 @@ export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName,
   }, [open, onClose]);
 
   const header = title !== undefined && (
-    <div className="flex items-center justify-between px-5 py-4 border-b-[3px] border-double border-gray-800 dark:border-gray-200 shrink-0">
+    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
       {typeof title === 'string' ? (
         <h2 className="font-display font-bold text-gray-900 dark:text-white">{title}</h2>
       ) : (
@@ -66,7 +66,7 @@ export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName,
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 border-t-2 sm:border-2 border-gray-800 dark:border-gray-200 max-h-[80vh] flex flex-col shadow-2xl focus:outline-none"
+            className="w-full sm:max-w-sm bg-gray-50 dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl border border-gray-200 dark:border-gray-700 max-h-[80vh] flex flex-col shadow-[0_-8px_30px_-8px_rgba(26,21,35,0.15)] sm:shadow-2xl focus:outline-none overflow-hidden"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -98,7 +98,7 @@ export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName,
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-200 overflow-hidden shadow-2xl focus:outline-none"
+              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-2xl focus:outline-none"
               initial={{ opacity: 0, scale: 0.95, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}

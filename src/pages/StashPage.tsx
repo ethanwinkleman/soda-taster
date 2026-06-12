@@ -328,7 +328,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             <ChevronLeft size={20} />
           </button>
           <div className="flex-1 min-w-0">
-            <div className="border-t border-gray-800 dark:border-gray-200 mb-1" />
             {/* Name row — ⋯ floats top-right, name fills remaining width */}
             <div className="relative pr-9">
               <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white flex items-center gap-2">
@@ -350,7 +349,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                         <motion.div
-                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 shadow-lg min-w-[11rem]"
+                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg min-w-[11rem] overflow-hidden"
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
@@ -414,14 +413,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <Plus size={13} />
               Record Soda
             </Button>
-            <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
           </div>
         </div>
       </div>
 
       {/* Metrics row — skeleton while loading, real data once ready */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-0 mb-5 border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
           {[0, 1, 2].map((i) => (
             <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
               <Skeleton className="h-2 w-14" />
@@ -431,7 +429,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           ))}
         </div>
       ) : sodas.length > 0 && (
-        <div className="grid grid-cols-3 gap-0 mb-5 border border-gray-300 dark:border-gray-600 divide-x divide-gray-300 dark:divide-gray-600">
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
@@ -494,20 +492,20 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {/* Group / Mine score toggle — only when multiple people have rated */}
       {!loading && showScoreToggle && (
-        <div className="flex mb-3 border border-gray-300 dark:border-gray-600">
+        <div className="flex mb-3 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <button
             type="button"
             onClick={() => { hapticTap(); setScoreView('group'); }}
             className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
               scoreView === 'group'
-                ? 'text-gray-50 dark:text-gray-900'
+                ? 'text-white dark:text-gray-950'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             {scoreView === 'group' && (
               <motion.span
                 layoutId="scoreview-pill"
-                className="absolute inset-0 bg-gray-900 dark:bg-gray-100"
+                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
                 transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               />
             )}
@@ -516,16 +514,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <button
             type="button"
             onClick={() => { hapticTap(); setScoreView('mine'); }}
-            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-300 dark:border-gray-600 ${
+            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-200 dark:border-gray-700 ${
               scoreView === 'mine'
-                ? 'text-gray-50 dark:text-gray-900'
+                ? 'text-white dark:text-gray-950'
                 : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             {scoreView === 'mine' && (
               <motion.span
                 layoutId="scoreview-pill"
-                className="absolute inset-0 bg-gray-900 dark:bg-gray-100"
+                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
                 transition={{ type: 'spring', stiffness: 380, damping: 32 }}
               />
             )}
@@ -549,7 +547,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
           disabled={restockFilter}
-          className="px-3 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300 uppercase tracking-wide disabled:opacity-40"
+          className="px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
@@ -561,10 +559,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           type="button"
           onClick={() => setRestockFilter((v) => !v)}
           title="Show sodas not in stock, sorted by your rating"
-          className={`flex items-center gap-1.5 px-3 py-2.5 border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
+          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
             restockFilter
-              ? 'bg-gray-900 dark:bg-gray-100 border-gray-900 dark:border-gray-100 text-gray-50 dark:text-gray-900'
-              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-gray-700 dark:hover:border-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+              ? 'bg-sky-600 dark:bg-sky-400 border-sky-600 dark:border-sky-400 text-white dark:text-gray-950'
+              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-sky-500 dark:hover:border-sky-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
           <ListFilter size={13} />
@@ -574,7 +572,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {/* Active filter banner */}
       {!loading && restockFilter && (
-        <div className="flex items-center justify-between mb-4 px-3 py-2 border border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-800">
+        <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
           <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
             Worth buying again — top-rated sodas you're out of
             <span className="ml-2 text-gray-500 dark:text-gray-400">
@@ -596,21 +594,21 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {/* Soda list */}
       {loading ? (
-        <div className="space-y-px">
+        <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 flex items-center gap-3 p-3">
-              <Skeleton className="w-12 h-12 shrink-0" />
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 flex items-center gap-3 p-3">
+              <Skeleton className="w-12 h-12 shrink-0 rounded-xl" />
               <div className="flex-1 min-w-0 space-y-1.5">
                 <Skeleton className="h-3.5 w-2/3" />
                 <Skeleton className="h-2.5 w-1/3" />
                 <Skeleton className="h-2 w-1/4" />
               </div>
-              <Skeleton className="w-8 h-8 shrink-0" />
+              <Skeleton className="w-8 h-8 shrink-0 rounded-full" />
             </div>
           ))}
         </div>
       ) : sorted.length === 0 ? (
-        <div className="border border-dashed border-gray-300 dark:border-gray-700">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
           {restockFilter ? (
             <div className="text-center py-12">
               <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
@@ -657,7 +655,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       ) : (
         <motion.div
-          className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600"
+          className="space-y-2"
           initial="hidden"
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
@@ -683,13 +681,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <FieldLabel className="mb-2">
                     Icon
                   </FieldLabel>
-                  <div className="grid grid-cols-6 gap-1 p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600">
+                  <div className="grid grid-cols-6 gap-1.5 p-2 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                     <button
                       type="button"
                       onClick={() => stashId && onUpdateIcon(stashId, null)}
-                      className={`h-9 flex items-center justify-center font-sans text-[10px] uppercase tracking-wide border transition-colors ${
+                      className={`h-9 rounded-lg flex items-center justify-center font-sans text-[10px] uppercase tracking-wide border transition-colors ${
                         !stash.icon
-                          ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          ? 'border-sky-500 dark:border-sky-400 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300'
                           : 'border-transparent text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                     >
@@ -700,9 +698,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         key={name}
                         type="button"
                         onClick={() => stashId && onUpdateIcon(stashId, name)}
-                        className={`h-9 flex items-center justify-center border transition-colors ${
+                        className={`h-9 rounded-lg flex items-center justify-center border transition-colors ${
                           stash.icon === name
-                            ? 'border-gray-700 dark:border-gray-300 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
+                            ? 'border-sky-500 dark:border-sky-400 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300'
                             : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-800 dark:hover:text-gray-200'
                         }`}
                       >
@@ -724,11 +722,11 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                           type="button"
                           title={label}
                           onClick={() => stashId && onUpdateAccentColor(stashId, value)}
-                          className={`w-9 h-9 border-2 transition-all ${
+                          className={`w-9 h-9 rounded-xl border-2 transition-all ${
                             stash.accentColor === value
                               ? 'scale-110 shadow'
                               : 'opacity-70 hover:opacity-100'
-                          } ${!value ? 'border-gray-400 dark:border-gray-500' : 'border-transparent'}`}
+                          } ${!value ? 'border-gray-300 dark:border-gray-600' : 'border-transparent'}`}
                           style={value ? { backgroundColor: value, borderColor: stash.accentColor === value ? value : 'transparent' } : undefined}
                           aria-label={label}
                           aria-pressed={stash.accentColor === value}
@@ -769,7 +767,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <FieldLabel className="mb-1.5">
                     Invite Code
                   </FieldLabel>
-                  <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-4 py-2.5">
+                  <div className="flex items-center gap-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-2.5">
                     <span className="flex-1 font-mono text-xl tracking-[0.3em] text-gray-900 dark:text-gray-100">
                       {stash.joinCode}
                     </span>
@@ -798,7 +796,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <div className="space-y-1">
                     {members.map((m) => (
                       <div key={m.userId} className="flex items-center gap-2 py-1.5">
-                        <div className="w-7 h-7 border border-gray-500 dark:border-gray-400 text-gray-700 dark:text-gray-300 text-xs font-bold flex items-center justify-center shrink-0 font-sans">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white text-xs font-bold flex items-center justify-center shrink-0 font-sans">
                           {(m.displayName ?? '?')[0].toUpperCase()}
                         </div>
                         <span className="flex-1 font-sans text-sm text-gray-900 dark:text-gray-100 truncate">
@@ -829,12 +827,12 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <p className="font-sans text-sm text-red-600 dark:text-red-400 italic">{settingsError}</p>
                 )}
 
-                <div className="border-t border-gray-300 dark:border-gray-700 pt-4">
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                   {isOwner ? (
                     <button
                       type="button"
                       onClick={handleDelete}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
                     >
                       <Trash2 size={13} />
                       Dissolve Collection
@@ -843,7 +841,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                     <button
                       type="button"
                       onClick={handleLeave}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 font-sans text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-colors"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-colors"
                     >
                       <LogOut size={13} />
                       Resign from Collection
@@ -887,10 +885,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
                       >
                         {soda.imageUrl ? (
-                          <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                          <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 rounded-lg object-cover shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
                         ) : (
-                          <div className="w-9 h-9 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
-                            <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-gray-700 dark:to-gray-800">
+                            <CupSoda size={14} className="text-sky-400 dark:text-gray-500" />
                           </div>
                         )}
                         <div className="min-w-0">
@@ -905,18 +903,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <button
                           type="button"
                           onClick={() => { hapticTap(); setFridgeStatus(soda.id, soda.quantity > 1, soda.quantity > 1 ? soda.quantity - 1 : 0); }}
-                          className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          className="w-10 h-10 rounded-l-xl flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Decrease"
                         >
                           <Minus size={11} />
                         </button>
-                        <span className="w-9 h-10 flex items-center justify-center font-display font-black text-sm text-gray-900 dark:text-white tabular-nums border-y border-gray-300 dark:border-gray-600">
+                        <span className="w-9 h-10 flex items-center justify-center font-display font-bold text-sm text-gray-900 dark:text-white tabular-nums border-y border-gray-200 dark:border-gray-700">
                           {soda.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => { hapticTap(); setFridgeStatus(soda.id, true, soda.quantity + 1); }}
-                          className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          className="w-10 h-10 rounded-r-xl flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Increase"
                         >
                           <Plus size={11} />
@@ -967,7 +965,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       onClick={() => { setTopOpen(false); navigate(`/stash/${stashId}/soda/${soda.id}`); }}
                       className="w-full flex items-center gap-3 px-5 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-left"
                     >
-                      <span className={`w-7 h-7 border flex items-center justify-center font-display text-xs font-black shrink-0 ${
+                      <span className={`w-7 h-7 rounded-full border flex items-center justify-center font-display text-xs font-bold shrink-0 ${
                         i === 0 ? 'border-amber-600 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20' :
                         i === 1 ? 'border-gray-400 text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800' :
                                   'border-orange-400 text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20'
@@ -975,10 +973,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         {i + 1}
                       </span>
                       {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                        <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-10 h-10 rounded-xl object-cover shrink-0 ring-1 ring-gray-200 dark:ring-gray-700" />
                       ) : (
-                        <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
-                          <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-gray-700 dark:to-gray-800">
+                          <CupSoda size={16} className="text-sky-400 dark:text-gray-500" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">

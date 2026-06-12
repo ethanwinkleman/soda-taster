@@ -49,7 +49,7 @@ export function PublicProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <header className="bg-gray-50 dark:bg-gray-950 border-b-[5px] border-double border-gray-800 dark:border-gray-200 px-4 py-3 flex items-center justify-between">
+      <header className="bg-gray-50 dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
         <Logo size="sm" />
         <button
           type="button"
@@ -65,7 +65,6 @@ export function PublicProfilePage() {
           <div>
             {/* Profile header */}
             <div className="mb-8">
-              <div className="border-t-2 border-gray-800 dark:border-gray-200 mb-2" />
               <div className="flex items-center gap-4">
                 <Skeleton className="w-14 h-14 rounded-full shrink-0" />
                 <div className="space-y-2">
@@ -73,12 +72,12 @@ export function PublicProfilePage() {
                   <Skeleton className="h-2.5 w-28" />
                 </div>
               </div>
-              <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
+              <div className="border-b border-gray-200 dark:border-gray-700 mt-3" />
             </div>
 
             {/* Ratings list */}
             <Skeleton className="h-2.5 w-32 mb-3" />
-            <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3 py-3 px-1">
                   <div className="flex-1 min-w-0 space-y-1.5">
@@ -108,21 +107,20 @@ export function PublicProfilePage() {
           <div>
             {/* Profile header */}
             <div className="mb-8">
-              <div className="border-t-2 border-gray-800 dark:border-gray-200 mb-2" />
               <div className="flex items-center gap-4">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt={profile.display_name ?? ''}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-gray-700 dark:border-gray-300 shrink-0"
+                    className="w-14 h-14 rounded-full object-cover ring-2 ring-sky-500 dark:ring-sky-400 shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 border-2 border-gray-700 dark:border-gray-300 flex items-center justify-center text-xl font-black font-display text-gray-700 dark:text-gray-300 shrink-0">
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center text-xl font-bold font-display text-white shrink-0">
                     {(profile.display_name ?? username ?? '?')[0].toUpperCase()}
                   </div>
                 )}
                 <div>
-                  <h1 className="font-display text-2xl font-black italic text-gray-900 dark:text-white">
+                  <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white">
                     {profile.display_name ?? username}
                   </h1>
                   <p className="text-xs font-sans uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mt-0.5">
@@ -130,12 +128,12 @@ export function PublicProfilePage() {
                   </p>
                 </div>
               </div>
-              <div className="border-b border-gray-400 dark:border-gray-600 mt-3" />
+              <div className="border-b border-gray-200 dark:border-gray-700 mt-3" />
             </div>
 
             {/* Ratings list */}
             {ratings.length === 0 ? (
-              <div className="text-center py-16 border border-dashed border-gray-300 dark:border-gray-700">
+              <div className="text-center py-16 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
                 <CupSoda size={36} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
                 <p className="font-display italic text-gray-500 dark:text-gray-400">No ratings on record yet.</p>
               </div>
@@ -144,9 +142,9 @@ export function PublicProfilePage() {
                 <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
                   {ratings.length} Soda{ratings.length !== 1 ? 's' : ''} Rated
                 </p>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-300 dark:border-gray-600">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
                   {ratings.map((r) => (
-                    <div key={r.soda_id} className="flex items-center gap-3 py-3 px-1 bg-white dark:bg-gray-800">
+                    <div key={r.soda_id} className="flex items-center gap-3 py-3 px-3 bg-white dark:bg-gray-800">
                       <div className="flex-1 min-w-0">
                         <p className="font-display font-bold text-gray-900 dark:text-gray-100 truncate">{r.soda_name}</p>
                         {r.soda_brand && (
@@ -165,7 +163,7 @@ export function PublicProfilePage() {
                   <button
                     type="button"
                     onClick={() => navigate('/')}
-                    className="px-5 py-2 font-sans text-xs font-bold uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors"
+                    className="px-5 py-2 rounded-xl font-sans text-xs font-bold uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors"
                   >
                     Try Soda Taster
                   </button>

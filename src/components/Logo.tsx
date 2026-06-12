@@ -11,7 +11,7 @@ const sizeClass = {
 export function Logo({ size = 'md' }: Props) {
   return (
     <span
-      className={`font-cursive ${sizeClass[size]} text-gray-900 dark:text-gray-100 leading-none tracking-wide select-none`}
+      className={`font-display font-bold ${sizeClass[size]} text-gray-900 dark:text-gray-100 leading-none tracking-wide select-none`}
     >
       Soda Taster
     </span>

@@ -8,7 +8,7 @@ export function BottomNav() {
   const onAddPage = !!matchPath('/stash/:id/add', pathname);
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 border-t-[5px] border-double border-gray-800 dark:border-gray-200 pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-700 pb-safe">
       <div className="flex items-center justify-around h-16">
         <NavLink
           to="/"
@@ -16,7 +16,7 @@ export function BottomNav() {
           className={({ isActive }) =>
             `flex flex-col items-center justify-center gap-0.5 px-8 h-full transition-colors font-sans ${
               isActive
-                ? 'text-gray-900 dark:text-gray-100'
+                ? 'text-sky-600 dark:text-sky-400'
                 : 'text-gray-400 dark:text-gray-500'
             }`
           }
@@ -33,7 +33,7 @@ export function BottomNav() {
             to={`/stash/${stashId}/add`}
             className={`flex flex-col items-center justify-center gap-0.5 px-8 h-full transition-colors font-sans ${
               onAddPage
-                ? 'text-gray-900 dark:text-gray-100'
+                ? 'text-sky-600 dark:text-sky-400'
                 : 'text-gray-400 dark:text-gray-500'
             }`}
           >

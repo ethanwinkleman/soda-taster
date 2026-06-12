@@ -28,10 +28,10 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
   const initials = name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-gray-50 dark:bg-gray-950 border-r-2 border-gray-800 dark:border-gray-200 z-40">
+    <aside className="hidden md:flex flex-col fixed left-0 top-0 h-screen w-64 bg-gray-50 dark:bg-gray-950 border-r border-gray-200 dark:border-gray-700 z-40">
 
       {/* Masthead */}
-      <div className="px-5 py-4 border-b-[5px] border-double border-gray-800 dark:border-gray-200 shrink-0 flex flex-col items-center gap-1">
+      <div className="px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0 flex flex-col items-center gap-1">
         <NavLink to="/" className="block text-center">
           <Logo size="md" />
         </NavLink>
@@ -64,19 +64,19 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
               <NavLink
                 to={`/stash/${stash.id}`}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 pl-3 pr-8 py-2 text-sm font-sans font-medium transition-colors border-l-2 ${
+                  `flex items-center gap-2.5 pl-3 pr-8 py-2 text-sm font-sans font-medium transition-colors rounded-lg border-l-2 ${
                     isActive
-                      ? 'border-gray-900 dark:border-gray-100 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                      ? 'border-sky-500 dark:border-sky-400 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
                       : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
                   }`
                 }
               >
                 {stash.icon ? (
-                  <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                  <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white">
                     <StashIcon name={stash.icon} size={12} />
                   </span>
                 ) : (
-                  <span className="w-5 h-5 border border-gray-400 dark:border-gray-600 flex items-center justify-center text-[10px] font-bold shrink-0 bg-gray-100 dark:bg-gray-800 font-sans">
+                  <span className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white font-sans">
                     {stash.name[0]?.toUpperCase() ?? '?'}
                   </span>
                 )}
@@ -114,7 +114,7 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
             onClick={() => navigate('/')}
             className="w-full flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border-l-2 border-transparent"
           >
-            <span className="w-5 h-5 border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
+            <span className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
               <Plus size={10} />
             </span>
             <span>New collection…</span>
@@ -124,7 +124,7 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
 
       {/* User footer */}
       {user && (
-        <div className="px-4 py-3 border-t-2 border-gray-800 dark:border-gray-200 shrink-0 flex items-center gap-3">
+        <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 shrink-0 flex items-center gap-3">
           {avatarUrl ? (
             <img src={avatarUrl} alt={name} className="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-400" />
           ) : (

@@ -9,11 +9,11 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-2 font-sans uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center gap-2 rounded-xl font-sans uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed';
 
 const variants: Record<Variant, string> = {
   primary:
-    'font-bold text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300',
+    'font-bold text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]',
   secondary:
     'font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
   danger:
