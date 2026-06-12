@@ -177,6 +177,10 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
               placeholder="XXXXXX"
               maxLength={6}
+              autoCapitalize="characters"
+              autoComplete="off"
+              spellCheck={false}
+              enterKeyHint="go"
               tone="inset"
               className="mb-3 font-mono tracking-[0.4em] text-center text-xl uppercase"
             />

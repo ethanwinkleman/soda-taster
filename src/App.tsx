@@ -41,7 +41,11 @@ import { PendingJoinHandler } from './components/PendingJoinHandler';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior }); }, [pathname]);
+  const navType = useNavigationType();
+  useEffect(() => {
+    // Leave scroll alone on back/forward so the browser can restore position
+    if (navType !== 'POP') window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [pathname, navType]);
   return null;
 }
 

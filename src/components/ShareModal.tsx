@@ -74,6 +74,10 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
               onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
               maxLength={20}
               placeholder="your_name"
+              autoCapitalize="none"
+              autoComplete="off"
+              spellCheck={false}
+              enterKeyHint="done"
               className="flex-1 px-2 py-3 text-base bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>

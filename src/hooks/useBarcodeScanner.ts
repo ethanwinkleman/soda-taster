@@ -1,21 +1,32 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
-import { DecodeHintType } from '@zxing/library';
 
 export type ScanStatus = 'idle' | 'requesting' | 'scanning' | 'error';
 export type ScanErrorType = 'permission' | 'device' | null;
 
-// Restrict to 1D grocery/beverage formats only — dramatically cuts processing time
-// and improves reliability vs. scanning for every possible format
-const HINTS = new Map<DecodeHintType, unknown>([
-  [DecodeHintType.POSSIBLE_FORMATS, [
-    BarcodeFormat.UPC_A,
-    BarcodeFormat.UPC_E,
-    BarcodeFormat.EAN_13,
-    BarcodeFormat.EAN_8,
-  ]],
-  [DecodeHintType.TRY_HARDER, true],
-] as Array<[DecodeHintType, unknown]>);
+// ZXing is ~370KB, so it's loaded dynamically when scanning starts rather
+// than bundled into the page chunk.
+async function loadReader() {
+  const [{ BrowserMultiFormatReader, BarcodeFormat }, { DecodeHintType }] = await Promise.all([
+    import('@zxing/browser'),
+    import('@zxing/library'),
+  ]);
+
+  // Restrict to 1D grocery/beverage formats only — dramatically cuts processing time
+  // and improves reliability vs. scanning for every possible format
+  const hints = new Map<unknown, unknown>([
+    [DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+    ]],
+    [DecodeHintType.TRY_HARDER, true],
+  ]);
+
+  return new BrowserMultiFormatReader(hints as ConstructorParameters<typeof BrowserMultiFormatReader>[0], {
+    delayBetweenScanAttempts: 100, // default is 500ms — scan 5× as often
+  });
+}
 
 // High-res back camera + continuous autofocus gives ZXing enough pixels
 // to decode small barcodes on cans and bottles reliably
@@ -62,9 +73,8 @@ export function useBarcodeScanner(
     prominentTimerRef.current = setTimeout(() => setShowProminentManual(true), 10000);
 
     try {
-      const reader = new BrowserMultiFormatReader(HINTS, {
-        delayBetweenScanAttempts: 100, // default is 500ms — scan 5× as often
-      });
+      const reader = await loadReader();
+      if (!videoRef.current) return;
 
       const controls = await reader.decodeFromConstraints(
         CAMERA_CONSTRAINTS,

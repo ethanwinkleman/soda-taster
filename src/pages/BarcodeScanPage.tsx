@@ -269,6 +269,8 @@ export function BarcodeScanPage() {
                   placeholder="e.g. 049000028928"
                   maxLength={14}
                   inputMode="numeric"
+                  autoComplete="off"
+                  enterKeyHint="search"
                   className="flex-1 px-3 py-2.5 bg-gray-800 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-gray-400 font-mono tracking-wider text-sm"
                 />
                 <button

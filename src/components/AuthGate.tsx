@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { Layers, Users, Refrigerator, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -96,14 +96,8 @@ const FEATURES = [
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithGoogle } = useAuth();
-  const [minElapsed, setMinElapsed] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setMinElapsed(true), 1800);
-    return () => clearTimeout(t);
-  }, []);
-
-  if (loading || !minElapsed) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <FillingBeer />

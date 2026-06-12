@@ -724,7 +724,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                           type="button"
                           title={label}
                           onClick={() => stashId && onUpdateAccentColor(stashId, value)}
-                          className={`w-7 h-7 border-2 transition-all ${
+                          className={`w-9 h-9 border-2 transition-all ${
                             stash.accentColor === value
                               ? 'scale-110 shadow'
                               : 'opacity-70 hover:opacity-100'
@@ -887,7 +887,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         className="flex items-center gap-2.5 flex-1 min-w-0 text-left"
                       >
                         {soda.imageUrl ? (
-                          <img src={soda.imageUrl} alt="" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                          <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-9 h-9 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                         ) : (
                           <div className="w-9 h-9 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
                             <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
@@ -905,18 +905,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <button
                           type="button"
                           onClick={() => { hapticTap(); setFridgeStatus(soda.id, soda.quantity > 1, soda.quantity > 1 ? soda.quantity - 1 : 0); }}
-                          className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Decrease"
                         >
                           <Minus size={11} />
                         </button>
-                        <span className="w-8 h-7 flex items-center justify-center font-display font-black text-sm text-gray-900 dark:text-white tabular-nums border-y border-gray-300 dark:border-gray-600">
+                        <span className="w-9 h-10 flex items-center justify-center font-display font-black text-sm text-gray-900 dark:text-white tabular-nums border-y border-gray-300 dark:border-gray-600">
                           {soda.quantity}
                         </span>
                         <button
                           type="button"
                           onClick={() => { hapticTap(); setFridgeStatus(soda.id, true, soda.quantity + 1); }}
-                          className="w-7 h-7 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                          className="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                           aria-label="Increase"
                         >
                           <Plus size={11} />
@@ -925,7 +925,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <button
                           type="button"
                           onClick={() => { hapticMedium(); setFridgeStatus(soda.id, false, 0); }}
-                          className="ml-2.5 w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          className="ml-1.5 w-10 h-10 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                           aria-label="Remove from stock"
                           title="Remove from stock"
                         >
@@ -975,7 +975,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         {i + 1}
                       </span>
                       {soda.imageUrl ? (
-                        <img src={soda.imageUrl} alt="" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
+                        <img src={soda.imageUrl} alt="" loading="lazy" decoding="async" className="w-10 h-10 object-cover shrink-0 border border-gray-200 dark:border-gray-600" />
                       ) : (
                         <div className="w-10 h-10 border border-gray-200 dark:border-gray-600 flex items-center justify-center shrink-0 bg-gray-100 dark:bg-gray-800">
                           <CupSoda size={16} className="text-gray-400 dark:text-gray-500" />

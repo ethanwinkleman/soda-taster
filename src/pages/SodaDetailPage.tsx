@@ -607,7 +607,7 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(-1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-8 h-8 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-10 h-10 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Minus size={12} />
               </motion.button>
@@ -619,7 +619,7 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-8 h-8 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="w-10 h-10 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Plus size={12} />
               </motion.button>
