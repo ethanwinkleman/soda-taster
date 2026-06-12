@@ -165,7 +165,7 @@ export function PublicProfilePage() {
                   <button
                     type="button"
                     onClick={() => navigate('/')}
-                    className="px-5 py-2 font-sans text-xs font-bold uppercase tracking-wider text-gray-50 bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
+                    className="px-5 py-2 font-sans text-xs font-bold uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors"
                   >
                     Try Soda Taster
                   </button>

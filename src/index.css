@@ -7,38 +7,29 @@
   --font-display: 'Playfair Display', Georgia, serif;
   --font-cursive: 'UnifrakturMaguntia', 'Playfair Display', serif;
 
-  /* ── Newsprint / sepia palette (replaces all gray-* tokens) ──── */
-  --color-gray-50:  #faf7f0;
-  --color-gray-100: #ede7d9;
-  --color-gray-200: #cfc4ae;
-  --color-gray-300: #b0a08a;
-  --color-gray-400: #8a7860;
-  --color-gray-500: #6b5c48;
-  --color-gray-600: #4e3e2e;
-  --color-gray-700: #352a1e;
-  --color-gray-800: #231a10;
-  --color-gray-900: #150e07;
-  --color-gray-950: #0c0904;
+  /* ── Clean neutral palette (replaces all gray-* tokens) ───────── */
+  --color-gray-50:  #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
+  --color-gray-950: #0f1115;
 
-  /* ── Dark ink replaces sky-* (CTAs, links, active states) ─────── */
-  --color-sky-50:  #f8f3e8;
-  --color-sky-100: #ede0c4;
-  --color-sky-200: #d4be96;
-  --color-sky-300: #b89660;
-  --color-sky-400: #8b6d3a;
-  --color-sky-500: #5c3d1e;
-  --color-sky-600: #3d2510;
-  --color-sky-700: #2a180a;
-  --color-sky-900: #140c04;
-
-  /* ── Indigo remapped to match ink tones (used in icon gradients) ─ */
-  --color-indigo-400: #7a5c38;
-  --color-indigo-500: #5c3d1e;
-  --color-indigo-900: #1a0f06;
-
-  /* ── Amber: slightly muted vintage gold for stars / ratings ────── */
-  --color-amber-400: #c4901a;
-  --color-amber-500: #a07010;
+  /* ── Cobalt blue (replaces sky-* — CTAs, links, active states) ── */
+  --color-sky-50:  #eff6ff;
+  --color-sky-100: #dbeafe;
+  --color-sky-200: #bfdbfe;
+  --color-sky-300: #93c5fd;
+  --color-sky-400: #60a5fa;
+  --color-sky-500: #3b82f6;
+  --color-sky-600: #2563eb;
+  --color-sky-700: #1d4ed8;
+  --color-sky-900: #1e3a8a;
 
   /* ── Tight border-radius — angular like newspaper columns ──────── */
   --radius-xs:  0px;
@@ -76,12 +67,12 @@ body {
   margin: 0;
   font-family: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
   -webkit-font-smoothing: antialiased;
-  background-color: #faf7f0;
+  background-color: #fafafa;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background-color: #0c0904;
+    background-color: #0f1115;
   }
 }
 
