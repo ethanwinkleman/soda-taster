@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type Tone = 'default' | 'inset';
@@ -15,9 +16,11 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   tone?: Tone;
 }
 
-export function Input({ tone = 'default', className, ...rest }: InputProps) {
-  return <input className={twMerge(base, tones[tone], className)} {...rest} />;
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  function Input({ tone = 'default', className, ...rest }, ref) {
+    return <input ref={ref} className={twMerge(base, tones[tone], className)} {...rest} />;
+  }
+);
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   tone?: Tone;
