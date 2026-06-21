@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Plus, Minus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal, ShoppingCart,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +19,7 @@ import { Skeleton } from '../components/Skeleton';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { FloatingBubbles } from '../components/FloatingBubbles';
 import { Button, Input, FieldLabel, Modal } from '../components/ui';
+import { ShoppingListModal } from '../components/ShoppingListModal';
 import { hapticTap, hapticMedium } from '../lib/haptics';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
@@ -63,6 +64,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [menuOpen, setMenuOpen] = useState(false);
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [topOpen, setTopOpen] = useState(false);
+  const [shoppingListOpen, setShoppingListOpen] = useState(false);
   const [restockFilter, setRestockFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   const [renameVal, setRenameVal] = useState('');
@@ -388,6 +390,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                           >
                             <Copy size={14} />
                             Copy as JSON for AI
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); setShoppingListOpen(true); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                          >
+                            <ShoppingCart size={14} />
+                            Shopping List
                           </button>
                           <div className="border-t border-gray-200 dark:border-gray-700" />
                           <button
@@ -991,6 +1001,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 </div>
               )}
       </Modal>
+
+      {stash && (
+        <ShoppingListModal
+          open={shoppingListOpen}
+          onClose={() => setShoppingListOpen(false)}
+          stashName={stash.name}
+          sodas={sodas}
+        />
+      )}
     </div>
   );
 }
