@@ -243,3 +243,50 @@ ALTER TABLE stashes ADD COLUMN IF NOT EXISTS accent_color TEXT;
 -- ── Tasting notes on ratings ──────────────────────────────────────────────────
 -- Optional free-text note (max 300 chars) attached to a member's score.
 ALTER TABLE stash_soda_ratings ADD COLUMN IF NOT EXISTS notes TEXT CHECK (notes IS NULL OR char_length(notes) <= 300);
+
+-- ── User profiles ─────────────────────────────────────────────────────────────
+-- Backs useProfile, the member list in useStashes.getMembers(), the public
+-- /u/:username page, and the get_public_ratings RPC above (which reads
+-- profiles.is_public).  A row is auto-created from Google metadata on first load.
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id           UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username     TEXT        UNIQUE,
+  is_public    BOOLEAN     NOT NULL DEFAULT FALSE,
+  display_name TEXT,
+  avatar_url   TEXT,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS profiles_username_idx ON profiles(username) WHERE username IS NOT NULL;
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Helper: do I share at least one stash with this user?  SECURITY DEFINER so the
+-- profiles policy doesn't re-trigger RLS on stash_members (same reason as is_stash_member).
+CREATE OR REPLACE FUNCTION shares_stash_with(p_user_id UUID)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM stash_members me
+    JOIN stash_members them ON them.stash_id = me.stash_id
+    WHERE me.user_id = auth.uid() AND them.user_id = p_user_id
+  );
+$$;
+
+-- Anyone (including anon) may read a profile the user has marked public — this is
+-- what makes the /u/:username page work without a session.
+CREATE POLICY "read_public_profiles" ON profiles FOR SELECT
+  USING (is_public = true);
+
+-- Members of a shared stash may read each other's profiles so names/avatars render.
+CREATE POLICY "read_costash_profiles" ON profiles FOR SELECT
+  USING (auth.uid() = id OR shares_stash_with(id));
+
+CREATE POLICY "insert_own_profile" ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "update_own_profile" ON profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
