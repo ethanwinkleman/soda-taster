@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Copy, Check, Refrigerator } from 'lucide-react';
+import { ShoppingCart, Copy, Check, Refrigerator, Plus, Minus, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Soda } from '../types/stash';
 import { Modal, Button } from './ui';
@@ -11,24 +11,52 @@ interface Props {
   sodas: Soda[];
 }
 
+// Scores come in 0.5 steps, so a half rating gets its own glyph and the row
+// always occupies five positions.
 function stars(score: number) {
-  return '★'.repeat(score) + '☆'.repeat(5 - score);
+  const full = Math.floor(score);
+  const half = score - full >= 0.5;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half ? 1 : 0));
+}
+
+function csvCell(value: string | number) {
+  const s = String(value);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function fileStem(stashName: string) {
+  return stashName.replace(/[^a-z0-9]/gi, '_');
 }
 
 export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
   const [copied, setCopied] = useState(false);
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
 
   const items = sodas
     .filter((s) => !s.inFridge && (s.myRating?.score ?? 0) >= 4)
     .sort((a, b) => (b.myRating?.score ?? 0) - (a.myRating?.score ?? 0));
+
+  const qtyOf = (id: string) => quantities[id] ?? 1;
+  const totalUnits = items.reduce((sum, s) => sum + qtyOf(s.id), 0);
+
+  function bump(id: string, delta: number) {
+    setQuantities((prev) => ({
+      ...prev,
+      [id]: Math.min(99, Math.max(1, (prev[id] ?? 1) + delta)),
+    }));
+  }
+
+  function label(soda: Soda) {
+    return soda.brand ? `${soda.name} (${soda.brand})` : soda.name;
+  }
 
   function buildText() {
     const date = new Date().toLocaleDateString(undefined, {
       month: 'long', day: 'numeric', year: 'numeric',
     });
     const rows = items.map((s) => {
-      const label = s.brand ? `${s.name} (${s.brand})` : s.name;
-      return `${stars(s.myRating!.score)}  ${label}`;
+      const qty = qtyOf(s.id);
+      return `${stars(s.myRating!.score)}  ${label(s)}${qty > 1 ? `  ×${qty}` : ''}`;
     });
     return [
       `Shopping List — ${stashName}`,
@@ -36,7 +64,9 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
       '',
       ...rows,
       '',
-      `${items.length} item${items.length !== 1 ? 's' : ''} · Soda Taster`,
+      `${items.length} item${items.length !== 1 ? 's' : ''}` +
+        (totalUnits !== items.length ? ` · ${totalUnits} units` : '') +
+        ' · Soda Taster',
     ].join('\n');
   }
 
@@ -51,6 +81,24 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
     }
   }
 
+  function handleDownloadCsv() {
+    const header = ['Name', 'Brand', 'My Rating', 'Quantity'];
+    const rows = items.map((s) => [
+      csvCell(s.name),
+      csvCell(s.brand),
+      csvCell(s.myRating!.score),
+      csvCell(qtyOf(s.id)),
+    ]);
+    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${fileStem(stashName)}_shopping_list.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV downloaded.');
+  }
+
   return (
     <Modal
       open={open}
@@ -63,6 +111,7 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
           {items.length > 0 && (
             <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
               {items.length} {items.length === 1 ? 'item' : 'items'} to buy
+              {totalUnits !== items.length ? ` · ${totalUnits} units` : ''}
             </span>
           )}
         </div>
@@ -92,21 +141,49 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
                       {soda.brand}
                     </p>
                   )}
+                  <span
+                    className="font-sans text-sm text-amber-400 tracking-tight"
+                    aria-label={`${soda.myRating!.score} out of 5 stars`}
+                  >
+                    {stars(soda.myRating!.score)}
+                  </span>
                 </div>
-                <span
-                  className="shrink-0 text-sm text-amber-400 tracking-tight"
-                  aria-label={`${soda.myRating!.score} out of 5 stars`}
-                >
-                  {stars(soda.myRating!.score)}
-                </span>
+
+                {/* Quantity to buy */}
+                <div className="shrink-0 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => bump(soda.id, -1)}
+                    disabled={qtyOf(soda.id) <= 1}
+                    aria-label={`Buy one fewer ${soda.name}`}
+                    className="w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 transition-colors"
+                  >
+                    <Minus size={12} />
+                  </button>
+                  <span className="w-6 text-center font-sans text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">
+                    {qtyOf(soda.id)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => bump(soda.id, 1)}
+                    aria-label={`Buy one more ${soda.name}`}
+                    className="w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Plus size={12} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="px-4 pt-3 pb-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="px-4 pt-3 pb-2 border-t border-gray-200 dark:border-gray-700 space-y-2">
             <Button size="md" onClick={handleCopy} className="w-full">
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? 'Copied!' : 'Copy to Clipboard'}
+            </Button>
+            <Button variant="secondary" size="md" onClick={handleDownloadCsv} className="w-full">
+              <Download size={14} />
+              Download as CSV
             </Button>
           </div>
         </>

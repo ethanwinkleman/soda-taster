@@ -80,7 +80,15 @@ export function AddSodaPage() {
     if (!name.trim()) return;
     setSaving(true);
     try {
-      const result = await addSoda(name.trim(), brand.trim(), score > 0 ? score : null, displayName, imageFile);
+      // Quick Add hides brand/photo, so never save values the user can't currently see —
+      // the state is kept so switching back to Full Details restores what they typed.
+      const result = await addSoda(
+        name.trim(),
+        quickMode ? '' : brand.trim(),
+        score > 0 ? score : null,
+        displayName,
+        quickMode ? null : imageFile,
+      );
       if (!result) throw new Error();
       toast.success(`"${name.trim()}" added to collection.`);
       if (quickMode) {

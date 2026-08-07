@@ -136,7 +136,7 @@ export default function App() {
               position="top-center"
               toastOptions={{
                 classNames: {
-                  toast: 'font-sans text-sm !rounded-none !border !border-gray-800 dark:!border-gray-200 !shadow-lg',
+                  toast: 'font-sans text-sm !rounded-2xl !border !border-gray-200 dark:!border-gray-700 !shadow-lg',
                   success: '!bg-white dark:!bg-gray-900 !text-gray-900 dark:!text-gray-100',
                   error: '!bg-white dark:!bg-gray-900 !text-red-600 dark:!text-red-400',
                 },
