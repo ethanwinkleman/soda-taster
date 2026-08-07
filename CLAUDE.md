@@ -15,9 +15,14 @@ There is no test suite. `npm run lint` currently reports a **baseline of 22 prob
 
 ## Database setup
 
-Before running the app against a new Supabase project, run `supabase/schema.sql` in the Supabase SQL editor. It creates every table, RLS policy, RPC, and the `soda-images` storage bucket.
+Before running the app against a new Supabase project, run `supabase/schema.sql` in the Supabase SQL editor. It creates every table, RLS policy, RPC, and the `soda-images` storage bucket. A top-to-bottom run on an empty database is verified to succeed.
 
-The file is written as an append-only migration log: new features add a `-- ── Section ──` block at the end using `CREATE TABLE IF NOT EXISTS` / `ADD COLUMN IF NOT EXISTS`, so re-running the whole file is safe. Follow that convention when adding schema.
+The file reads as a migration log of `-- ── Section ──` blocks, but note two constraints when adding to it:
+
+- **Order matters.** Postgres validates a policy expression and a `LANGUAGE sql` function body at `CREATE` time, so a block must come *after* whatever it references. `is_stash_member` precedes the `stashes` policies and the `profiles` table precedes `get_public_ratings` for exactly this reason — appending either to the end breaks a fresh run.
+- **The whole file is not re-runnable.** `CREATE TABLE`/`ADD COLUMN` are guarded with `IF NOT EXISTS`, but Postgres has no `CREATE POLICY IF NOT EXISTS`, so a second full run fails on the first duplicate policy. Individual sections can be made re-appliable by pairing each policy with `DROP POLICY IF EXISTS` (the `profiles` block does this); the rest of the file predates that convention.
+
+**Applying a single new section to a live project:** paste just that section, not the whole file.
 
 **Environment:** requires `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. (`*.local` is gitignored.)
 
