@@ -6,6 +6,14 @@ interface Props {
   onSignIn: () => void;
 }
 
+// The hero deliberately shows the collections home — the three SECTIONS below each
+// own a screen, so reusing one of them here would show the same image twice.
+const HERO_SHOT = {
+  src: '/shots/home.webp',
+  alt: 'The Soda Taster home screen listing four soda collections alongside an automatically written summary of the drinker’s palate.',
+  w: 640, h: 1280,
+};
+
 const SECTIONS = [
   {
     icon: Star,
@@ -145,7 +153,7 @@ export function LandingPage({ onSignIn }: Props) {
             transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
             className="mx-auto w-full max-w-[17rem] lg:max-w-[19rem]"
           >
-            <Shot src="/shots/soda.webp" alt={SECTIONS[0].alt} w={640} h={1280} framed eager />
+            <Shot {...HERO_SHOT} framed eager />
           </motion.div>
         </div>
       </section>
