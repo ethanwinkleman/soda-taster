@@ -48,6 +48,15 @@ ALTER TABLE stash_members     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stash_sodas       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE stash_soda_ratings ENABLE ROW LEVEL SECURITY;
 
+-- Helper: checks membership without triggering RLS on stash_members (avoids infinite
+-- recursion). Must be defined before the policies below — Postgres validates a policy
+-- expression at CREATE time, so a forward reference aborts a fresh run of this file.
+CREATE OR REPLACE FUNCTION is_stash_member(p_stash_id UUID)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM stash_members WHERE stash_id = p_stash_id AND user_id = auth.uid());
+$$;
+
 -- stashes
 -- owner_id check lets the owner read back their stash immediately after INSERT,
 -- before they've been added to stash_members.
@@ -59,13 +68,6 @@ CREATE POLICY "owner_update_stash"    ON stashes FOR UPDATE
   USING (auth.uid() = owner_id);
 CREATE POLICY "owner_delete_stash"    ON stashes FOR DELETE
   USING (auth.uid() = owner_id);
-
--- Helper: checks membership without triggering RLS on stash_members (avoids infinite recursion)
-CREATE OR REPLACE FUNCTION is_stash_member(p_stash_id UUID)
-RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
-SET search_path = public AS $$
-  SELECT EXISTS (SELECT 1 FROM stash_members WHERE stash_id = p_stash_id AND user_id = auth.uid());
-$$;
 
 -- stash_members
 CREATE POLICY "members_view_stash_members" ON stash_members FOR SELECT
@@ -118,6 +120,70 @@ SET search_path = public AS $$
   FROM stashes
   WHERE join_code = upper(trim(code));
 $$;
+
+-- ── User profiles ─────────────────────────────────────────────────────────────
+-- Backs useProfile, the member list in useStashes.getMembers(), the public
+-- /u/:username page, and the get_public_ratings RPC below (which reads
+-- profiles.is_public).  A row is auto-created from Google metadata on first load.
+--
+-- Must precede get_public_ratings: that function is LANGUAGE sql, so its body is
+-- parsed at CREATE time and a missing profiles table aborts a fresh run.
+--
+-- This block is written to be safely re-appliable on a project where profiles was
+-- created by hand: the ADD COLUMNs backfill a partial table, and each policy is
+-- dropped before being recreated (Postgres has no CREATE POLICY IF NOT EXISTS).
+
+CREATE TABLE IF NOT EXISTS profiles (
+  id           UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  username     TEXT        UNIQUE,
+  is_public    BOOLEAN     NOT NULL DEFAULT FALSE,
+  display_name TEXT,
+  avatar_url   TEXT,
+  created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS username     TEXT UNIQUE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_public    BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url   TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS created_at   TIMESTAMPTZ DEFAULT NOW();
+
+CREATE INDEX IF NOT EXISTS profiles_username_idx ON profiles(username) WHERE username IS NOT NULL;
+
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Helper: do I share at least one stash with this user?  SECURITY DEFINER so the
+-- profiles policy doesn't re-trigger RLS on stash_members (same reason as is_stash_member).
+CREATE OR REPLACE FUNCTION shares_stash_with(p_user_id UUID)
+RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM stash_members me
+    JOIN stash_members them ON them.stash_id = me.stash_id
+    WHERE me.user_id = auth.uid() AND them.user_id = p_user_id
+  );
+$$;
+
+-- Anyone (including anon) may read a profile the user has marked public — this is
+-- what makes the /u/:username page work without a session.
+DROP POLICY IF EXISTS "read_public_profiles" ON profiles;
+CREATE POLICY "read_public_profiles" ON profiles FOR SELECT
+  USING (is_public = true);
+
+-- Members of a shared stash may read each other's profiles so names/avatars render.
+DROP POLICY IF EXISTS "read_costash_profiles" ON profiles;
+CREATE POLICY "read_costash_profiles" ON profiles FOR SELECT
+  USING (auth.uid() = id OR shares_stash_with(id));
+
+DROP POLICY IF EXISTS "insert_own_profile" ON profiles;
+CREATE POLICY "insert_own_profile" ON profiles FOR INSERT
+  WITH CHECK (auth.uid() = id);
+
+DROP POLICY IF EXISTS "update_own_profile" ON profiles;
+CREATE POLICY "update_own_profile" ON profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
 
 -- ── Public ratings RPC (no auth required) ────────────────────────────────────
 -- Returns a user's ratings only when their profile is public.
@@ -243,50 +309,3 @@ ALTER TABLE stashes ADD COLUMN IF NOT EXISTS accent_color TEXT;
 -- ── Tasting notes on ratings ──────────────────────────────────────────────────
 -- Optional free-text note (max 300 chars) attached to a member's score.
 ALTER TABLE stash_soda_ratings ADD COLUMN IF NOT EXISTS notes TEXT CHECK (notes IS NULL OR char_length(notes) <= 300);
-
--- ── User profiles ─────────────────────────────────────────────────────────────
--- Backs useProfile, the member list in useStashes.getMembers(), the public
--- /u/:username page, and the get_public_ratings RPC above (which reads
--- profiles.is_public).  A row is auto-created from Google metadata on first load.
-
-CREATE TABLE IF NOT EXISTS profiles (
-  id           UUID        PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  username     TEXT        UNIQUE,
-  is_public    BOOLEAN     NOT NULL DEFAULT FALSE,
-  display_name TEXT,
-  avatar_url   TEXT,
-  created_at   TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS profiles_username_idx ON profiles(username) WHERE username IS NOT NULL;
-
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
--- Helper: do I share at least one stash with this user?  SECURITY DEFINER so the
--- profiles policy doesn't re-trigger RLS on stash_members (same reason as is_stash_member).
-CREATE OR REPLACE FUNCTION shares_stash_with(p_user_id UUID)
-RETURNS BOOLEAN LANGUAGE sql SECURITY DEFINER STABLE
-SET search_path = public AS $$
-  SELECT EXISTS (
-    SELECT 1
-    FROM stash_members me
-    JOIN stash_members them ON them.stash_id = me.stash_id
-    WHERE me.user_id = auth.uid() AND them.user_id = p_user_id
-  );
-$$;
-
--- Anyone (including anon) may read a profile the user has marked public — this is
--- what makes the /u/:username page work without a session.
-CREATE POLICY "read_public_profiles" ON profiles FOR SELECT
-  USING (is_public = true);
-
--- Members of a shared stash may read each other's profiles so names/avatars render.
-CREATE POLICY "read_costash_profiles" ON profiles FOR SELECT
-  USING (auth.uid() = id OR shares_stash_with(id));
-
-CREATE POLICY "insert_own_profile" ON profiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "update_own_profile" ON profiles FOR UPDATE
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
