@@ -421,7 +421,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               className="w-full mt-3 py-2.5"
             >
               <Plus size={13} />
-              Record Soda
+              Add Soda
             </Button>
           </div>
         </div>
