@@ -4,21 +4,32 @@ import { Layers, Users, Refrigerator, Star } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
 
-function FillingBeer() {
+// The cup body from lucide's CupSoda, closed into a fillable shape.
+const CUP_BODY = 'M6 8 L7.75 20.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8 Z';
+
+// Bubbles rise inside the cup once it is mostly full.
+const FIZZ = [
+  { cx: 9.5,  r: 0.7, delay: 0 },
+  { cx: 12,   r: 0.9, delay: 0.25 },
+  { cx: 14.5, r: 0.6, delay: 0.5 },
+];
+
+function FillingCup() {
   const fillLevel = useMotionValue(0);
-  const liquidRef = useRef<SVGRectElement>(null);
-  const foamRef   = useRef<SVGGElement>(null);
+  const liquidRef  = useRef<SVGRectElement>(null);
+  const bubblesRef = useRef<SVGGElement>(null);
 
   useEffect(() => {
     return fillLevel.on('change', v => {
       if (liquidRef.current) {
-        const h = v * 11.5;
-        liquidRef.current.setAttribute('y',      String(19 - h));
+        // The cup interior runs from y=8 (rim) to y=22 (base) — 14 units tall.
+        const h = v * 14;
+        liquidRef.current.setAttribute('y',      String(22 - h));
         liquidRef.current.setAttribute('height', String(h));
       }
-      if (foamRef.current) {
-        const fo = v < 0.85 ? 0 : Math.min(1, (v - 0.85) / 0.1);
-        foamRef.current.setAttribute('opacity', String(fo));
+      if (bubblesRef.current) {
+        const o = v < 0.6 ? 0 : Math.min(1, (v - 0.6) / 0.25);
+        bubblesRef.current.setAttribute('opacity', String(o));
       }
     });
   }, [fillLevel]);
@@ -41,30 +52,40 @@ function FillingBeer() {
         transition={{ duration: 0.3 }}
       >
         <defs>
-          <clipPath id="mug-fill-clip">
-            <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5Z" />
+          <clipPath id="cup-fill-clip">
+            <path d={CUP_BODY} />
           </clipPath>
         </defs>
+
+        {/* Cherry soda rising up the cup */}
         <rect
           ref={liquidRef}
-          x="2" y="19" width="14" height="0"
-          fill="#b45309"
-          clipPath="url(#mug-fill-clip)"
+          x="5" y="22" width="14" height="0"
+          fill="#ff3d78"
+          clipPath="url(#cup-fill-clip)"
         />
-        <g ref={foamRef} opacity="0">
-          <path
-            d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5 Z"
-            fill="white"
-          />
-          <path
-            d="M1.5 7.5 C1.5 4.5 6 4.5 6 7.5 C6 3 12 3 12 7.5 C12 4.5 16.5 4.5 16.5 7.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            fill="none"
-          />
+
+        {/* Fizz */}
+        <g ref={bubblesRef} opacity="0" clipPath="url(#cup-fill-clip)">
+          {FIZZ.map((b, i) => (
+            <motion.circle
+              key={i}
+              cx={b.cx}
+              r={b.r}
+              fill="#fffbf7"
+              initial={{ cy: 20, opacity: 0 }}
+              animate={{ cy: 10, opacity: [0, 0.9, 0] }}
+              transition={{ repeat: Infinity, duration: 1.6, delay: b.delay, ease: 'easeOut' }}
+            />
+          ))}
         </g>
-        <path d="M17 11h1a3 3 0 0 1 0 6h-1" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M3 7.5V17a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5" stroke="currentColor" strokeWidth="1.5" />
+
+        {/* Cup outline */}
+        <g stroke="currentColor" strokeWidth="1.5">
+          <path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8" />
+          <path d="M5 8h14" />
+          <path d="m12 8 1-6h2" />
+        </g>
       </motion.svg>
       <Logo size="md" />
     </div>
@@ -100,7 +121,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <FillingBeer />
+        <FillingCup />
       </div>
     );
   }

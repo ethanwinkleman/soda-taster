@@ -53,8 +53,8 @@ export default defineConfig({
         start_url: '/',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0c0a09',
-        theme_color: '#1a0e06',
+        background_color: '#15101c',
+        theme_color: '#ff3d78',
         categories: ['food', 'lifestyle', 'utilities'],
         icons: [
           { src: '/favicon-32x32.png',   sizes: '32x32',   type: 'image/png' },
