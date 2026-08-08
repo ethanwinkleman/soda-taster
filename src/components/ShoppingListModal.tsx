@@ -28,13 +28,29 @@ function fileStem(stashName: string) {
   return stashName.replace(/[^a-z0-9]/gi, '_');
 }
 
+/**
+ * Out of stock, or down to the last one. A soda can sit in the fridge at quantity 0
+ * (SodaDetailPage lets you decrement to zero without clearing the in-fridge flag),
+ * which counts as out rather than low.
+ */
+function stockState(s: Soda): 'out' | 'low' | 'stocked' {
+  if (!s.inFridge || s.quantity === 0) return 'out';
+  if (s.quantity <= LOW_STOCK) return 'low';
+  return 'stocked';
+}
+
+const LOW_STOCK = 1;
+
 export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
   const [copied, setCopied] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
+  // Worth buying (rated 4+) and either gone or down to the last bottle.
   const items = sodas
-    .filter((s) => !s.inFridge && (s.myRating?.score ?? 0) >= 4)
+    .filter((s) => (s.myRating?.score ?? 0) >= 4 && stockState(s) !== 'stocked')
     .sort((a, b) => (b.myRating?.score ?? 0) - (a.myRating?.score ?? 0));
+
+  const lowCount = items.filter((s) => stockState(s) === 'low').length;
 
   const qtyOf = (id: string) => quantities[id] ?? 1;
   const totalUnits = items.reduce((sum, s) => sum + qtyOf(s.id), 0);
@@ -56,7 +72,9 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
     });
     const rows = items.map((s) => {
       const qty = qtyOf(s.id);
-      return `${stars(s.myRating!.score)}  ${label(s)}${qty > 1 ? `  ×${qty}` : ''}`;
+      // Only annotate the running-low ones; "gone" is the default assumption for a shopping list.
+      const low = stockState(s) === 'low' ? '  (1 left)' : '';
+      return `${stars(s.myRating!.score)}  ${label(s)}${low}${qty > 1 ? `  ×${qty}` : ''}`;
     });
     return [
       `Shopping List — ${stashName}`,
@@ -82,11 +100,12 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
   }
 
   function handleDownloadCsv() {
-    const header = ['Name', 'Brand', 'My Rating', 'Quantity'];
+    const header = ['Name', 'Brand', 'My Rating', 'Stock', 'Quantity'];
     const rows = items.map((s) => [
       csvCell(s.name),
       csvCell(s.brand),
       csvCell(s.myRating!.score),
+      csvCell(stockState(s) === 'low' ? '1 left' : 'Out of stock'),
       csvCell(qtyOf(s.id)),
     ]);
     const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
@@ -111,6 +130,7 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
           {items.length > 0 && (
             <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
               {items.length} {items.length === 1 ? 'item' : 'items'} to buy
+              {lowCount > 0 ? ` · ${lowCount} running low` : ''}
               {totalUnits !== items.length ? ` · ${totalUnits} units` : ''}
             </span>
           )}
@@ -141,11 +161,22 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
                       {soda.brand}
                     </p>
                   )}
-                  <span
-                    className="font-sans text-sm text-amber-400 tracking-tight"
-                    aria-label={`${soda.myRating!.score} out of 5 stars`}
-                  >
-                    {stars(soda.myRating!.score)}
+                  <span className="flex items-center gap-2 mt-0.5">
+                    <span
+                      className="font-sans text-sm text-amber-400 tracking-tight"
+                      aria-label={`${soda.myRating!.score} out of 5 stars`}
+                    >
+                      {stars(soda.myRating!.score)}
+                    </span>
+                    <span
+                      className={`font-sans text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
+                        stockState(soda) === 'low'
+                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                          : 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
+                      }`}
+                    >
+                      {stockState(soda) === 'low' ? '1 left' : 'Out'}
+                    </span>
                   </span>
                 </div>
 

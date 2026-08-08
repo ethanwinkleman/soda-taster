@@ -37,7 +37,7 @@ const SECTIONS = [
     icon: ShoppingCart,
     kicker: 'Restock',
     title: 'Never buy the wrong soda again.',
-    body: 'Mark what is in the fridge as you drink it. Everything you rated four stars or better and have run out of becomes a shopping list you can copy straight into your phone on the way to the store.',
+    body: 'Mark what is in the fridge as you drink it. Anything you rated four stars or better that you have run out of — or are down to the last bottle of — becomes a shopping list you can copy straight into your phone on the way to the store.',
     shot: '/shots/shop.webp',
     alt: 'The Soda Taster shopping list showing highly rated sodas that are out of stock, with quantity steppers and a copy button.',
     // A bottom sheet rather than a whole screen, so it gets a plain card instead of a phone bezel.
