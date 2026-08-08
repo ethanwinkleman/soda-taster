@@ -11,7 +11,7 @@ const SECTIONS = [
     icon: Star,
     kicker: 'Rate',
     title: 'Rate it once. Remember it forever.',
-    body: 'Tap a star and it saves instantly — half-steps and all. Add a tasting note while it is still in your mouth, and six months from now you will still know exactly why you loved it.',
+    body: 'Tap a star and it saves instantly. Add a tasting note while it is still in your mouth, and six months from now you will still know exactly why you loved it.',
     shot: '/shots/soda.webp',
     alt: 'A soda page in Soda Taster showing a 4.5 group average, a 5.0 personal rating, a tasting note and every member’s score.',
     w: 640, h: 1280, framed: true,
@@ -195,7 +195,7 @@ export function LandingPage({ onSignIn }: Props) {
             Start your collection.
           </h2>
           <p className="font-sans text-sm text-gray-400 leading-relaxed mb-8">
-            Free, unlimited collections, and the whole thing works offline once it is installed.
+            Free, unlimited collections, and it installs to your home screen like an app.
           </p>
           <SignInButton onSignIn={onSignIn} className="w-full" />
           <p className="font-sans text-[11px] text-gray-600 mt-4 tracking-wide uppercase">
