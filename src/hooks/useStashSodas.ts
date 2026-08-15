@@ -2,6 +2,7 @@ import { useEffect, useId } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
+import { averageScore } from '../lib/score';
 import {
   ADD_SODA_KEY, SAVE_RATING_KEY, holdImageFor,
   type AddSodaVars, type SaveRatingVars,
@@ -56,9 +57,7 @@ async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
 
   return (sodaRows ?? []).map((s) => {
     const ratings = (ratingRows ?? []).filter((r) => r.soda_id === s.id).map(ratingFromDb);
-    const avgScore = ratings.length
-      ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
-      : null;
+    const avgScore = averageScore(ratings.map((r) => r.score));
     const myRating = ratings.find((r) => r.userId === userId) ?? null;
     return { ...sodaFromDb(s), ratings, avgScore, myRating, commentCount: commentCountMap.get(s.id) ?? 0 };
   });
@@ -258,7 +257,7 @@ export function useStashSodas(
       const ratings = isUpdate
         ? s.ratings.map((r) => r.userId === userId ? optimistic : r)
         : [...s.ratings, optimistic];
-      const avgScore = Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10;
+      const avgScore = averageScore(ratings.map((r) => r.score));
       return { ...s, ratings, avgScore, myRating: optimistic };
     }));
 
@@ -284,9 +283,7 @@ export function useStashSodas(
     patch((prev) => prev.map((s) => {
       if (s.id !== sodaId) return s;
       const ratings = s.ratings.filter((r) => r.id !== ratingId);
-      const avgScore = ratings.length
-        ? Math.round((ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length) * 10) / 10
-        : null;
+      const avgScore = averageScore(ratings.map((r) => r.score));
       return { ...s, ratings, avgScore, myRating: null };
     }));
 

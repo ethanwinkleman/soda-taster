@@ -18,8 +18,8 @@ const FLAVOR_RULES: [RegExp, string][] = [
   [/tonic/i,                                          'Tonic'],
   [/seltzer|sparkling.?water|club.?soda|mineral.?water/, 'Sparkling Water'],
   [/\bcola\b/i,                                       'Cola'],
-  [/lemon|lime|citrus|orange|grapefruit|tangerine|yuzu/, 'Citrus'],
-  [/cherry|grape|\bberry\b|strawberr|watermelon|peach|apricot|\bapple\b|mango|pineapple|pomegranate|passion|guava|kiwi|\bplum\b|raspberr|blueberr|cranberr|hibiscus/, 'Fruit'],
+  [/lemon|lime|citrus|orange|grapefruit|tangerine|yuzu/i, 'Citrus'],
+  [/cherry|grape|\bberry\b|strawberr|watermelon|peach|apricot|\bapple\b|mango|pineapple|pomegranate|passion|guava|kiwi|\bplum\b|raspberr|blueberr|cranberr|hibiscus/i, 'Fruit'],
 ];
 
 export function classifyFlavor(name: string, brand: string): string | null {
