@@ -42,14 +42,12 @@ This is also why `stockState`/`stars`/`buildShoppingText` live in `lib/` rather 
 
 ## Database setup
 
-Before running the app against a new Supabase project, run `supabase/schema.sql` in the Supabase SQL editor. It creates every table, RLS policy, RPC, and the `soda-images` storage bucket. A top-to-bottom run on an empty database is verified to succeed.
+Schema lives in `supabase/migrations/`, applied in filename order — `supabase db push`, or paste each file into the SQL editor in order. See `supabase/README.md` for adopting them on a project that already has the tables.
 
-The file reads as a migration log of `-- ── Section ──` blocks, but note two constraints when adding to it:
+Two constraints, both of which have caused real bugs, so **run `scripts/verify-migrations.sh` before pushing schema changes**. It applies every migration to a throwaway database twice and catches both:
 
-- **Order matters.** Postgres validates a policy expression and a `LANGUAGE sql` function body at `CREATE` time, so a block must come *after* whatever it references. `is_stash_member` precedes the `stashes` policies and the `profiles` table precedes `get_public_ratings` for exactly this reason — appending either to the end breaks a fresh run.
-- **The whole file is not re-runnable.** `CREATE TABLE`/`ADD COLUMN` are guarded with `IF NOT EXISTS`, but Postgres has no `CREATE POLICY IF NOT EXISTS`, so a second full run fails on the first duplicate policy. Individual sections can be made re-appliable by pairing each policy with `DROP POLICY IF EXISTS` (the `profiles` block does this); the rest of the file predates that convention.
-
-**Applying a single new section to a live project:** paste just that section, not the whole file.
+- **Order matters.** Postgres validates a policy expression and a `LANGUAGE sql` function body at `CREATE` time, so a migration must come *after* whatever it references — and it fails only on a *fresh* database, passing silently wherever the object already exists. `is_stash_member` was once defined after the policies calling it, and `profiles` after the RPC reading it.
+- **Migrations must be re-appliable.** There is no `CREATE POLICY IF NOT EXISTS`, so every policy is preceded by `DROP POLICY IF EXISTS`. Without that they cannot be safely applied to an existing project.
 
 **Environment:** requires `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. (`*.local` is gitignored.)
 
@@ -67,7 +65,7 @@ Stash  →  Soda  →  SodaRating (one per user per soda)
        ↘  StashActivity
 ```
 
-Tables in `supabase/schema.sql`:
+Tables, created across `supabase/migrations/`:
 
 - `stashes` — name, owner_id, join_code, icon, accent_color
 - `stash_members` — stash_id, user_id, is_favorite (owner is inserted as first member on creation)
