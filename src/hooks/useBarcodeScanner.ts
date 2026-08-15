@@ -99,9 +99,19 @@ export function useBarcodeScanner(
     }
   }, [onResult]);
 
+  // The one set-state-in-effect left in the codebase, kept deliberately.
+  //
+  // Deriving `status` from `active` is the usual fix, but scanning stops and restarts
+  // while this page stays mounted — every detected barcode pauses it — and a derived
+  // status would surface the previous attempt's value (an 'error' most damagingly) for
+  // a frame before start() reports back. Moving the reset into stop() does not help;
+  // the rule follows the call. Both alternatives risk a visible regression in the
+  // camera flow, which cannot be exercised in CI or a headless browser, so this trades
+  // one extra render on an infrequent user-driven transition for a UI that is correct.
   useEffect(() => {
     if (!active) {
       stop();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- see note above
       setStatus('idle');
       return;
     }

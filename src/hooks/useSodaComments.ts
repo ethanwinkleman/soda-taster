@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
 export interface SodaComment {
@@ -41,25 +42,35 @@ function buildTree(flat: Omit<SodaComment, 'replies'>[]): SodaComment[] {
   return roots;
 }
 
+async function loadComments(sodaId: string): Promise<SodaComment[]> {
+  const { data } = await supabase
+    .from('soda_comments')
+    .select('*')
+    .eq('soda_id', sodaId)
+    .order('created_at', { ascending: true });
+  return buildTree((data ?? []).map(fromDb));
+}
+
 export function useSodaComments(sodaId: string | undefined, stashId: string | undefined) {
-  const [comments, setComments] = useState<SodaComment[]>([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const queryKey = ['soda-comments', sodaId] as const;
 
-  const fetchComments = useCallback(async () => {
-    if (!sodaId) return;
-    setLoading(true);
-    const { data } = await supabase
-      .from('soda_comments')
-      .select('*')
-      .eq('soda_id', sodaId)
-      .order('created_at', { ascending: true });
-    setComments(buildTree((data ?? []).map(fromDb)));
-    setLoading(false);
-  }, [sodaId]);
+  // Was a useState + useEffect fetch, which set state synchronously inside the effect.
+  // Moving to useQuery removes that and lines the hook up with the rest of the app:
+  // keyed cache, no refetch when several components mount it, background revalidation.
+  const { data, isLoading } = useQuery({
+    queryKey,
+    queryFn: () => loadComments(sodaId!),
+    enabled: !!sodaId,
+    staleTime: 60 * 1000,
+  });
 
-  useEffect(() => { fetchComments(); }, [fetchComments]);
+  const refresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: ['soda-comments', sodaId] }),
+    [queryClient, sodaId],
+  );
 
-  // Real-time: debounced re-fetch on any INSERT or DELETE (same pattern as useStashSodas).
+  // Real-time: debounced invalidate on any INSERT or DELETE (same pattern as useStashSodas).
   // The 150ms debounce collapses the local mutation echo + realtime event into one fetch.
   useEffect(() => {
     if (!sodaId) return;
@@ -67,7 +78,10 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
     let timer: ReturnType<typeof setTimeout>;
     const silentRefetch = () => {
       clearTimeout(timer);
-      timer = setTimeout(() => fetchComments(), 150);
+      timer = setTimeout(
+        () => queryClient.invalidateQueries({ queryKey: ['soda-comments', sodaId] }),
+        150,
+      );
     };
 
     const channel = supabase
@@ -77,7 +91,7 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
       .subscribe();
 
     return () => { clearTimeout(timer); supabase.removeChannel(channel); };
-  }, [sodaId, fetchComments]);
+  }, [sodaId, queryClient]);
 
   const addComment = useCallback(async (
     userId: string,
@@ -95,14 +109,14 @@ export function useSodaComments(sodaId: string | undefined, stashId: string | un
       parent_id: parentId ?? null,
     });
     if (error) throw new Error('Failed to post comment');
-    await fetchComments();
-  }, [sodaId, stashId, fetchComments]);
+    await refresh();
+  }, [sodaId, stashId, refresh]);
 
   const deleteComment = useCallback(async (commentId: string) => {
     const { error } = await supabase.from('soda_comments').delete().eq('id', commentId);
     if (error) throw new Error('Failed to delete comment');
-    await fetchComments();
-  }, [fetchComments]);
+    await refresh();
+  }, [refresh]);
 
-  return { comments, loading, addComment, deleteComment, refresh: fetchComments };
+  return { comments: data ?? [], loading: isLoading, addComment, deleteComment, refresh };
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Check, Globe, Lock } from 'lucide-react';
 import leoProfanity from 'leo-profanity';
@@ -22,18 +22,24 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
     (user.user_metadata?.full_name as string | undefined)?.split(' ')[0] ?? ''
   );
 
-  const [username, setUsername] = useState(profile?.username ?? suggested);
-  const [isPublic, setIsPublic] = useState(profile?.is_public ?? false);
+  // The profile arrives asynchronously, so these layer any edit over whatever has
+  // loaded so far rather than copying the profile into state once it turns up —
+  // which used to re-render the whole modal a second time on load.
+  const [usernameEdit, setUsernameEdit] = useState<string | null>(null);
+  const [isPublicEdit, setIsPublicEdit] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (profile) {
-      setUsername(profile.username ?? suggested);
-      setIsPublic(profile.is_public);
-    }
-  }, [profile]);
+  const username = usernameEdit ?? profile?.username ?? suggested;
+  const isPublic = isPublicEdit ?? profile?.is_public ?? false;
+  const setUsername = setUsernameEdit;
+
+  // Toggles off the derived value, not the raw edit — the raw one is null until the
+  // user touches it, and !null would flip a public profile back to public.
+  function toggleIsPublic() {
+    setIsPublicEdit(!isPublic);
+  }
 
   const shareUrl = `${window.location.origin}/u/${username}`;
   const usernameValid = /^[a-z0-9_]{3,20}$/.test(username);
@@ -105,7 +111,7 @@ export function ShareModal({ user, profile, onSave, onClose }: Props) {
           </div>
           <button
             type="button"
-            onClick={() => setIsPublic((p) => !p)}
+            onClick={toggleIsPublic}
             className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${isPublic ? 'bg-sky-500' : 'bg-gray-200 dark:bg-gray-700'}`}
             aria-label="Toggle public"
           >

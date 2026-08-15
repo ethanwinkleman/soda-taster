@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda } from 'lucide-react';
@@ -58,19 +58,18 @@ export function SodaDetailPage() {
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editBrand, setEditBrand] = useState('');
-  const [ratingVal, setRatingVal] = useState(0);
-  const [noteVal, setNoteVal] = useState('');
-  const [initialized, setInitialized] = useState(false);
+  // The soda loads asynchronously, so the form layers any edit over the saved rating
+  // instead of copying it into state once the fetch lands. That removes both the
+  // cascading render and the `initialized` flag that guarded it.
+  const [ratingEdit, setRatingEdit] = useState<number | null>(null);
+  const [noteEdit, setNoteEdit] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!loading && soda && !initialized) {
-      setRatingVal(soda.myRating?.score ?? 0);
-      setNoteVal(soda.myRating?.notes ?? '');
-      setInitialized(true);
-    }
-  }, [loading, soda, initialized]);
+  const ratingVal = ratingEdit ?? soda?.myRating?.score ?? 0;
+  const noteVal = noteEdit ?? soda?.myRating?.notes ?? '';
+  const setRatingVal = setRatingEdit;
+  const setNoteVal = setNoteEdit;
 
   function startEditing() {
     if (!soda) return;
