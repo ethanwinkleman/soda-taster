@@ -67,7 +67,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [shoppingListOpen, setShoppingListOpen] = useState(false);
   const [restockFilter, setRestockFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
-  const [renameVal, setRenameVal] = useState('');
+  // Layered over the stash name rather than copied into state when it loads.
+  const [renameEdit, setRenameEdit] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [search, setSearch] = useState('');
@@ -79,9 +80,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     if (stashId) markVisited(stashId);
   }, [stashId]);
 
-  useEffect(() => {
-    if (stash) setRenameVal(stash.name);
-  }, [stash?.name]);
+  const renameVal = renameEdit ?? stash?.name ?? '';
+  const setRenameVal = setRenameEdit;
 
   useEffect(() => {
     if (settingsOpen && stashId) {

@@ -9,8 +9,8 @@ function generateJoinCode(): string {
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fromDb(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw Supabase row
   row: any,
   isFavorite = false,
   sodaCount = 0,

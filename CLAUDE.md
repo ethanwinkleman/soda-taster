@@ -13,7 +13,18 @@ npm run test:watch # Vitest, watch mode
 npm run preview    # Preview production build
 ```
 
-`npm run lint` currently reports a **baseline of 21 problems (14 errors, 7 warnings)** — mostly `react-hooks/set-state-in-effect` and `exhaustive-deps`. Treat that number as the bar: don't add to it, and don't count it as a regression you caused.
+`npm run lint` currently reports a **baseline of 11 problems (7 errors, 4 warnings)** — mostly `exhaustive-deps` and `react-refresh/only-export-components`. Treat that number as the bar: don't add to it, and don't count it as a regression you caused.
+
+**Don't reintroduce `set-state-in-effect`.** Copying a prop or fetched value into state with an effect costs a second render and goes stale. The established fix here is to layer an edit over the source instead:
+
+```ts
+const [nameEdit, setNameEdit] = useState<string | null>(null);
+const name = nameEdit ?? stash?.name ?? '';   // ?? not ||, so '' and 0 survive
+```
+
+`ShareModal`, `StashPage`, `SodaDetailPage` and `BarcodeResultPage` all use this. Two things to watch: a functional updater (`setX(p => !p)`) now receives the raw `null`, not the derived value, so toggles need writing out; and any code that reset the old state (clearing a form after a delete) still works, because writing the edit wins over the source.
+
+`useBarcodeScanner` keeps one suppressed instance with the reasoning inline — deriving there would flash the previous scan's status, and the camera flow can't be exercised in CI.
 
 ### Tests
 
