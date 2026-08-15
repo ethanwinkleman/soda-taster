@@ -1,7 +1,11 @@
 import { useEffect, useId } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { logActivity } from '../lib/activity';
+import {
+  ADD_SODA_KEY, SAVE_RATING_KEY, holdImageFor,
+  type AddSodaVars, type SaveRatingVars,
+} from '../lib/offlineMutations';
 import type { Soda, SodaRating } from '../types/stash';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +97,20 @@ export function useStashSodas(
     ]);
   }
 
+  // Resumable writes. mutationFn comes from the defaults registered on the client, so
+  // these keep working after a reload; see lib/offlineMutations.
+  const addSodaMutation = useMutation<{ sodaId: string }, Error, AddSodaVars>({
+    mutationKey: ADD_SODA_KEY,
+    onSuccess: () => { void invalidate(); },
+    onError: () => { void invalidate(); },
+  });
+
+  const saveRatingMutation = useMutation<{ sodaId: string }, Error, SaveRatingVars>({
+    mutationKey: SAVE_RATING_KEY,
+    onSuccess: () => { void invalidateRatings(); },
+    onError: () => { void invalidateRatings(); },
+  });
+
   // Real-time: invalidate the query on any DB change so RQ refetches in the background
   useEffect(() => {
     if (!stashId || !userId) return;
@@ -124,7 +142,12 @@ export function useStashSodas(
     await logActivity(params);
   }
 
-  async function addSoda(
+  /**
+   * Optimistic and non-blocking: the soda lands in the cache immediately and the write
+   * is handed to a resumable mutation, which pauses rather than fails when offline.
+   * Callers get the id back straight away because we mint it here (see offlineMutations).
+   */
+  function addSoda(
     name: string,
     brand: string,
     score: number | null,
@@ -134,39 +157,29 @@ export function useStashSodas(
   ) {
     if (!stashId || !userId) return null;
 
-    const { data: soda, error } = await supabase
-      .from('stash_sodas')
-      .insert({ stash_id: stashId, name, brand, added_by: userId })
-      .select()
-      .single();
+    const sodaId = crypto.randomUUID();
+    if (imageFile) holdImageFor(sodaId, imageFile);
 
-    if (error || !soda) return null;
+    const optimisticRating: SodaRating | null = score === null ? null : {
+      id: `optimistic-${sodaId}`, sodaId, userId, displayName: dn,
+      score, notes: null, createdAt: new Date().toISOString(),
+    };
 
-    if (imageFile) {
-      const path = `${stashId}/${soda.id}`;
-      const { error: upErr } = await supabase.storage
-        .from('soda-images')
-        .upload(path, imageFile, { upsert: true, contentType: imageFile.type });
-      if (!upErr) {
-        const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
-        await supabase.from('stash_sodas').update({ image_url: publicUrl }).eq('id', soda.id);
-      }
-    } else if (externalImageUrl) {
-      await supabase.from('stash_sodas').update({ image_url: externalImageUrl }).eq('id', soda.id);
-    }
+    patch((prev) => [{
+      id: sodaId, stashId, name, brand, addedBy: userId,
+      inFridge: false, quantity: 0,
+      imageUrl: imageFile ? null : externalImageUrl ?? null,
+      createdAt: new Date().toISOString(),
+      ratings: optimisticRating ? [optimisticRating] : [],
+      avgScore: score, myRating: optimisticRating, commentCount: 0,
+    }, ...prev]);
 
-    if (score !== null) {
-      await supabase.from('stash_soda_ratings').insert({
-        soda_id: soda.id,
-        user_id: userId,
-        display_name: dn,
-        score,
-      });
-    }
+    addSodaMutation.mutate({
+      sodaId, stashId, userId, name, brand, score, displayName: dn,
+      externalImageUrl: externalImageUrl ?? null,
+    });
 
-    await act({ stashId, userId, displayName: dn, action: 'soda_added', sodaId: soda.id, sodaName: name });
-    await invalidate();
-    return { sodaId: soda.id as string };
+    return { sodaId };
   }
 
   async function updateSodaImage(sodaId: string, file: File): Promise<string | null> {
@@ -249,17 +262,19 @@ export function useStashSodas(
       return { ...s, ratings, avgScore, myRating: optimistic };
     }));
 
-    try {
-      await supabase.from('stash_soda_ratings').upsert(
-        { soda_id: sodaId, user_id: userId, display_name: dn, score, notes: trimmedNotes },
-        { onConflict: 'soda_id,user_id' },
-      );
-      await act({ stashId: stashId!, userId, displayName: dn, action: isUpdate ? 'rating_updated' : 'rating_added', sodaId, sodaName: soda?.name, score });
-      await invalidateRatings();
-    } catch {
-      if (previous) queryClient.setQueryData(queryKey, previous);
-      throw new Error('Failed to save rating');
-    }
+    // Queued rather than awaited: offline this pauses instead of throwing, and the
+    // optimistic score above is what the taster sees either way.
+    saveRatingMutation.mutate(
+      {
+        sodaId, stashId: stashId!, userId, score, displayName: dn,
+        notes: trimmedNotes, isUpdate, sodaName: soda?.name,
+      },
+      {
+        onError: () => {
+          if (previous) queryClient.setQueryData(queryKey, previous);
+        },
+      },
+    );
   }
 
   async function deleteRating(ratingId: string, sodaId: string) {

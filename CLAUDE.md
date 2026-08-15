@@ -81,6 +81,18 @@ Because the cache is keyed and shared, calling `useStashSodas` in several compon
 
 Bump `buster` in `App.tsx` when a change makes previously persisted cache shapes invalid.
 
+### Offline writes
+
+Quick Add is built for tasting events, which is exactly where signal dies, so the two mutations on that path — `addSoda` and `saveRating` — are **resumable**: TanStack Query pauses them while offline, the persister writes paused mutations into the same `localStorage` blob as the cache, and they replay on reconnect. `OfflineBanner` surfaces the queue.
+
+Three constraints follow, and breaking any of them silently loses writes:
+
+- **`mutationFn` lives at module scope** in `src/lib/offlineMutations.ts`, registered via `queryClient.setMutationDefaults`. A mutation restored from `localStorage` after a reload has no component to close over, so anything hook-scoped is unavailable — everything it needs must travel in the mutation variables.
+- **Ids are minted on the client** with `crypto.randomUUID()`. A rating queued offline has to reference a soda that does not exist on the server yet; Postgres accepts an explicit uuid for these primary keys, so the optimistic id is the final id and nothing needs reconciling afterwards. Inserts tolerate a `23505` duplicate so a resumed-but-already-applied write is not an error.
+- **`addSoda` is non-blocking and returns `{ sodaId }` synchronously.** Do not `await` it: offline the underlying mutation is paused, so a promise would never settle and the form would hang. Failures surface through `onError` (rollback + toast), not a rejected call.
+
+Variables must be JSON-serialisable, which is why a `File` cannot ride along — photos are held in an in-memory map keyed by soda id and uploaded when the mutation runs. That survives a reconnect within the session but not a reload, where the soda simply keeps no photo.
+
 ### Routing
 
 ```
