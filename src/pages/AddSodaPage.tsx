@@ -26,7 +26,8 @@ export function AddSodaPage() {
   const [score, setScore] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  // No saving state: the write is optimistic and queues offline, so submitting never
+  // blocks on the network and there is nothing to spin on.
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -75,32 +76,34 @@ export function AddSodaPage() {
     }) ?? null;
   }, [name, sodas]);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      // Quick Add hides brand/photo, so never save values the user can't currently see —
-      // the state is kept so switching back to Full Details restores what they typed.
-      const result = await addSoda(
-        name.trim(),
-        quickMode ? '' : brand.trim(),
-        score > 0 ? score : null,
-        displayName,
-        quickMode ? null : imageFile,
-      );
-      if (!result) throw new Error();
-      toast.success(`"${name.trim()}" added to collection.`);
-      if (quickMode) {
-        setAddedCount((c) => c + 1);
-        resetForm();
-        setSaving(false);
-      } else {
-        navigate(`/stash/${stashId}`);
-      }
-    } catch {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    // Quick Add hides brand/photo, so never save values the user can't currently see —
+    // the state is kept so switching back to Full Details restores what they typed.
+    // addSoda is optimistic and queues offline, so this does not wait on the network:
+    // at a tasting you can keep logging on a dead connection and it syncs later.
+    const result = addSoda(
+      trimmed,
+      quickMode ? '' : brand.trim(),
+      score > 0 ? score : null,
+      displayName,
+      quickMode ? null : imageFile,
+    );
+
+    if (!result) {
       toast.error('Failed to save — please try again.');
-      setSaving(false);
+      return;
+    }
+
+    toast.success(`"${trimmed}" added to collection.`);
+    if (quickMode) {
+      setAddedCount((c) => c + 1);
+      resetForm();
+    } else {
+      navigate(`/stash/${stashId}`);
     }
   }
 
@@ -306,8 +309,8 @@ export function AddSodaPage() {
         </div>
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-5 space-y-3">
-          <Button type="submit" size="md" disabled={saving || !name.trim()} className="w-full">
-            {saving ? 'Saving…' : quickMode ? 'Add & Next' : 'Add to Collection'}
+          <Button type="submit" size="md" disabled={!name.trim()} className="w-full">
+            {quickMode ? 'Add & Next' : 'Add to Collection'}
           </Button>
 
           <AnimatePresence>

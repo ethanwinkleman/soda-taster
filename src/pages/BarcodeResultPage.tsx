@@ -64,8 +64,11 @@ export function BarcodeResultPage() {
   );
   const [editingName, setEditingName] = useState(false);
   const [editingManufacturer, setEditingManufacturer] = useState(false);
-  const [editedName, setEditedName] = useState('');
-  const [editedManufacturer, setEditedManufacturer] = useState('');
+  // Edits are stored per candidate and layered over the scanned values rather than
+  // copied into state by an effect, which avoids a cascading render on every selection
+  // change — and means switching between candidates keeps whatever you had typed.
+  const [nameEdits, setNameEdits] = useState<Record<number, string>>({});
+  const [manufacturerEdits, setManufacturerEdits] = useState<Record<number, string>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -74,13 +77,20 @@ export function BarcodeResultPage() {
 
   const selected = selectedIdx !== null ? candidates[selectedIdx] : null;
 
-  // Sync edit fields when selection changes
-  useEffect(() => {
-    if (selected) {
-      setEditedName(selected.name);
-      setEditedManufacturer(selected.manufacturer);
-    }
-  }, [selectedIdx]);
+  const editedName =
+    (selectedIdx !== null ? nameEdits[selectedIdx] : undefined) ?? selected?.name ?? '';
+  const editedManufacturer =
+    (selectedIdx !== null ? manufacturerEdits[selectedIdx] : undefined) ?? selected?.manufacturer ?? '';
+
+  function setEditedName(value: string) {
+    if (selectedIdx === null) return;
+    setNameEdits((prev) => ({ ...prev, [selectedIdx]: value }));
+  }
+
+  function setEditedManufacturer(value: string) {
+    if (selectedIdx === null) return;
+    setManufacturerEdits((prev) => ({ ...prev, [selectedIdx]: value }));
+  }
 
   useEffect(() => {
     return () => {
@@ -111,26 +121,27 @@ export function BarcodeResultPage() {
     const finalManufacturer = editedManufacturer.trim() || selected.manufacturer;
     const externalImageUrl = imageFile ? null : (selected.imageUrl ?? null);
 
-    try {
-      const result = await addSoda(
-        finalName,
-        finalManufacturer,
-        null,
-        displayName,
-        imageFile,
-        externalImageUrl,
-      );
-      if (!result) throw new Error();
-      const { sodaId } = result;
-      if (sodaId && barcode) {
-        sessionStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
-        localStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
-      }
-      navigate(`/stash/${stashId}`);
-    } catch {
+    const result = addSoda(
+      finalName,
+      finalManufacturer,
+      null,
+      displayName,
+      imageFile,
+      externalImageUrl,
+    );
+
+    if (!result) {
       toast.error('Failed to save — please try again.');
       setSaving(false);
+      return;
     }
+
+    const { sodaId } = result;
+    if (sodaId && barcode) {
+      sessionStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+      localStorage.setItem(`scanned_${stashId}_${barcode}`, sodaId);
+    }
+    navigate(`/stash/${stashId}`);
   }
 
   // ── NOT FOUND ───────────────────────────────────────────────────────────────

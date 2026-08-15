@@ -5,6 +5,8 @@ import { Toaster } from 'sonner';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { registerOfflineMutations } from './lib/offlineMutations';
+import { OfflineBanner } from './components/OfflineBanner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -12,8 +14,16 @@ const queryClient = new QueryClient({
       // Keep unused query data for 24 h so the persisted cache survives app relaunches
       gcTime: 24 * 60 * 60 * 1000,
     },
+    mutations: {
+      // Paused mutations are persisted, so keep them around as long as the cache
+      gcTime: 24 * 60 * 60 * 1000,
+    },
   },
 });
+
+// Teaches the client how to replay writes that were queued while offline — must run
+// before any restored mutation is resumed.
+registerOfflineMutations(queryClient);
 
 const persister = createSyncStoragePersister({
   storage: window.localStorage,
@@ -119,6 +129,7 @@ function AppRoutes() {
         </main>
       </div>
       <BottomNav />
+      <OfflineBanner />
     </div>
   );
 }
@@ -127,7 +138,11 @@ export default function App() {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: 'v1' }}
+      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: 'v2' }}
+      // Fires once the cache has been read back from localStorage. Writes queued in a
+      // previous session are replayed here — before this, they only resumed on reconnect
+      // within the same session, so closing the app mid-tasting would have stranded them.
+      onSuccess={() => { void queryClient.resumePausedMutations(); }}
     >
       <BrowserRouter>
         <AuthProvider>
