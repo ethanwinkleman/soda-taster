@@ -5,13 +5,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Start dev server (Vite default, port 5173)
-npm run build    # Generate icons → tsc -b → vite build
-npm run lint     # ESLint across the project
-npm run preview  # Preview production build
+npm run dev        # Start dev server (Vite default, port 5173)
+npm run build      # Generate icons → tsc -b → vite build
+npm run lint       # ESLint across the project
+npm test           # Vitest, single run
+npm run test:watch # Vitest, watch mode
+npm run preview    # Preview production build
 ```
 
-There is no test suite. `npm run lint` currently reports a **baseline of 22 problems (14 errors, 8 warnings)** — mostly `react-hooks/set-state-in-effect` and `exhaustive-deps`. Treat that number as the bar: don't add to it, and don't count it as a regression you caused.
+`npm run lint` currently reports a **baseline of 21 problems (14 errors, 7 warnings)** — mostly `react-hooks/set-state-in-effect` and `exhaustive-deps`. Treat that number as the bar: don't add to it, and don't count it as a regression you caused.
+
+### Tests
+
+Vitest, no jsdom — the suite covers **pure logic only**, which is where the bugs have actually been. Components are verified by driving the real app in a browser instead.
+
+Tested modules, and why each is worth it:
+
+- `lib/score.ts` — averaging and star glyphs. Scores are half-steps, so `'★'.repeat(4.5)` silently renders four glyphs; that shipped once.
+- `lib/shoppingList.ts` — who belongs on the list, and the copied/CSV output. The filter has been wrong twice.
+- `utils/tasteProfile.ts` — flavour classification and generated prose.
+
+This is also why `stockState`/`stars`/`buildShoppingText` live in `lib/` rather than inside `ShoppingListModal`: the component imports them, so the tests exercise exactly what ships. Put new pure logic in `lib/` for the same reason.
+
+**Rule ordering in `FLAVOR_RULES` is load-bearing** — first match wins, so "cherry cola" is a Cola, and `grapefruit` must precede `grape`. All patterns need the `i` flag; two were missing it, which quietly hollowed out the Citrus and Fruit categories for anyone who capitalised a soda name normally.
 
 ## Database setup
 

@@ -3,6 +3,10 @@ import { ShoppingCart, Copy, Check, Refrigerator, Plus, Minus, Download } from '
 import { toast } from 'sonner';
 import type { Soda } from '../types/stash';
 import { Modal, Button } from './ui';
+import { starGlyphs } from '../lib/score';
+import {
+  buildShoppingCsv, buildShoppingText, fileStem, shoppingListItems, stockState,
+} from '../lib/shoppingList';
 
 interface Props {
   open: boolean;
@@ -11,45 +15,11 @@ interface Props {
   sodas: Soda[];
 }
 
-// Scores come in 0.5 steps, so a half rating gets its own glyph and the row
-// always occupies five positions.
-function stars(score: number) {
-  const full = Math.floor(score);
-  const half = score - full >= 0.5;
-  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half ? 1 : 0));
-}
-
-function csvCell(value: string | number) {
-  const s = String(value);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
-function fileStem(stashName: string) {
-  return stashName.replace(/[^a-z0-9]/gi, '_');
-}
-
-/**
- * Out of stock, or down to the last one. A soda can sit in the fridge at quantity 0
- * (SodaDetailPage lets you decrement to zero without clearing the in-fridge flag),
- * which counts as out rather than low.
- */
-function stockState(s: Soda): 'out' | 'low' | 'stocked' {
-  if (!s.inFridge || s.quantity === 0) return 'out';
-  if (s.quantity <= LOW_STOCK) return 'low';
-  return 'stocked';
-}
-
-const LOW_STOCK = 1;
-
 export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
   const [copied, setCopied] = useState(false);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
-  // Worth buying (rated 4+) and either gone or down to the last bottle.
-  const items = sodas
-    .filter((s) => (s.myRating?.score ?? 0) >= 4 && stockState(s) !== 'stocked')
-    .sort((a, b) => (b.myRating?.score ?? 0) - (a.myRating?.score ?? 0));
-
+  const items = shoppingListItems(sodas);
   const lowCount = items.filter((s) => stockState(s) === 'low').length;
 
   const qtyOf = (id: string) => quantities[id] ?? 1;
@@ -62,30 +32,15 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
     }));
   }
 
-  function label(soda: Soda) {
-    return soda.brand ? `${soda.name} (${soda.brand})` : soda.name;
-  }
-
   function buildText() {
-    const date = new Date().toLocaleDateString(undefined, {
-      month: 'long', day: 'numeric', year: 'numeric',
+    return buildShoppingText({
+      stashName,
+      items,
+      quantityOf: qtyOf,
+      date: new Date().toLocaleDateString(undefined, {
+        month: 'long', day: 'numeric', year: 'numeric',
+      }),
     });
-    const rows = items.map((s) => {
-      const qty = qtyOf(s.id);
-      // Only annotate the running-low ones; "gone" is the default assumption for a shopping list.
-      const low = stockState(s) === 'low' ? '  (1 left)' : '';
-      return `${stars(s.myRating!.score)}  ${label(s)}${low}${qty > 1 ? `  ×${qty}` : ''}`;
-    });
-    return [
-      `Shopping List — ${stashName}`,
-      date,
-      '',
-      ...rows,
-      '',
-      `${items.length} item${items.length !== 1 ? 's' : ''}` +
-        (totalUnits !== items.length ? ` · ${totalUnits} units` : '') +
-        ' · Soda Taster',
-    ].join('\n');
   }
 
   async function handleCopy() {
@@ -100,15 +55,7 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
   }
 
   function handleDownloadCsv() {
-    const header = ['Name', 'Brand', 'My Rating', 'Stock', 'Quantity'];
-    const rows = items.map((s) => [
-      csvCell(s.name),
-      csvCell(s.brand),
-      csvCell(s.myRating!.score),
-      csvCell(stockState(s) === 'low' ? '1 left' : 'Out of stock'),
-      csvCell(qtyOf(s.id)),
-    ]);
-    const csv = [header, ...rows].map((r) => r.join(',')).join('\n');
+    const csv = buildShoppingCsv(items, qtyOf);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
     const a = document.createElement('a');
     a.href = url;
@@ -166,7 +113,7 @@ export function ShoppingListModal({ open, onClose, stashName, sodas }: Props) {
                       className="font-sans text-sm text-amber-400 tracking-tight"
                       aria-label={`${soda.myRating!.score} out of 5 stars`}
                     >
-                      {stars(soda.myRating!.score)}
+                      {starGlyphs(soda.myRating!.score)}
                     </span>
                     <span
                       className={`font-sans text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${
