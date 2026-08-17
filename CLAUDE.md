@@ -147,6 +147,20 @@ Variables must be JSON-serialisable, which is why a `File` cannot ride along —
 
 RLS helpers are `SECURITY DEFINER` functions (`is_stash_member`, `shares_stash_with`) specifically to avoid infinite recursion when a policy needs to read the table it protects. Reuse that pattern rather than inlining a subquery.
 
+### Admin analytics
+
+`/admin` shows aggregate metrics to a designated super admin. Two things matter:
+
+- **The admin flag lives in `app_admins`, not `profiles`.** `update_own_profile` lets a user update their own `profiles` row with no column restriction, so a `profiles.is_admin` column would let anyone promote themselves with one API call. `app_admins` has a SELECT-own-row policy and *no* write policies, so membership is grantable only from the SQL editor:
+
+  ```sql
+  INSERT INTO app_admins (user_id) SELECT id FROM auth.users WHERE email = 'you@example.com';
+  ```
+
+- **The RPCs are the security boundary, not the route.** `admin_daily_metrics`, `admin_summary_metrics` and `admin_top_sodas` each `RAISE EXCEPTION` unless `is_app_admin()`. `useIsAdmin` only decides whether to *offer* the link — the anon key ships in the bundle, so a client-side check protects nothing.
+
+Charts are hand-rolled inline SVG (`MetricChart`) rather than a charting dependency; the page is `lazy()`-loaded so ordinary users never download it.
+
 ### Permissions enforced in UI
 
 - Any stash member: add sodas, edit any soda's name/brand, remove any soda, add/update their own rating, comment

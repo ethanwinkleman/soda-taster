@@ -39,6 +39,7 @@ const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage').then(m 
 const JoinStashPage     = lazy(() => import('./pages/JoinStashPage').then(m => ({ default: m.JoinStashPage })));
 const BarcodeScanPage   = lazy(() => import('./pages/BarcodeScanPage').then(m => ({ default: m.BarcodeScanPage })));
 const BarcodeResultPage = lazy(() => import('./pages/BarcodeResultPage').then(m => ({ default: m.BarcodeResultPage })));
+const AdminPage         = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
 const NotFoundPage      = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
@@ -121,6 +122,8 @@ function AppRoutes() {
               <Route path="/stash/:id/scan/result" element={<BarcodeResultPage />} />
               <Route path="/stash/:id/activity" element={<StashActivityPage />} />
               <Route path="/stash/:id/soda/:sodaId" element={<SodaDetailPage />} />
+              {/* Lazy, so ordinary users never download it. The RPCs are the real gate. */}
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
             </Suspense>
