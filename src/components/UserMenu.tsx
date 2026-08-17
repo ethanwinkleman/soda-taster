@@ -1,7 +1,9 @@
 import { lazy, Suspense, useState, useRef, useEffect } from 'react';
-import { LogOut, ChevronDown, Share2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, ChevronDown, Share2, BarChart3 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
+import { useIsAdmin } from '../hooks/useAdminMetrics';
 
 const ShareModal = lazy(() => import('./ShareModal').then((m) => ({ default: m.ShareModal })));
 
@@ -10,7 +12,10 @@ export function UserMenu() {
   const [open, setOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { profile, saveProfile } = useProfile(user);
+  // Only decides whether to offer the link; the RPCs behind the page do the gating.
+  const isAdmin = useIsAdmin(user);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -60,6 +65,16 @@ export function UserMenu() {
             <Share2 size={15} />
             Share Profile
           </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => { setOpen(false); navigate('/admin'); }}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            >
+              <BarChart3 size={15} />
+              Analytics
+            </button>
+          )}
           <button
             type="button"
             onClick={() => { setOpen(false); signOut(); }}
