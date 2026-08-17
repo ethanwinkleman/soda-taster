@@ -8,6 +8,7 @@ import { Skeleton } from '../components/Skeleton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { TasteProfile } from '../components/TasteProfile';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
+import { FloatingBubbles } from '../components/FloatingBubbles';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -223,7 +224,10 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
       ) : stashes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-14">
           <div className="max-w-xs mx-auto px-6 text-center">
-            <CupSoda size={32} className="mx-auto mb-5 text-gray-300 dark:text-gray-600" />
+            <div className="relative inline-flex items-center justify-center mb-5">
+              <CupSoda size={32} className="text-gray-300 dark:text-gray-600" />
+              <FloatingBubbles size={32} className="absolute inset-0" />
+            </div>
             <h2 className="font-display text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
               Your collection starts here.
             </h2>
@@ -251,14 +255,22 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
           </div>
         </div>
       ) : (
-        <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{ visible: { transition: { staggerChildren: 0.04 } } }}
+          className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]"
+        >
           {stashes.map((stash) => (
             <motion.button
               key={stash.id}
               type="button"
               onClick={() => navigate(`/stash/${stash.id}`)}
+              variants={{
+                hidden: { opacity: 0, y: 8 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.25, ease: 'easeOut' } },
+              }}
               whileTap={{ scale: 0.985, opacity: 0.85 }}
-              transition={{ duration: 0.1 }}
               style={{ borderLeftColor: stash.accentColor ?? 'transparent' }}
               className="w-full text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors p-4 flex items-center gap-3 border-l-4"
             >
@@ -307,7 +319,7 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               <span className="text-gray-300 dark:text-gray-600 font-sans shrink-0">›</span>
             </motion.button>
           ))}
-        </div>
+        </motion.div>
       )}
 
       {/* Taste profile */}

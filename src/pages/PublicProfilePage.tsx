@@ -4,6 +4,7 @@ import { CupSoda } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/profile';
 import { Logo } from '../components/Logo';
+import { motion } from 'framer-motion';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 
@@ -104,7 +105,11 @@ export function PublicProfilePage() {
         )}
 
         {status === 'ready' && profile && (
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+          >
             {/* Profile header */}
             <div className="mb-8">
               <div className="flex items-center gap-4">
@@ -142,9 +147,21 @@ export function PublicProfilePage() {
                 <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-3">
                   {ratings.length} Soda{ratings.length !== 1 ? 's' : ''} Rated
                 </p>
-                <div className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{ visible: { transition: { staggerChildren: 0.035 } } }}
+                  className="divide-y divide-gray-200 dark:divide-gray-700 border-t border-b border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden"
+                >
                   {ratings.map((r) => (
-                    <div key={r.soda_id} className="flex items-center gap-3 py-3 px-3 bg-white dark:bg-gray-800">
+                    <motion.div
+                      key={r.soda_id}
+                      variants={{
+                        hidden: { opacity: 0, y: 6 },
+                        visible: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+                      }}
+                      className="flex items-center gap-3 py-3 px-3 bg-white dark:bg-gray-800"
+                    >
                       <div className="flex-1 min-w-0">
                         <p className="font-display font-bold text-gray-900 dark:text-gray-100 truncate">{r.soda_name}</p>
                         {r.soda_brand && (
@@ -152,9 +169,9 @@ export function PublicProfilePage() {
                         )}
                       </div>
                       <ScoreBadge score={r.score} size="sm" />
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
 
                 <div className="mt-10 pt-6 border-t border-gray-200 dark:border-gray-800 text-center">
                   <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mb-3">
@@ -170,7 +187,7 @@ export function PublicProfilePage() {
                 </div>
               </>
             )}
-          </div>
+          </motion.div>
         )}
       </main>
     </div>

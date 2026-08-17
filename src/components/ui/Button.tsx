@@ -1,9 +1,16 @@
+import { motion } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 
 type Variant = 'primary' | 'secondary' | 'danger';
 type Size = 'sm' | 'md';
 
-interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+/** Drop the DOM drag/animation handlers framer-motion also declares, so they don't clash. */
+type NativeButtonProps = Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onAnimationStart' | 'onDragStart' | 'onDragEnd' | 'onDrag'
+>;
+
+interface Props extends NativeButtonProps {
   variant?: Variant;
   size?: Size;
 }
@@ -25,10 +32,16 @@ const sizes: Record<Size, string> = {
   md: 'px-4 py-3 text-sm',
 };
 
-export function Button({ variant = 'primary', size = 'sm', className, type = 'button', ...rest }: Props) {
+export function Button({ variant = 'primary', size = 'sm', className, type = 'button', disabled, ...rest }: Props) {
   return (
-    <button
+    <motion.button
       type={type}
+      disabled={disabled}
+      // The most-tapped element in the app used to be inert on press while the soda
+      // cards gave way under a finger. Matches SodaCard's 0.97 so the whole app
+      // responds with the same weight.
+      whileTap={disabled ? undefined : { scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 600, damping: 30 }}
       className={twMerge(base, variants[variant], sizes[size], className)}
       {...rest}
     />

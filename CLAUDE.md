@@ -184,6 +184,17 @@ Conventions:
 
 Use the `z-(--z-*)` scale from `index.css` (`sticky`/`header`/`modal`/`confirm`) rather than raw z-index numbers.
 
+### Motion
+
+The app is meant to feel carbonated, so motion is part of the design rather than decoration. Conventions:
+
+- **Everything tappable gives way.** `Button` and `BottomNav` use `whileTap={{ scale: 0.97 }}` on a stiff spring; `SodaCard` and the collection cards match. A new interactive element without press feedback will feel dead next to them.
+- **Lists stagger in** at `staggerChildren: 0.03–0.04` with a 6–8px rise. Used by the soda list, collections, activity feed and public profile.
+- **`FloatingBubbles`** is the signature motif — an ambient rise behind a `CupSoda` icon. It belongs in empty states and placeholders, *not* in list rows: four looping animations per row gets expensive and noisy fast.
+- **Shared-element transitions** via `layoutId` morph a soda card into its detail page (`card`, `thumb`, `name`, `score`). Keep the ids in sync across both files or the morph silently degrades to a cut.
+
+**`MotionConfig reducedMotion="user"` wraps the whole app** in `App.tsx`, so every Framer Motion animation honours the OS setting automatically — transforms and layout morphs drop, opacity fades stay. Tailwind's CSS animations are outside its reach: pair decorative ones with `motion-reduce:animate-none` (as `Skeleton` does). Spinners are deliberately left running, since they are the only signal that something is in progress.
+
 ### Build notes
 
 `scripts/generate-icons.mjs` runs first during `npm run build` to convert `public/favicon.svg` → PNG formats for Safari. This uses Node's `sharp` package.
