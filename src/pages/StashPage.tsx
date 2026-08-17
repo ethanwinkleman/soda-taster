@@ -351,7 +351,11 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
                         <motion.div
-                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg min-w-[11rem] overflow-hidden"
+                          // Six items is taller than a short viewport (a laptop at
+                          // browser zoom, or landscape on a phone), and the menu opens
+                          // near the top of the page — so cap it and let it scroll
+                          // rather than dropping Settings off the bottom of the screen.
+                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg min-w-[11rem] overflow-y-auto overscroll-contain max-h-[calc(100dvh-8rem)]"
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}

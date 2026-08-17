@@ -48,14 +48,22 @@ export function TastingCard({ soda, cardRef, sharedBy, sharedAt }: Props) {
       {/* Cherry brand bar */}
       <div style={{ height: 6, background: `linear-gradient(to right, ${cherry}, #00c2d1)`, flexShrink: 0 }} />
 
-      {/* Hero image */}
+      {/* Hero image.
+          A background-image rather than an <img>: html2canvas does not implement
+          object-fit, so `objectFit: cover` was silently ignored and a portrait photo
+          got stretched to fill 600×280. It does honour background-size, so cropping
+          survives rasterisation. */}
       {hasImage && (
-        <div style={{ position: 'relative', width: CARD_W, height: imgH, flexShrink: 0 }}>
-          <img
-            src={soda.imageUrl!}
-            crossOrigin="anonymous"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
+        <div
+          style={{
+            position: 'relative', width: CARD_W, height: imgH, flexShrink: 0,
+            backgroundImage: `url("${soda.imageUrl!}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: bg,
+          }}
+        >
           <div
             style={{
               position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,

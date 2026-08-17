@@ -105,9 +105,13 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     daily: daily.data ?? [],
     summary: summary.data ?? null,
     topSodas: topSodas.data ?? [],
+    // isLoading is only true before there is any data. A refetch over existing data
+    // leaves it false, which is why refreshing looked like nothing happened — isFetching
+    // is the one that reports a refresh in progress.
     loading: daily.isLoading || summary.isLoading,
+    refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching,
     error: daily.error ?? summary.error ?? topSodas.error ?? null,
     timezone: tz,
-    refetch: () => { void daily.refetch(); void summary.refetch(); void topSodas.refetch(); },
+    refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch()]),
   };
 }
