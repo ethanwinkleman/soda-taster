@@ -96,9 +96,23 @@ export function StashActivityPage() {
           <FieldLabel as="p" className="mb-3">
             {entries.length} event{entries.length !== 1 ? 's' : ''}
           </FieldLabel>
-          <div className="divide-y divide-gray-100 dark:divide-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          {/* A feed of events that appeared all at once. Staggering them in reads as
+              activity arriving, which is what the page is for. */}
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
+            className="divide-y divide-gray-100 dark:divide-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+          >
             {entries.map((entry) => (
-              <div key={entry.id} className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800">
+              <motion.div
+                key={entry.id}
+                variants={{
+                  hidden: { opacity: 0, y: 6 },
+                  visible: { opacity: 1, y: 0, transition: { duration: 0.22, ease: 'easeOut' } },
+                }}
+                className="px-4 py-3 flex items-start gap-3 bg-white dark:bg-gray-800"
+              >
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-500 to-cyan-500 text-white flex items-center justify-center text-[10px] font-bold font-sans shrink-0 mt-0.5">
                   {entry.displayName[0]?.toUpperCase() ?? '?'}
                 </div>
@@ -112,9 +126,9 @@ export function StashActivityPage() {
                     {relativeTime(entry.createdAt)}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </>
       )}
     </div>

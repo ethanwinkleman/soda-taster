@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
@@ -147,6 +147,12 @@ export default function App() {
       // within the same session, so closing the app mid-tasting would have stranded them.
       onSuccess={() => { void queryClient.resumePausedMutations(); }}
     >
+      {/* reducedMotion="user" honours the OS setting for every animation in the app:
+          transforms and layout morphs are dropped, opacity fades are kept, so the UI
+          still reads as responsive without moving. The shared-element morph between a
+          soda card and its detail page is exactly the kind of motion that causes
+          trouble for vestibular sensitivity, and it was previously unavoidable. */}
+      <MotionConfig reducedMotion="user">
       <BrowserRouter>
         <AuthProvider>
           <ConfirmProvider>
@@ -177,6 +183,7 @@ export default function App() {
           </ConfirmProvider>
         </AuthProvider>
       </BrowserRouter>
+      </MotionConfig>
     </PersistQueryClientProvider>
   );
 }

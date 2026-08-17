@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from '../components/Logo';
+import { motion } from 'framer-motion';
 
 const PENDING_KEY = 'pendingStashCode';
 
@@ -39,7 +40,7 @@ export function JoinStashPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="animate-pulse opacity-60"><Logo size="md" /></div>
+        <div className="animate-pulse motion-reduce:animate-none opacity-60"><Logo size="md" /></div>
       </div>
     );
   }
@@ -67,7 +68,12 @@ export function JoinStashPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
-      <div className="text-center max-w-sm w-full">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1] }}
+        className="text-center max-w-sm w-full"
+      >
         <div className="flex justify-center mb-8"><Logo size="lg" /></div>
 
         {stashName ? (
@@ -75,7 +81,14 @@ export function JoinStashPage() {
             <p className="text-sm font-medium text-sky-500 uppercase tracking-wide mb-1">
               You've been invited to join
             </p>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{stashName}</h2>
+            <motion.h2
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, ease: [0.34, 1.4, 0.64, 1], delay: 0.1 }}
+              className="text-2xl font-bold text-gray-900 dark:text-white mb-6"
+            >
+              {stashName}
+            </motion.h2>
           </>
         ) : (
           <div className="h-16 flex items-center justify-center mb-6">
@@ -119,7 +132,7 @@ export function JoinStashPage() {
             </button>
           </>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 }
