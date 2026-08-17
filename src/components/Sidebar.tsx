@@ -1,10 +1,11 @@
 import { lazy, Suspense, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Plus, LogOut, Share2, Star } from 'lucide-react';
+import { Plus, LogOut, Share2, Star, BarChart3 } from 'lucide-react';
 import { StashIcon } from './StashIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { useProfile } from '../hooks/useProfile';
+import { useIsAdmin } from '../hooks/useAdminMetrics';
 import { Logo } from './Logo';
 import { Skeleton } from './Skeleton';
 import type { Stash } from '../types/stash';
@@ -20,6 +21,7 @@ interface Props {
 export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
   const { user, signOut } = useAuth();
   const { profile, saveProfile } = useProfile(user);
+  const isAdmin = useIsAdmin(user);
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -136,10 +138,23 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate font-sans">{name.split(' ')[0]}</p>
             <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate font-sans">{user.email}</p>
           </div>
+          {/* The mobile header has this in UserMenu, which is md:hidden — without it here
+              the admin has no way to reach /admin on a desktop at all. */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => navigate('/admin')}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+              aria-label="Analytics"
+              title="Analytics"
+            >
+              <BarChart3 size={15} />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setShareOpen(true)}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0"
             aria-label="Share profile"
             title="Share profile"
           >

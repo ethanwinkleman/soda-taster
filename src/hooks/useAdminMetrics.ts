@@ -49,7 +49,9 @@ export function useIsAdmin(user: User | null | undefined) {
       return !!data;
     },
     enabled: !!user?.id,
-    staleTime: 10 * 60 * 1000,
+    // Short: the persisted cache would otherwise hold a `false` from before the grant,
+    // and a fresh-looking one blocks the refetch that would correct it.
+    staleTime: 30 * 1000,
   });
   return data ?? false;
 }
