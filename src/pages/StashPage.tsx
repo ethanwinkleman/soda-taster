@@ -349,13 +349,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <AnimatePresence>
                     {menuOpen && (
                       <>
-                        <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                        {/* Backdrop and menu share a level; the menu wins on DOM order.
+                            Both must clear the sticky filter bar below (--z-sticky),
+                            which is opaque and was painting over the menu's lower half. */}
+                        <div className="fixed inset-0 z-(--z-dropdown)" onClick={() => setMenuOpen(false)} />
                         <motion.div
                           // Six items is taller than a short viewport (a laptop at
                           // browser zoom, or landscape on a phone), and the menu opens
                           // near the top of the page — so cap it and let it scroll
                           // rather than dropping Settings off the bottom of the screen.
-                          className="absolute right-0 top-full mt-1 z-20 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg min-w-[11rem] overflow-y-auto overscroll-contain max-h-[calc(100dvh-8rem)]"
+                          className="absolute right-0 top-full mt-1 z-(--z-dropdown) bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-lg min-w-[11rem] overflow-y-auto overscroll-contain max-h-[calc(100dvh-8rem)]"
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
