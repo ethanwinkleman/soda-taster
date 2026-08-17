@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Users, CupSoda, Star, Layers, TrendingUp, Repeat, RefreshCw } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Users, CupSoda, Star, Layers, TrendingUp, Repeat, RefreshCw, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAdminMetrics, useIsAdmin } from '../hooks/useAdminMetrics';
+import { AnimatedNumber } from '../components/AnimatedNumber';
 import { MetricChart } from '../components/MetricChart';
 import { Skeleton } from '../components/Skeleton';
 import { PageHeader } from '../components/ui';
 
 function Tile({ icon: Icon, label, value, sub }: {
-  icon: typeof Users; label: string; value: string | number; sub?: string;
+  icon: typeof Users; label: string; value: number; sub?: string;
 }) {
   return (
     <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] p-4">
@@ -17,7 +19,9 @@ function Tile({ icon: Icon, label, value, sub }: {
         <p className="font-sans text-[10px] font-bold uppercase tracking-[0.15em]">{label}</p>
       </div>
       <p className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
-        {value}
+        {/* Counts up from the previous figure, so a refresh that changes something is
+            visible rather than a silent swap. */}
+        <AnimatedNumber value={value} decimals={0} />
       </p>
       {sub && <p className="font-sans text-[11px] text-gray-400 dark:text-gray-500 mt-1.5">{sub}</p>}
     </div>
@@ -49,7 +53,16 @@ export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAdmin = useIsAdmin(user);
-  const { daily, summary, topSodas, loading, error, timezone, refetch } = useAdminMetrics(isAdmin);
+  const { daily, summary, topSodas, loading, refreshing, error, timezone, refetch } = useAdminMetrics(isAdmin);
+  const [justUpdated, setJustUpdated] = useState(false);
+
+  async function handleRefresh() {
+    await refetch();
+    // The numbers often come back identical, so a spinner alone can leave you unsure
+    // anything happened. This confirms it did.
+    setJustUpdated(true);
+    setTimeout(() => setJustUpdated(false), 2000);
+  }
 
   if (!isAdmin) {
     return (
@@ -79,11 +92,37 @@ export function AdminPage() {
         </p>
         <button
           type="button"
-          onClick={refetch}
-          className="flex items-center gap-1.5 font-sans text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 font-sans text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 disabled:opacity-60 transition-colors"
         >
-          <RefreshCw size={11} />
-          Refresh
+          <AnimatePresence mode="wait" initial={false}>
+            {justUpdated ? (
+              <motion.span
+                key="done"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-1.5 text-cyan-600 dark:text-cyan-400"
+              >
+                <Check size={11} />
+                Updated
+              </motion.span>
+            ) : (
+              <motion.span
+                key="idle"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex items-center gap-1.5"
+              >
+                <RefreshCw size={11} className={refreshing ? 'animate-spin' : undefined} />
+                {refreshing ? 'Refreshing' : 'Refresh'}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
       </div>
 
