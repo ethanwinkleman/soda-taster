@@ -116,6 +116,40 @@ describe('ratingDistribution', () => {
     expect(d.find((b) => b.score === 5)!.count).toBe(1); // revealed, so both count
   });
 
+  it('counts your own ratings as a separate series', () => {
+    const d = ratingDistribution([
+      soda([rating('me', 4.5), rating('alice', 2)]),
+      soda([rating('me', 4.5)]),
+      soda([rating('alice', 2), rating('me', 1)]),
+    ]);
+    expect(d.find((b) => b.score === 4.5)!.mine).toBe(2);
+    expect(d.find((b) => b.score === 2)!.mine).toBe(0);   // both 2.0s are Alice's
+    expect(d.find((b) => b.score === 1)!.mine).toBe(1);
+  });
+
+  it('counts you inside everyone too — the room includes you', () => {
+    const d = ratingDistribution([soda([rating('me', 3)])]);
+    const bucket = d.find((b) => b.score === 3)!;
+    expect(bucket.count).toBe(1);
+    expect(bucket.mine).toBe(1);
+  });
+
+  it('never reports more of yours than there are in total', () => {
+    // The chart draws yours inset inside everyone's, which is only legible while
+    // this holds. It holds because your rating is one of the visible ones.
+    const d = ratingDistribution([
+      soda([rating('me', 5), rating('alice', 5), rating('bob', 1)]),
+      soda([rating('alice', 3)]),
+      soda([rating('me', 2), rating('bob', 2)]),
+    ]);
+    for (const b of d) expect(b.mine).toBeLessThanOrEqual(b.count);
+  });
+
+  it('reports none of yours on a soda you have not rated', () => {
+    const d = ratingDistribution([soda([rating('alice', 4)])]);
+    expect(d.every((b) => b.mine === 0)).toBe(true);
+  });
+
   it('labels whole numbers without a decimal and halves with one', () => {
     const d = ratingDistribution([]);
     expect(d.find((b) => b.score === 3)!.label).toBe('3');
