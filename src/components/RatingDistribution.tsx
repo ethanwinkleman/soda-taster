@@ -1,45 +1,49 @@
 import { motion } from 'framer-motion';
-import type { DistributionBucket } from '../lib/ratingVisibility';
+import type { DistributionBucket, RatingComparison } from '../lib/ratingVisibility';
 
 interface Props {
   buckets: DistributionBucket[];
+  comparison: RatingComparison;
   /** Currently filtered score, or null for "no filter". */
   selected: number | null;
   onSelect: (score: number | null) => void;
 }
 
 /**
- * How often each score gets awarded, and how your own scoring compares.
+ * How often each score gets awarded, yours against everyone else's.
  *
- * Two series, drawn inset rather than side by side. Yours is a subset of everyone's
- * — your rating is one of the visible ones — so `mine` can never exceed `count`, and
- * a narrower bar drawn in front of the wider one reads as "your share of this bar"
- * with no ambiguity about which is which. Side-by-side would mean twenty bars across
- * a phone, each about fourteen pixels wide.
+ * The two series are disjoint — you are not counted in "everyone else" — and that is
+ * what makes this readable. The previous version compared you against a group that
+ * included you, so the two averages converged toward each other and the bars had to
+ * be drawn nested to stay truthful. Nested bars do not say "compare these two".
+ *
+ * The headline carries the answer as numbers. Reading a difference out of the shape
+ * of two distributions is not something anyone should have to do; the bars are here
+ * to show *where* the difference sits, not to be measured by eye.
  *
  * Drawn with plain elements rather than SVG or a chart library — same reasoning as
- * MetricChart, plus each bar has to be a real focusable control, since clicking one
- * filters the list below.
- *
- * Ten bars, always all ten: an empty bucket is the interesting part of a
- * distribution, so 0.5 and 5.0 stay on the axis even when nobody has awarded them.
+ * MetricChart, plus each column has to be a real focusable control, since clicking
+ * one filters the list below.
  */
-export function RatingDistribution({ buckets, selected, onSelect }: Props) {
-  const total = buckets.reduce((sum, b) => sum + b.count, 0);
+export function RatingDistribution({ buckets, comparison, selected, onSelect }: Props) {
+  const total = buckets.reduce((sum, b) => sum + b.mine + b.others, 0);
   if (total === 0) return null;
 
-  const mineTotal = buckets.reduce((sum, b) => sum + b.mine, 0);
-  const max = Math.max(...buckets.map((b) => b.count));
+  const max = Math.max(1, ...buckets.map((b) => Math.max(b.mine, b.others)));
+  const { mine, others, shared } = comparison;
+  const hasBoth = mine.count > 0 && others.count > 0;
 
-  // Averaged over ratings, not over sodas — this is "what score do people give",
-  // which is the question the chart exists to answer.
-  const mean = buckets.reduce((sum, b) => sum + b.score * b.count, 0) / total;
-  const myMean = mineTotal
-    ? buckets.reduce((sum, b) => sum + b.score * b.mine, 0) / mineTotal
-    : null;
+  // Stated as a direction rather than a signed number: "+0.3" needs a key to read,
+  // "you rate higher" does not.
+  const gap = shared.avgGap;
+  const verdict =
+    gap === null ? null
+    : Math.abs(gap) < 0.25 ? 'You and the group agree, near enough.'
+    : gap > 0 ? `You rate ${Math.abs(gap).toFixed(1)} higher than the group.`
+    : `You rate ${Math.abs(gap).toFixed(1)} lower than the group.`;
 
-  // Only worth drawing a second series once it says something the first does not.
-  const showMine = mineTotal > 0 && mineTotal < total;
+  /** Bar height. A count of 1 still has to be visible and hittable. */
+  const barHeight = (n: number) => (n === 0 ? 0 : Math.max(10, (n / max) * 100));
 
   return (
     <motion.div
@@ -48,99 +52,109 @@ export function RatingDistribution({ buckets, selected, onSelect }: Props) {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] p-4 mb-3"
     >
-      <div className="flex items-baseline justify-between mb-1 gap-2">
-        <p className="font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400">
-          Rating spread
-        </p>
-        <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 tabular-nums">
-          {total} rating{total !== 1 ? 's' : ''} · {mean.toFixed(1)} avg
-        </p>
-      </div>
+      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 mb-3">
+        Rating spread
+      </p>
 
-      {showMine && (
-        <div className="flex items-center gap-3 mb-3">
-          <span className="flex items-center gap-1.5 font-sans text-[10px] text-gray-500 dark:text-gray-400">
-            <span className="w-2.5 h-2.5 rounded-sm bg-sky-200 dark:bg-sky-800" />
-            Everyone
-          </span>
-          <span className="flex items-center gap-1.5 font-sans text-[10px] text-gray-500 dark:text-gray-400">
-            <span className="w-2.5 h-2.5 rounded-sm bg-sky-500" />
-            You
-            {myMean !== null && (
-              <span className="tabular-nums text-gray-400 dark:text-gray-500">
-                · {mineTotal} · {myMean.toFixed(1)} avg
+      {hasBoth ? (
+        <div className="mb-4">
+          <div className="flex items-stretch gap-4">
+            <div className="flex-1">
+              <p className="font-sans text-[10px] uppercase tracking-wider text-sky-600 dark:text-sky-400 mb-1">
+                You
+              </p>
+              <p className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+                {mine.avg?.toFixed(1)}
+              </p>
+              <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 tabular-nums mt-1">
+                {mine.count} rating{mine.count !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <div className="w-px bg-gray-200 dark:bg-gray-700" />
+            <div className="flex-1">
+              <p className="font-sans text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">
+                Everyone else
+              </p>
+              <p className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+                {others.avg?.toFixed(1)}
+              </p>
+              <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 tabular-nums mt-1">
+                {others.count} rating{others.count !== 1 ? 's' : ''}
+              </p>
+            </div>
+          </div>
+
+          {verdict && shared.sodas > 0 && (
+            <p className="font-sans text-xs text-gray-600 dark:text-gray-300 mt-3 leading-relaxed">
+              {verdict}{' '}
+              <span className="text-gray-400 dark:text-gray-500">
+                Across the {shared.sodas} soda{shared.sodas !== 1 ? 's' : ''} you have both
+                rated — the same sodas, so the difference is you and not what you happened
+                to drink.
               </span>
-            )}
-          </span>
+            </p>
+          )}
         </div>
+      ) : (
+        <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4 tabular-nums">
+          {total} rating{total !== 1 ? 's' : ''}
+          {mine.avg !== null && ` · ${mine.avg.toFixed(1)} avg`}
+        </p>
       )}
-      {!showMine && <div className="mb-3" />}
 
-      <div className="flex items-end gap-1 h-24" role="group" aria-label="Rating distribution">
+      {/* Where the difference sits. */}
+      <div className="flex items-end gap-1.5 h-24" role="group" aria-label="Rating distribution">
         {buckets.map((b) => {
           const isSelected = selected === b.score;
           const isDimmed = selected !== null && !isSelected;
-          // Every non-zero bucket keeps a visible stub, so a lone rating at 0.5 is
-          // still clickable rather than a one-pixel sliver.
-          const heightPct = b.count === 0 ? 0 : Math.max(8, (b.count / max) * 100);
-          const minePct = b.mine === 0 ? 0 : Math.max(8, (b.mine / max) * 100);
+          const empty = b.mine === 0 && b.others === 0;
 
-          const label =
-            `${b.label} stars, ${b.count} rating${b.count !== 1 ? 's' : ''}` +
-            (showMine ? `, ${b.mine} of them yours` : '') +
-            (b.count === 0 ? '' : isSelected ? ' — filtering by this score' : ' — filter by this score');
+          const bar = (n: number, mineSide: boolean) => (
+            <span className="flex-1 h-full flex flex-col justify-end items-center min-w-0">
+              <span
+                className={`font-sans text-[9px] tabular-nums leading-none mb-0.5 ${
+                  mineSide ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'
+                }`}
+              >
+                {n || ''}
+              </span>
+              <motion.span
+                initial={{ height: 0 }}
+                animate={{ height: `${barHeight(n)}%` }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: mineSide ? 0 : 0.05 }}
+                className={`w-full rounded-t-sm ${
+                  mineSide
+                    ? isSelected ? 'bg-sky-600' : 'bg-sky-500 group-hover:bg-sky-600'
+                    : isSelected
+                      ? 'bg-gray-500 dark:bg-gray-400'
+                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500'
+                }`}
+              />
+            </span>
+          );
 
           return (
             <button
               key={b.score}
               type="button"
-              disabled={b.count === 0}
+              disabled={empty}
               onClick={() => onSelect(isSelected ? null : b.score)}
               aria-pressed={isSelected}
-              aria-label={label}
-              className={`group flex-1 flex flex-col items-center justify-end h-full min-w-0 rounded-md transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
-                b.count === 0 ? 'cursor-default' : 'cursor-pointer'
+              aria-label={`${b.label} stars — you ${b.mine}, everyone else ${b.others}${
+                empty ? '' : isSelected ? '. Filtering by this score' : '. Filter by this score'
+              }`}
+              className={`group flex-1 h-full flex items-end gap-[3px] min-w-0 rounded-sm transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
+                empty ? 'cursor-default' : 'cursor-pointer'
               } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
             >
-              <span
-                className={`font-sans text-[10px] tabular-nums mb-1 transition-colors ${
-                  isSelected
-                    ? 'text-sky-600 dark:text-sky-400 font-bold'
-                    : 'text-gray-400 dark:text-gray-500'
-                }`}
-              >
-                {b.count || ''}
-              </span>
-
-              {/* Everyone's bar, with yours drawn inside it. */}
-              <span className="relative w-full flex justify-center" style={{ height: `${heightPct}%` }}>
-                <motion.span
-                  initial={{ height: 0 }}
-                  animate={{ height: '100%' }}
-                  transition={{ duration: 0.4, ease: 'easeOut' }}
-                  className={`absolute bottom-0 w-full rounded-t-md transition-colors ${
-                    isSelected
-                      ? 'bg-sky-400'
-                      : b.count === 0
-                        ? 'bg-transparent'
-                        : 'bg-sky-200 dark:bg-sky-800 group-hover:bg-sky-300 dark:group-hover:bg-sky-700'
-                  }`}
-                />
-                {showMine && b.mine > 0 && (
-                  <motion.span
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(minePct / heightPct) * 100}%` }}
-                    transition={{ duration: 0.4, ease: 'easeOut', delay: 0.08 }}
-                    className="absolute bottom-0 w-1/2 rounded-t-md bg-sky-500 dark:bg-sky-400"
-                  />
-                )}
-              </span>
+              {bar(b.mine, true)}
+              {bar(b.others, false)}
             </button>
           );
         })}
       </div>
 
-      <div className="flex gap-1 mt-1.5">
+      <div className="flex gap-1.5 mt-1.5">
         {buckets.map((b) => (
           <span
             key={b.score}
@@ -154,6 +168,17 @@ export function RatingDistribution({ buckets, selected, onSelect }: Props) {
           </span>
         ))}
       </div>
+
+      {hasBoth && (
+        <div className="flex items-center gap-3 mt-3">
+          <span className="flex items-center gap-1.5 font-sans text-[10px] text-gray-500 dark:text-gray-400">
+            <span className="w-2.5 h-2.5 rounded-sm bg-sky-500" /> You
+          </span>
+          <span className="flex items-center gap-1.5 font-sans text-[10px] text-gray-500 dark:text-gray-400">
+            <span className="w-2.5 h-2.5 rounded-sm bg-gray-300 dark:bg-gray-600" /> Everyone else
+          </span>
+        </div>
+      )}
     </motion.div>
   );
 }

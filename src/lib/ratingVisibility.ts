@@ -58,10 +58,10 @@ export function toBucket(score: number): number {
 export interface DistributionBucket {
   score: number;
   label: string;
-  /** Everyone's visible ratings at this score — your own included. */
-  count: number;
-  /** Yours alone. Always <= count, since your rating is one of the visible ones. */
+  /** Yours. */
   mine: number;
+  /** Everyone else's. Disjoint from `mine` — you are not in both. */
+  others: number;
 }
 
 /**
@@ -82,23 +82,75 @@ export function ratingDistribution(sodas: Soda[]): DistributionBucket[] {
   };
 
   for (const soda of sodas) {
-    for (const rating of visibleRatings(soda)) bump(counts, rating.score);
-    // Your own rating is also one of the visible ones, so it is counted in both.
-    // That is deliberate: the comparison is "you against the room", and the room
-    // includes you. It also guarantees mine <= count, which is what lets the chart
-    // draw yours inset inside everyone's rather than as a second competing bar.
-    if (soda.myRating) bump(mine, soda.myRating.score);
+    // The two series are disjoint: your rating goes in yours, everyone else's in
+    // theirs. Counting yourself into both — which is what "Everyone" used to mean —
+    // compares you against a group that is mostly you, so the averages converge and
+    // the bars have to be drawn nested to stay truthful. Splitting them makes the
+    // comparison real and lets the bars sit side by side.
+    for (const rating of visibleRatings(soda)) {
+      if (rating.userId === soda.myRating?.userId) bump(mine, rating.score);
+      else bump(counts, rating.score);
+    }
   }
 
   return RATING_BUCKETS.map((score) => ({
     score,
     label: score % 1 === 0 ? String(score) : score.toFixed(1),
-    count: counts.get(score) ?? 0,
     mine: mine.get(score) ?? 0,
+    others: counts.get(score) ?? 0,
   }));
 }
 
 /** Whether a soda carries at least one visible rating at the given score. */
 export function hasVisibleRatingAt(soda: Soda, score: number): boolean {
   return visibleRatings(soda).some((r) => toBucket(r.score) === score);
+}
+
+
+export interface RatingComparison {
+  mine: { count: number; avg: number | null };
+  others: { count: number; avg: number | null };
+  /** Your average minus theirs. Positive means you rate more generously. */
+  delta: number | null;
+  /**
+   * The honest version of "how different am I".
+   *
+   * Comparing two averages compares two different sets of sodas — if you happened to
+   * rate the good ones, you look generous when you are not. This instead looks only
+   * at sodas you and someone else have both rated, takes your score minus their
+   * average on each, and averages that. Same sodas, so the difference is you.
+   */
+  shared: { sodas: number; avgGap: number | null };
+}
+
+export function ratingComparison(sodas: Soda[]): RatingComparison {
+  const mineScores: number[] = [];
+  const otherScores: number[] = [];
+  const gaps: number[] = [];
+
+  for (const soda of sodas) {
+    const visible = visibleRatings(soda);
+    const myScore = soda.myRating?.score ?? null;
+    const theirs = visible.filter((r) => r.userId !== soda.myRating?.userId).map((r) => r.score);
+
+    if (myScore !== null) mineScores.push(myScore);
+    otherScores.push(...theirs);
+
+    if (myScore !== null && theirs.length > 0) {
+      gaps.push(myScore - theirs.reduce((a, b) => a + b, 0) / theirs.length);
+    }
+  }
+
+  const mean = (xs: number[]) =>
+    xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null;
+
+  const myAvg = mean(mineScores);
+  const theirAvg = mean(otherScores);
+
+  return {
+    mine: { count: mineScores.length, avg: myAvg },
+    others: { count: otherScores.length, avg: theirAvg },
+    delta: myAvg !== null && theirAvg !== null ? Math.round((myAvg - theirAvg) * 10) / 10 : null,
+    shared: { sodas: gaps.length, avgGap: mean(gaps) },
+  };
 }
