@@ -31,8 +31,9 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
 
   // Scaled by the column total, since a column is now one bar made of two parts.
   const max = Math.max(1, ...buckets.map((b) => b.mine + b.others));
-  const { mine, others, shared } = comparison;
-  const hasBoth = mine.count > 0 && others.count > 0;
+  const { mine, shared } = comparison;
+  // The headline only appears when there is a like-for-like comparison to make.
+  const hasBoth = shared.sodas > 0 && shared.myAvg !== null && shared.othersAvg !== null;
 
   // Stated as a direction rather than a signed number: "+0.3" needs a key to read,
   // "you rate higher" does not.
@@ -65,10 +66,7 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
                 You
               </p>
               <p className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
-                {mine.avg?.toFixed(1)}
-              </p>
-              <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 tabular-nums mt-1">
-                {mine.count} rating{mine.count !== 1 ? 's' : ''}
+                {shared.myAvg?.toFixed(1)}
               </p>
             </div>
             <div className="w-px bg-gray-200 dark:bg-gray-700" />
@@ -77,21 +75,23 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
                 Everyone else
               </p>
               <p className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 tabular-nums leading-none">
-                {others.avg?.toFixed(1)}
-              </p>
-              <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 tabular-nums mt-1">
-                {others.count} rating{others.count !== 1 ? 's' : ''}
+                {shared.othersAvg?.toFixed(1)}
               </p>
             </div>
           </div>
+          <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-2">
+            across the {shared.sodas} soda{shared.sodas !== 1 ? 's' : ''} you have both rated
+          </p>
 
-          {verdict && shared.sodas > 0 && (
+          {verdict && (
             <p className="font-sans text-xs text-gray-600 dark:text-gray-300 mt-3 leading-relaxed">
               {verdict}{' '}
               <span className="text-gray-400 dark:text-gray-500">
-                Across the {shared.sodas} soda{shared.sodas !== 1 ? 's' : ''} you have both
-                rated — the same sodas, so the difference is you and not what you happened
-                to drink.
+                Same sodas on both sides, so the difference is you and not what you
+                happened to drink.
+                {mine.count > shared.sodas && (
+                  <> You have rated {mine.count} in all, averaging {mine.avg?.toFixed(1)}.</>
+                )}
               </span>
             </p>
           )}

@@ -113,20 +113,28 @@ export interface RatingComparison {
   /** Your average minus theirs. Positive means you rate more generously. */
   delta: number | null;
   /**
-   * The honest version of "how different am I".
+   * The comparable pair, and the only one worth putting side by side.
    *
-   * Comparing two averages compares two different sets of sodas — if you happened to
-   * rate the good ones, you look generous when you are not. This instead looks only
-   * at sodas you and someone else have both rated, takes your score minus their
-   * average on each, and averages that. Same sodas, so the difference is you.
+   * Overall averages cover different sets of sodas: yours includes ones nobody else
+   * has tried, theirs cannot. That is not a rounding difference — the two can point
+   * in opposite directions. Rate one soda 3 against their 4, then rate two more at 5
+   * that nobody else has touched, and your overall average is 4.3 against their 4.0
+   * while you are a full point below them on the only soda you have both tried.
+   *
+   * These are restricted to sodas you and someone else have both rated, one vote per
+   * soda. Because both are plain means over the same set, avgGap is exactly
+   * myAvg - othersAvg, so the headline and the sentence can never disagree.
    */
-  shared: { sodas: number; avgGap: number | null };
+  shared: { sodas: number; myAvg: number | null; othersAvg: number | null; avgGap: number | null };
 }
 
 export function ratingComparison(sodas: Soda[]): RatingComparison {
   const mineScores: number[] = [];
   const otherScores: number[] = [];
-  const gaps: number[] = [];
+  // One entry per soda you have both rated, so a soda with three other raters
+  // counts once rather than three times.
+  const sharedMine: number[] = [];
+  const sharedOthers: number[] = [];
 
   for (const soda of sodas) {
     const visible = visibleRatings(soda);
@@ -137,20 +145,38 @@ export function ratingComparison(sodas: Soda[]): RatingComparison {
     otherScores.push(...theirs);
 
     if (myScore !== null && theirs.length > 0) {
-      gaps.push(myScore - theirs.reduce((a, b) => a + b, 0) / theirs.length);
+      sharedMine.push(myScore);
+      sharedOthers.push(theirs.reduce((a, b) => a + b, 0) / theirs.length);
     }
   }
 
-  const mean = (xs: number[]) =>
-    xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null;
+  const round1 = (n: number) => Math.round(n * 10) / 10;
+  const rawMean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+  const mean = (xs: number[]) => {
+    const m = rawMean(xs);
+    return m === null ? null : round1(m);
+  };
 
   const myAvg = mean(mineScores);
   const theirAvg = mean(otherScores);
 
+  // Gap from the unrounded means, then rounded once — rounding each side first can
+  // shift the gap by a tenth and make it disagree with the two numbers shown.
+  const sharedMineMean = rawMean(sharedMine);
+  const sharedOthersMean = rawMean(sharedOthers);
+
   return {
     mine: { count: mineScores.length, avg: myAvg },
     others: { count: otherScores.length, avg: theirAvg },
-    delta: myAvg !== null && theirAvg !== null ? Math.round((myAvg - theirAvg) * 10) / 10 : null,
-    shared: { sodas: gaps.length, avgGap: mean(gaps) },
+    delta: myAvg !== null && theirAvg !== null ? round1(myAvg - theirAvg) : null,
+    shared: {
+      sodas: sharedMine.length,
+      myAvg: mean(sharedMine),
+      othersAvg: mean(sharedOthers),
+      avgGap:
+        sharedMineMean !== null && sharedOthersMean !== null
+          ? round1(sharedMineMean - sharedOthersMean)
+          : null,
+    },
   };
 }
