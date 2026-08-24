@@ -15,7 +15,7 @@ import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { revealedSodas, ratingDistribution, hasVisibleRatingAt, isRevealed, visibleRatings } from '../lib/ratingVisibility';
+import { revealedSodas, ratingDistribution, ratingComparison, hasVisibleRatingAt, isRevealed, visibleRatings } from '../lib/ratingVisibility';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -271,6 +271,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const activeTopThree = scoreView === 'mine' ? myTopThree : topThree;
 
   const distribution = ratingDistribution(sodas);
+  const comparison = ratingComparison(sodas);
 
   const filtered = sodas.filter((s) => {
     if (scoreFilter !== null && !hasVisibleRatingAt(s, scoreFilter)) return false;
@@ -657,6 +658,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       {!loading && (
         <RatingDistribution
           buckets={distribution}
+          comparison={comparison}
           selected={scoreFilter}
           onSelect={setScoreFilter}
         />

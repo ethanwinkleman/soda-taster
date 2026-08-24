@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  ratingComparison,
   isRevealed,
   visibleRatings,
   visibleAvg,
@@ -94,55 +95,60 @@ describe('ratingDistribution', () => {
     expect(d[9].score).toBe(5);
   });
 
-  it('counts every visible rating into its bucket', () => {
+  it('splits every visible rating into exactly one of the two series', () => {
     const d = ratingDistribution([
       soda([rating('me', 4.5), rating('alice', 4.5)]),
       soda([rating('me', 2)]),
     ]);
-    expect(d.find((b) => b.score === 4.5)!.count).toBe(2);
-    expect(d.find((b) => b.score === 2)!.count).toBe(1);
-    expect(d.find((b) => b.score === 5)!.count).toBe(0);
+    const at = (score: number) => d.find((b) => b.score === score)!;
+    expect(at(4.5).mine).toBe(1);
+    expect(at(4.5).others).toBe(1);
+    expect(at(2).mine).toBe(1);
+    expect(at(2).others).toBe(0);
+    expect(at(5).mine + at(5).others).toBe(0);
+  });
+
+  it('never counts you in the "others" series', () => {
+    // The whole point of the split: comparing you against a group that includes you
+    // compares you partly against yourself, and the two averages converge.
+    const d = ratingDistribution([soda([rating('me', 3)])]);
+    const bucket = d.find((b) => b.score === 3)!;
+    expect(bucket.mine).toBe(1);
+    expect(bucket.others).toBe(0);
   });
 
   it('does not count ratings it is refusing to show', () => {
     // Alice rated it 5, you have not rated it — that 5 must not appear anywhere.
     const d = ratingDistribution([soda([rating('alice', 5)])]);
-    expect(d.every((b) => b.count === 0)).toBe(true);
+    expect(d.every((b) => b.mine === 0 && b.others === 0)).toBe(true);
   });
 
-  it('counts your own rating on a soda others have also rated blind', () => {
+  it('counts both sides once a blind soda is revealed', () => {
     const d = ratingDistribution([soda([rating('alice', 5), rating('me', 1)])]);
-    expect(d.find((b) => b.score === 1)!.count).toBe(1);
-    expect(d.find((b) => b.score === 5)!.count).toBe(1); // revealed, so both count
+    expect(d.find((b) => b.score === 1)!.mine).toBe(1);
+    expect(d.find((b) => b.score === 5)!.others).toBe(1);
   });
 
-  it('counts your own ratings as a separate series', () => {
+  it('attributes each score to whoever actually gave it', () => {
     const d = ratingDistribution([
       soda([rating('me', 4.5), rating('alice', 2)]),
       soda([rating('me', 4.5)]),
       soda([rating('alice', 2), rating('me', 1)]),
     ]);
     expect(d.find((b) => b.score === 4.5)!.mine).toBe(2);
-    expect(d.find((b) => b.score === 2)!.mine).toBe(0);   // both 2.0s are Alice's
+    expect(d.find((b) => b.score === 2)!.mine).toBe(0);    // both 2.0s are Alice's
+    expect(d.find((b) => b.score === 2)!.others).toBe(2);
     expect(d.find((b) => b.score === 1)!.mine).toBe(1);
   });
 
-  it('counts you inside everyone too — the room includes you', () => {
-    const d = ratingDistribution([soda([rating('me', 3)])]);
-    const bucket = d.find((b) => b.score === 3)!;
-    expect(bucket.count).toBe(1);
-    expect(bucket.mine).toBe(1);
-  });
-
-  it('never reports more of yours than there are in total', () => {
-    // The chart draws yours inset inside everyone's, which is only legible while
-    // this holds. It holds because your rating is one of the visible ones.
-    const d = ratingDistribution([
+  it('loses no rating in the split', () => {
+    const list = [
       soda([rating('me', 5), rating('alice', 5), rating('bob', 1)]),
-      soda([rating('alice', 3)]),
       soda([rating('me', 2), rating('bob', 2)]),
-    ]);
-    for (const b of d) expect(b.mine).toBeLessThanOrEqual(b.count);
+    ];
+    const total = list.reduce((n, s) => n + s.ratings.length, 0);
+    const d = ratingDistribution(list);
+    expect(d.reduce((n, b) => n + b.mine + b.others, 0)).toBe(total);
   });
 
   it('reports none of yours on a soda you have not rated', () => {
@@ -167,5 +173,62 @@ describe('hasVisibleRatingAt', () => {
 
   it('never matches a blind soda on someone else\'s score', () => {
     expect(hasVisibleRatingAt(soda([rating('alice', 4)]), 4)).toBe(false);
+  });
+});
+
+
+describe('ratingComparison', () => {
+  it('keeps you out of the others average', () => {
+    const c = ratingComparison([soda([rating('me', 5), rating('alice', 1)])]);
+    expect(c.mine).toEqual({ count: 1, avg: 5 });
+    expect(c.others).toEqual({ count: 1, avg: 1 });
+    expect(c.delta).toBe(4);
+  });
+
+  it('reports the per-soda gap, not the difference of two averages', () => {
+    // You rated the two sodas you and Alice both tried a point below her, and also
+    // rated a third soda 5 that she never tried. Comparing bare averages would let
+    // that third soda flatter you; the shared gap must not move.
+    const c = ratingComparison([
+      soda([rating('me', 3), rating('alice', 4)]),
+      soda([rating('me', 2), rating('alice', 3)]),
+      soda([rating('me', 5)]),
+    ]);
+    expect(c.shared.sodas).toBe(2);
+    expect(c.shared.avgGap).toBe(-1);
+    // The naive comparison disagrees, which is exactly why the gap exists.
+    expect(c.delta).not.toBe(-1);
+  });
+
+  it('averages the others on a soda before comparing, so one soda is one vote', () => {
+    // Three people rated it 2, you rated it 5. That is a gap of 3, not of nine.
+    const c = ratingComparison([
+      soda([rating('me', 5), rating('a', 2), rating('b', 2), rating('c', 2)]),
+    ]);
+    expect(c.shared.avgGap).toBe(3);
+  });
+
+  it('has nothing to say about sodas only one side has rated', () => {
+    const c = ratingComparison([soda([rating('me', 5)]), soda([rating('me', 1)])]);
+    expect(c.shared.sodas).toBe(0);
+    expect(c.shared.avgGap).toBeNull();
+    expect(c.others.avg).toBeNull();
+    expect(c.delta).toBeNull();
+  });
+
+  it('ignores ratings that are still sealed', () => {
+    // You have not rated it, so Alice's 5 is hidden — it cannot show up in her
+    // average either, or the chart would leak what the soda page is withholding.
+    const c = ratingComparison([soda([rating('alice', 5)])]);
+    expect(c.others.count).toBe(0);
+    expect(c.mine.count).toBe(0);
+  });
+
+  it('says nothing at all for an empty stash', () => {
+    const c = ratingComparison([]);
+    expect(c.mine.avg).toBeNull();
+    expect(c.others.avg).toBeNull();
+    expect(c.delta).toBeNull();
+    expect(c.shared).toEqual({ sodas: 0, avgGap: null });
   });
 });
