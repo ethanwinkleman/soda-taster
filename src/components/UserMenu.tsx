@@ -15,7 +15,7 @@ export function UserMenu() {
   const navigate = useNavigate();
   const { profile, saveProfile } = useProfile(user);
   // Only decides whether to offer the link; the RPCs behind the page do the gating.
-  const isAdmin = useIsAdmin(user);
+  const { isAdmin } = useIsAdmin(user);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

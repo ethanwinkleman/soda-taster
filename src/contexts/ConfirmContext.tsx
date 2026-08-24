@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface ConfirmOptions {
   title: string;
@@ -21,6 +22,11 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     options: ConfirmOptions;
     resolve: (v: boolean) => void;
   } | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // This one guards destructive answers — deleting a collection, removing a soda — so
+  // wandering focus is worse here than anywhere else in the app.
+  useFocusTrap(panelRef, !!state);
 
   const confirm = useCallback((options: ConfirmOptions | string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -56,7 +62,11 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             onClick={handleCancel}
           >
             <motion.div
-              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-2xl"
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className="w-full max-w-sm bg-gray-50 dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-2xl focus:outline-none"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}

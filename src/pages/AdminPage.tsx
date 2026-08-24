@@ -65,7 +65,7 @@ function RateTile({ icon: Icon, label, pct, explain }: {
 export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = useIsAdmin(user);
+  const { isAdmin, loading: adminLoading, error: adminError } = useIsAdmin(user);
   const { daily, summary, topSodas, users, loading, refreshing, error, timezone, refetch } = useAdminMetrics(isAdmin);
   const [justUpdated, setJustUpdated] = useState(false);
 
@@ -77,10 +77,24 @@ export function AdminPage() {
     setTimeout(() => setJustUpdated(false), 2000);
   }
 
-  if (!isAdmin) {
+  // Three distinct outcomes, and they must not be collapsed: the check is still running,
+  // the check failed, or it came back and you are not an admin. Showing "nothing to see
+  // here" for the first two tells an actual admin they have no access.
+  if (adminLoading || adminError || !isAdmin) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center">
-        <p className="font-display text-gray-500 dark:text-gray-400 mb-4">Nothing to see here.</p>
+        {adminLoading ? (
+          <p className="font-display text-gray-500 dark:text-gray-400 mb-4">Checking access…</p>
+        ) : adminError ? (
+          <>
+            <p className="font-display font-bold text-gray-900 dark:text-white mb-1">
+              Couldn't check your access.
+            </p>
+            <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mb-4">{adminError.message}</p>
+          </>
+        ) : (
+          <p className="font-display text-gray-500 dark:text-gray-400 mb-4">Nothing to see here.</p>
+        )}
         <button
           type="button"
           onClick={() => navigate('/')}

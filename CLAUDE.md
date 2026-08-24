@@ -145,6 +145,10 @@ Variables must be JSON-serialisable, which is why a `File` cannot ride along —
 
 `src/lib/supabase.ts` exports only the client. Each hook defines its own inline `fromDb` mappers for snake_case → camelCase conversion. All auth is Google OAuth managed by `AuthContext`.
 
+**supabase-js resolves with `{ error }` rather than throwing.** An unchecked call therefore renders a failure as its empty value, which is the single most common bug in this codebase: `editSoda` reported a save that never happened, `loadStashes` showed the "your collection starts here" empty state to people who had collections, and `useIsAdmin` told an admin they were not one. Every read and write must act on `error` — `if (error) throw new Error(error.message)` in a query function, so TanStack Query surfaces it.
+
+A hook that can fail should return that error, and the UI must draw three distinct states — loading, failed, empty. Collapsing the first two into the third is what made all three bugs invisible. `useStashes` and `useIsAdmin` both return `{ ..., error }` for this reason.
+
 RLS helpers are `SECURITY DEFINER` functions (`is_stash_member`, `shares_stash_with`) specifically to avoid infinite recursion when a policy needs to read the table it protects. Reuse that pattern rather than inlining a subquery.
 
 ### Admin analytics
@@ -192,6 +196,12 @@ The app is meant to feel carbonated, so motion is part of the design rather than
 - **Lists stagger in** at `staggerChildren: 0.03–0.04` with a 6–8px rise. Used by the soda list, collections, activity feed and public profile.
 - **`FloatingBubbles`** is the signature motif — an ambient rise behind a `CupSoda` icon. It belongs in empty states and placeholders, *not* in list rows: four looping animations per row gets expensive and noisy fast.
 - **Shared-element transitions** via `layoutId` morph a soda card into its detail page (`card`, `thumb`, `name`, `score`). Keep the ids in sync across both files or the morph silently degrades to a cut.
+
+### Dialog focus
+
+`Modal` and the confirm dialog both call `useFocusTrap(panelRef, open)`. It moves focus in, keeps Tab inside, and hands focus back to whatever opened the dialog on close — without it, Tab walks straight out into the page behind the backdrop. Any new dialog needs the same hook plus `role="dialog"`, `aria-modal="true"` and `tabIndex={-1}` on the panel.
+
+Toasts are already announced: sonner renders its own `aria-live="polite"` region, so a `toast.success` reaches a screen reader without extra markup. Don't add a second live region for the same message.
 
 **`MotionConfig reducedMotion="user"` wraps the whole app** in `App.tsx`, so every Framer Motion animation honours the OS setting automatically — transforms and layout morphs drop, opacity fades stay. Tailwind's CSS animations are outside its reach: pair decorative ones with `motion-reduce:animate-none` (as `Skeleton` does). Spinners are deliberately left running, since they are the only signal that something is in progress.
 

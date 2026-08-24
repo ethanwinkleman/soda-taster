@@ -54,17 +54,22 @@ interface StashesData {
 }
 
 async function loadStashes(userId: string): Promise<StashesData> {
-  const { data: memberships } = await supabase
+  const { data: memberships, error: membershipError } = await supabase
     .from('stash_members')
     .select('stash_id, is_favorite')
     .eq('user_id', userId);
+
+  // supabase-js resolves with { error } rather than throwing. Without this check a
+  // failed read looked identical to owning nothing, so the page showed its
+  // "start here" empty state to people who already had collections.
+  if (membershipError) throw new Error(membershipError.message);
 
   if (!memberships?.length) return { stashes: [], recentActivity: [] };
 
   const favoriteMap = new Map(memberships.map((m) => [m.stash_id, m.is_favorite ?? false]));
   const ids = memberships.map((m) => m.stash_id);
 
-  const [{ data }, { data: sodaRows }, { data: activityRows }] = await Promise.all([
+  const [{ data, error: stashError }, { data: sodaRows }, { data: activityRows }] = await Promise.all([
     supabase.from('stashes').select('*').in('id', ids),
     supabase.from('stash_sodas').select('stash_id').in('stash_id', ids),
     supabase
@@ -75,6 +80,8 @@ async function loadStashes(userId: string): Promise<StashesData> {
       .order('created_at', { ascending: false })
       .limit(100),
   ]);
+
+  if (stashError) throw new Error(stashError.message);
 
   const countMap = new Map<string, number>();
   (sodaRows ?? []).forEach((r) => countMap.set(r.stash_id, (countMap.get(r.stash_id) ?? 0) + 1));
@@ -116,7 +123,7 @@ export function useStashes(userId: string | undefined) {
   const queryClient = useQueryClient();
   const queryKey = ['stashes', userId] as const;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error: loadError } = useQuery({
     queryKey,
     queryFn: () => loadStashes(userId!),
     enabled: !!userId,
@@ -291,6 +298,7 @@ export function useStashes(userId: string | undefined) {
   return {
     stashes,
     loading: isLoading,
+    error: loadError,
     recentActivity,
     createStash,
     renameStash,
