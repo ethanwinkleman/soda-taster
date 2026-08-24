@@ -13,6 +13,9 @@ import { useStashSodas } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
+import { RatingDistribution } from '../components/RatingDistribution';
+import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { revealedSodas, ratingDistribution, hasVisibleRatingAt, isRevealed } from '../lib/ratingVisibility';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -74,6 +77,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('newest');
   const [scoreView, setScoreView] = useState<'group' | 'mine'>('group');
+  const [scoreFilter, setScoreFilter] = useState<number | null>(null);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -215,8 +219,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const fridgeSodas = sodas.filter((s) => s.inFridge);
   const totalUnits = fridgeSodas.reduce((sum, s) => sum + s.quantity, 0);
 
-  // Group metrics
-  const ratedSodas = sodas.filter((s) => s.avgScore !== null);
+  // Group metrics.
+  //
+  // Restricted to revealed sodas: the average, the top three and the divisive pick
+  // all read avgScore, and printing those for a soda you have not rated would leak
+  // the exact number the soda page is withholding. See lib/ratingVisibility.
+  const visibleForMetrics = revealedSodas(sodas);
+  const ratedSodas = visibleForMetrics.filter((s) => s.avgScore !== null);
   const overallAvg = ratedSodas.length
     ? Math.round(ratedSodas.reduce((sum, s) => sum + (s.avgScore ?? 0), 0) / ratedSodas.length * 10) / 10
     : null;
@@ -226,7 +235,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   // Most controversial: soda with highest rating variance (requires 2+ ratings, variance > 0)
   const controversialSodaId = (() => {
-    const candidates = sodas.filter((s) => s.ratings.length >= 2);
+    const candidates = visibleForMetrics.filter((s) => s.ratings.length >= 2);
     if (!candidates.length) return null;
     const variance = (s: typeof candidates[0]) => {
       const scores = s.ratings.map((r) => r.score);
@@ -252,10 +261,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const activeAvg = scoreView === 'mine' ? myOverallAvg : overallAvg;
   const activeTopThree = scoreView === 'mine' ? myTopThree : topThree;
 
+  const distribution = ratingDistribution(sodas);
+
   const filtered = sodas.filter((s) => {
+    if (scoreFilter !== null && !hasVisibleRatingAt(s, scoreFilter)) return false;
     if (restockFilter && s.inFridge) return false;
     if (restockFilter) {
-      const score = scoreView === 'mine' ? (s.myRating?.score ?? null) : s.avgScore;
+      const score = scoreView === 'mine'
+        ? (s.myRating?.score ?? null)
+        : (isRevealed(s) ? s.avgScore : null);
       if (score === null || score < 4) return false;
     }
     if (!search) return true;
@@ -275,20 +289,33 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         : (b.myRating?.score ?? b.avgScore ?? -1);
       return bScore - aScore;
     }
+    // In group view a blind soda has no score the viewer is allowed to know, so it
+    // sorts as unrated. Ordering by a hidden number would leak it just as surely as
+    // printing it — top of "highest rated" says plenty on its own.
+    const groupScore = (s: typeof a) => (isRevealed(s) ? s.avgScore : null);
     if (sort === 'highest') {
-      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? -1) : (a.avgScore ?? -1);
-      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? -1) : (b.avgScore ?? -1);
+      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? -1) : (groupScore(a) ?? -1);
+      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? -1) : (groupScore(b) ?? -1);
       return bScore - aScore;
     }
     if (sort === 'lowest') {
-      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? 999) : (a.avgScore ?? 999);
-      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? 999) : (b.avgScore ?? 999);
+      const aScore = scoreView === 'mine' ? (a.myRating?.score ?? 999) : (groupScore(a) ?? 999);
+      const bScore = scoreView === 'mine' ? (b.myRating?.score ?? 999) : (groupScore(b) ?? 999);
       return aScore - bScore;
     }
     if (sort === 'name') return a.name.localeCompare(b.name);
     if (sort === 'oldest') return a.createdAt.localeCompare(b.createdAt);
     return b.createdAt.localeCompare(a.createdAt);
   });
+
+  // The list starts at 10 and grows as you reach the bottom. Anything that
+  // reorders or re-filters it starts the window over, so you are never dropped
+  // into the middle of a list you have not seen the top of.
+  const { visibleCount, hasMore, sentinelRef } = useInfiniteScroll({
+    total: sorted.length,
+    resetKey: `${search}|${sort}|${scoreView}|${restockFilter}|${scoreFilter}`,
+  });
+  const visibleSodas = sorted.slice(0, visibleCount);
 
   if (!stash) {
     return (
@@ -609,6 +636,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {!loading && !restockFilter && <div className="mb-3" />}
 
+      {/* Rating spread — hidden while loading and when nothing is rated yet */}
+      {!loading && (
+        <RatingDistribution
+          buckets={distribution}
+          selected={scoreFilter}
+          onSelect={setScoreFilter}
+        />
+      )}
+
       {/* Soda list */}
       {loading ? (
         <div className="space-y-2">
@@ -631,6 +667,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
               <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Fridge fully stocked!</p>
               <p className="font-sans text-xs text-gray-400 dark:text-gray-500">All your rated sodas are currently in stock.</p>
+            </div>
+          ) : scoreFilter !== null ? (
+            <div className="text-center py-12">
+              <p className="font-sans text-gray-500 dark:text-gray-400 mb-3">
+                Nothing you can see is rated {scoreFilter}.
+              </p>
+              <Button variant="secondary" onClick={() => setScoreFilter(null)} className="py-2">
+                Clear score filter
+              </Button>
             </div>
           ) : search ? (
             <div className="text-center py-12">
@@ -677,7 +722,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
         >
-          {sorted.map((soda) => (
+          {visibleSodas.map((soda) => (
             <SodaCard
               key={soda.id}
               soda={soda}
@@ -687,6 +732,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               onToggleFridge={(s) => setFridgeStatus(s.id, !s.inFridge, !s.inFridge ? Math.max(s.quantity, 1) : 0)}
             />
           ))}
+
+          {/* Scrolling this into view loads the next ten. It carries the count so
+              the bottom of a long list says where you are rather than going blank. */}
+          {hasMore && (
+            <div ref={sentinelRef} className="py-4 text-center">
+              <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 tabular-nums">
+                {visibleCount} of {sorted.length}
+              </p>
+            </div>
+          )}
         </motion.div>
       )}
 

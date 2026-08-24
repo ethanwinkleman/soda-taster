@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
-import { Refrigerator, CupSoda, MessageSquare, Flame } from 'lucide-react';
+import { Refrigerator, CupSoda, MessageSquare, Flame, EyeOff } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { hapticTap } from '../lib/haptics';
+import { isRevealed, hiddenCount } from '../lib/ratingVisibility';
 
 interface Props {
   soda: Soda;
@@ -24,7 +25,12 @@ export function SodaCard({
   isControversial = false,
 }: Props) {
   const navigate = useNavigate();
-  const score = scoreView === 'mine' ? (soda.myRating?.score ?? null) : soda.avgScore;
+  // Your own score is always yours to see. The group score waits until you have rated.
+  const revealed = isRevealed(soda);
+  const blindCount = hiddenCount(soda);
+  const score = scoreView === 'mine'
+    ? (soda.myRating?.score ?? null)
+    : (revealed ? soda.avgScore : null);
 
   function handleClick() {
     hapticTap();
@@ -81,7 +87,13 @@ export function SodaCard({
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 font-sans uppercase tracking-wide">
-            <span>{scoreView === 'mine' ? (soda.myRating ? 'My rating' : 'Not rated') : `${soda.ratings.length} rating${soda.ratings.length !== 1 ? 's' : ''}`}</span>
+            <span>
+              {scoreView === 'mine'
+                ? (soda.myRating ? 'My rating' : 'Not rated')
+                : blindCount > 0
+                  ? `${blindCount} rating${blindCount !== 1 ? 's' : ''} hidden`
+                  : `${soda.ratings.length} rating${soda.ratings.length !== 1 ? 's' : ''}`}
+            </span>
             {soda.commentCount > 0 && (
               <>
                 <span className="text-gray-300 dark:text-gray-600">·</span>
@@ -107,6 +119,13 @@ export function SodaCard({
         {score !== null ? (
           <span className="shrink-0 w-11 h-11 rounded-full border-2 border-sky-500 dark:border-sky-400 bg-white dark:bg-gray-800 flex items-center justify-center font-display font-bold text-sm tabular-nums text-gray-900 dark:text-gray-50">
             {score.toFixed(1)}
+          </span>
+        ) : scoreView === 'group' && blindCount > 0 ? (
+          <span
+            title="Rate this yourself to see what everyone else gave it"
+            className="shrink-0 w-11 h-11 rounded-full border-2 border-dashed border-sky-300 dark:border-sky-700 flex items-center justify-center text-sky-400 dark:text-sky-600"
+          >
+            <EyeOff size={16} aria-label="Score hidden until you rate it" />
           </span>
         ) : (
           <span className="shrink-0 w-11 h-11 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center font-display text-sm text-gray-300 dark:text-gray-600">

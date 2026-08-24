@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda } from 'lucide-react';
+import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
@@ -10,6 +10,7 @@ import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
+import { isRevealed, hiddenCount } from '../lib/ratingVisibility';
 import { ShareCardButton } from '../components/ShareCardButton';
 import { Button, Textarea, FieldLabel } from '../components/ui';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
@@ -265,6 +266,9 @@ export function SodaDetailPage() {
   }
 
   const noteChanged = noteVal.trim() !== (soda.myRating?.notes ?? '');
+  // Blind rating: the group's verdict stays sealed until you have filed your own.
+  const revealed = isRevealed(soda);
+  const sealedCount = hiddenCount(soda);
 
   return (
     <div className="overflow-x-hidden">
@@ -410,7 +414,7 @@ export function SodaDetailPage() {
         {/* Score column — Average (group) on the left, Mine on the right */}
         <div className="flex-1 min-h-[11rem] grid grid-cols-2 divide-x divide-gray-200 dark:divide-gray-700">
           <AnimatePresence mode="wait">
-            {soda.avgScore !== null ? (
+            {soda.avgScore !== null && revealed ? (
               <motion.div
                 key="avg-rated"
                 initial={{ opacity: 0, y: 4 }}
@@ -438,10 +442,24 @@ export function SodaDetailPage() {
                 <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
                   Average
                 </span>
-                <span className="font-display text-4xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
-                  Not yet rated
-                </span>
+                {sealedCount > 0 ? (
+                  <>
+                    <EyeOff size={30} className="text-sky-400 dark:text-sky-600" aria-hidden />
+                    <span className="font-sans text-[10px] text-sky-600 dark:text-sky-400 uppercase tracking-wide">
+                      Sealed
+                    </span>
+                    <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic px-1 leading-snug">
+                      {sealedCount} rating{sealedCount !== 1 ? 's' : ''} · rate it to unseal
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-display text-4xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
+                    <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic">
+                      Not yet rated
+                    </span>
+                  </>
+                )}
               </motion.div>
             )}
           </AnimatePresence>
@@ -525,7 +543,7 @@ export function SodaDetailPage() {
 
       {/* Rating breakdown */}
       <AnimatePresence>
-      {soda.ratings.length > 1 && (
+      {revealed && soda.ratings.length > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
