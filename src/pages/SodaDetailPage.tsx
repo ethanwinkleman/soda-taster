@@ -10,7 +10,9 @@ import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
-import { isRevealed, hiddenCount } from '../lib/ratingVisibility';
+import { isRevealed, hiddenCount, visibleRatings } from '../lib/ratingVisibility';
+import { FlavorNotes } from '../components/FlavorNotes';
+import { sodaFlavorProfile } from '../lib/flavorNotes';
 import { ShareCardButton } from '../components/ShareCardButton';
 import { Button, Textarea, FieldLabel } from '../components/ui';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
@@ -269,6 +271,9 @@ export function SodaDetailPage() {
   // Blind rating: the group's verdict stays sealed until you have filed your own.
   const revealed = isRevealed(soda);
   const sealedCount = hiddenCount(soda);
+  // Someone else's tasting note anchors you as surely as their score, so the notes
+  // ride the same seal — only ratings you may see feed the flavour profile.
+  const flavorProfile = sodaFlavorProfile(soda, visibleRatings(soda).map((r) => r.notes));
 
   return (
     <div className="overflow-x-hidden">
@@ -540,6 +545,8 @@ export function SodaDetailPage() {
           </p>
         )}
       </div>
+
+      <FlavorNotes profile={flavorProfile} sealedCount={sealedCount} />
 
       {/* Rating breakdown */}
       <AnimatePresence>
