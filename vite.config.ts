@@ -11,6 +11,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // og.png is fetched by link-preview scrapers, never by the app — precaching it
+        // would put 350 KB into every install for nothing.
+        globIgnores: ['**/og.png'],
         navigateFallback: '/index.html',
         // Never fall back to index.html for asset / API requests — that's what
         // caused "text/html is not a valid JavaScript MIME type" when a stale

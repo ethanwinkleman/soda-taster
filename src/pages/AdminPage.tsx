@@ -66,7 +66,7 @@ export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading, error: adminError } = useIsAdmin(user);
-  const { daily, summary, topSodas, users, loading, refreshing, error, timezone, refetch } = useAdminMetrics(isAdmin);
+  const { daily, summary, topSodas, users, loading, refreshing, error, usersError, timezone, refetch } = useAdminMetrics(isAdmin);
   const [justUpdated, setJustUpdated] = useState(false);
 
   async function handleRefresh() {
@@ -203,6 +203,18 @@ export function AdminPage() {
           <MetricChart label="Active users" values={series('active_users')} color="var(--color-cyan-500)" />
           <MetricChart label="Sodas added"  values={series('new_sodas')}    color="var(--color-sky-400)" />
           <MetricChart label="Ratings"      values={series('new_ratings')}  color="var(--color-amber-500)" />
+        </div>
+      )}
+
+      {usersError && (
+        <div className="mb-6 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-5">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 mb-1.5">
+            Who's contributing
+          </p>
+          <p className="font-sans text-sm text-red-600 dark:text-red-400">{usersError.message}</p>
+          <p className="font-sans text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+            If the function is missing, apply the latest migrations in <code>supabase/migrations/</code>.
+          </p>
         </div>
       )}
 

@@ -19,13 +19,22 @@
     <meta property="og:site_name"   content="Soda Taster" />
     <meta property="og:title"       content="Soda Taster — Rate, Track &amp; Share Your Soda Collection" />
     <meta property="og:description" content="The soda enthusiast's journal. Rate every soda you try, build unlimited shared collections, and track your fridge inventory. Free to use." />
-    <meta property="og:image"       content="https://soda-taster.vercel.app/apple-touch-icon.png" />
+    <!-- 1200×630 card, built from scripts/og-template.html. Absolute URL: scrapers do
+         not resolve relative paths. -->
+    <meta property="og:image"        content="https://soda-taster.vercel.app/og.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type"   content="image/png" />
+    <meta property="og:image:alt"    content="Soda Taster — rate every soda you actually try. A phone showing a list of shared soda collections." />
 
     <!-- Twitter / X -->
-    <meta name="twitter:card"        content="summary" />
+    <!-- summary_large_image, not summary: with a 1200×630 card the small variant
+         crops it to a square thumbnail and the headline is lost. -->
+    <meta name="twitter:card"        content="summary_large_image" />
     <meta name="twitter:title"       content="Soda Taster — Rate, Track &amp; Share Your Soda Collection" />
     <meta name="twitter:description" content="The soda enthusiast's journal. Rate every soda you try, build unlimited shared collections, and track your fridge inventory." />
-    <meta name="twitter:image"       content="https://soda-taster.vercel.app/apple-touch-icon.png" />
+    <meta name="twitter:image"       content="https://soda-taster.vercel.app/og.png" />
+    <meta name="twitter:image:alt"   content="Soda Taster — rate every soda you actually try." />
 
     <!-- Favicon: SVG only — every current browser supports it, Safari since 17 -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

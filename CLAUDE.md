@@ -44,10 +44,11 @@ This is also why `stockState`/`stars`/`buildShoppingText` live in `lib/` rather 
 
 Schema lives in `supabase/migrations/`, applied in filename order — `supabase db push`, or paste each file into the SQL editor in order. See `supabase/README.md` for adopting them on a project that already has the tables.
 
-Two constraints, both of which have caused real bugs, so **run `scripts/verify-migrations.sh` before pushing schema changes**. It applies every migration to a throwaway database twice and catches both:
+Three constraints, all of which have caused real bugs, so **run `scripts/verify-migrations.sh` before pushing schema changes**. It applies every migration to a throwaway database twice, then calls the admin RPCs as both an admin and an ordinary user:
 
 - **Order matters.** Postgres validates a policy expression and a `LANGUAGE sql` function body at `CREATE` time, so a migration must come *after* whatever it references — and it fails only on a *fresh* database, passing silently wherever the object already exists. `is_stash_member` was once defined after the policies calling it, and `profiles` after the RPC reading it.
 - **Migrations must be re-appliable.** There is no `CREATE POLICY IF NOT EXISTS`, so every policy is preceded by `DROP POLICY IF EXISTS`. Without that they cannot be safely applied to an existing project.
+- **A plpgsql body is not checked until it runs.** `RETURNS TABLE (... user_email TEXT)` selecting `auth.users.email` creates without complaint and then fails in the app with *structure of query does not match function result type* — `email` is `CHARACTER VARYING(255)`, and plpgsql wants an exact match. Cast at the SELECT (`u.email::text`). The script's third pass calls each RPC for this reason, and its `auth.users` stub mirrors the real column types, because a stub typed `TEXT` hides the bug completely.
 
 **Environment:** requires `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. (`*.local` is gitignored.)
 
@@ -210,5 +211,9 @@ Toasts are already announced: sonner renders its own `aria-live="polite"` region
 `scripts/generate-icons.mjs` runs first during `npm run build` to convert `public/favicon.svg` → PNG formats for Safari. This uses Node's `sharp` package.
 
 `vite-plugin-pwa` runs with `registerType: 'autoUpdate'` and generates a service worker, so a production build precaches the app shell.
+
+**The social card (`public/og.png`) is committed, not built.** Its source is `scripts/og-template.html` — a standalone 1200×630 page that inlines the Cherry Fizz palette, for the same reason `TastingCard` does: it is rasterised rather than served by Tailwind. `node scripts/generate-og.mjs` re-shoots it, and needs `npm i -D playwright` (deliberately not a project dependency — one asset uses it). `CHROMIUM_PATH` points at a browser you already have; `OG_FONT_DIR` inlines local woff2 files when fonts.googleapis.com is unreachable.
+
+Two traps it now guards against: `document.fonts.check()` returns `true` for a family that never loaded, so the script asserts against `document.fonts` itself and aborts rather than shipping a card set in a fallback face; and a `file://` page is an opaque origin whose webfonts never load at all, hence the throwaway HTTP server. `og.png` is excluded from the Workbox precache in `vite.config.ts` — scrapers fetch it, the app never does.
 
 ESLint uses the flat config format (ESLint 9), configured in `eslint.config.js`.
