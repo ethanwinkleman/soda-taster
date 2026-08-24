@@ -41,13 +41,13 @@ describe('isChunkLoadError', () => {
 
 describe('loadChunk', () => {
   it('returns the module when the import works', async () => {
-    const reload = vi.fn(() => true);
+    const reload = vi.fn(async () => true);
     await expect(loadChunk(async () => 'mod', reload)).resolves.toBe('mod');
     expect(reload).not.toHaveBeenCalled();
   });
 
   it('reloads on a stale chunk instead of surfacing the error', async () => {
-    const reload = vi.fn(() => true);
+    const reload = vi.fn(async () => true);
     const pending = loadChunk(async () => {
       throw new Error("'text/html' is not a valid JavaScript MIME type.");
     }, reload);
@@ -60,7 +60,7 @@ describe('loadChunk', () => {
   });
 
   it('rethrows a genuine module error rather than reloading', async () => {
-    const reload = vi.fn(() => true);
+    const reload = vi.fn(async () => true);
     await expect(
       loadChunk(async () => { throw new Error('boom in module top level'); }, reload),
     ).rejects.toThrow('boom in module top level');
@@ -68,7 +68,7 @@ describe('loadChunk', () => {
   });
 
   it('rethrows once the reload budget is spent, so the boundary can show something', async () => {
-    const reload = vi.fn(() => false); // guard already used
+    const reload = vi.fn(async () => false); // budget already spent
     await expect(
       loadChunk(async () => { throw new Error('Failed to fetch dynamically imported module'); }, reload),
     ).rejects.toThrow('Failed to fetch dynamically imported module');
@@ -76,6 +76,7 @@ describe('loadChunk', () => {
   });
 });
 
-// reloadOnce itself is not tested here: it touches window.location, and this suite
-// runs without jsdom on purpose. That is why loadChunk takes `reload` as an
-// argument — the decision logic is testable, the page reload is not.
+// recoverOnce itself is not tested here: it touches caches, navigator.serviceWorker
+// and window.location, and this suite runs without jsdom on purpose. That is why
+// loadChunk takes `recover` as an argument — the decision logic is testable, the
+// cache purge and page reload are not.

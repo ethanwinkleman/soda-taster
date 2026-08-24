@@ -1,5 +1,5 @@
 import { Component, type ReactNode } from 'react';
-import { isChunkLoadError, reloadOnce } from '../lib/chunkRecovery';
+import { isChunkLoadError, recoverOnce } from '../lib/chunkRecovery';
 
 interface Props { children: ReactNode }
 interface State { error: Error | null; recovering: boolean }
@@ -17,7 +17,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     // Reloading belongs here, not in getDerivedStateFromError, which must stay pure.
-    if (isChunkLoadError(error.message)) reloadOnce();
+    if (isChunkLoadError(error.message)) void recoverOnce();
   }
 
   render() {
