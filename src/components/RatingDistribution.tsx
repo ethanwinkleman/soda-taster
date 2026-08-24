@@ -102,36 +102,22 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
         </p>
       )}
 
-      {/* Where the difference sits. */}
-      <div className="flex items-end gap-1.5 h-24" role="group" aria-label="Rating distribution">
+      {/*
+        Mirrored on a shared axis: yours above, everyone else's below, one column per
+        score. Side by side put twenty narrow bars in a row where the gap inside a
+        pair was barely wider than the gap between pairs, so neighbouring columns
+        merged and nothing lined up with its tick. Here each score owns a single
+        column, both bars are full width, and the label sits on the axis between
+        them — so comparing the two is reading up and down one column rather than
+        picking pairs out of a row.
+
+        Both halves share one scale, or the shapes would not be comparable.
+      */}
+      <div className="flex items-stretch gap-1 h-40" role="group" aria-label="Rating distribution">
         {buckets.map((b) => {
           const isSelected = selected === b.score;
           const isDimmed = selected !== null && !isSelected;
           const empty = b.mine === 0 && b.others === 0;
-
-          const bar = (n: number, mineSide: boolean) => (
-            <span className="flex-1 h-full flex flex-col justify-end items-center min-w-0">
-              <span
-                className={`font-sans text-[9px] tabular-nums leading-none mb-0.5 ${
-                  mineSide ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'
-                }`}
-              >
-                {n || ''}
-              </span>
-              <motion.span
-                initial={{ height: 0 }}
-                animate={{ height: `${barHeight(n)}%` }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: mineSide ? 0 : 0.05 }}
-                className={`w-full rounded-t-sm ${
-                  mineSide
-                    ? isSelected ? 'bg-sky-600' : 'bg-sky-500 group-hover:bg-sky-600'
-                    : isSelected
-                      ? 'bg-gray-500 dark:bg-gray-400'
-                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500'
-                }`}
-              />
-            </span>
-          );
 
           return (
             <button
@@ -143,30 +129,67 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
               aria-label={`${b.label} stars — you ${b.mine}, everyone else ${b.others}${
                 empty ? '' : isSelected ? '. Filtering by this score' : '. Filter by this score'
               }`}
-              className={`group flex-1 h-full flex items-end gap-[3px] min-w-0 rounded-sm transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
+              className={`group flex-1 min-w-0 flex flex-col rounded-sm transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
                 empty ? 'cursor-default' : 'cursor-pointer'
               } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
             >
-              {bar(b.mine, true)}
-              {bar(b.others, false)}
+              {/* Yours, growing up from the axis */}
+              <span className="flex-1 w-full flex flex-col justify-end items-center min-w-0">
+                <span className="font-sans text-[10px] tabular-nums leading-none mb-1 text-sky-600 dark:text-sky-400">
+                  {b.mine || ''}
+                </span>
+                <motion.span
+                  initial={{ height: 0 }}
+                  animate={{ height: `${barHeight(b.mine)}%` }}
+                  transition={{ duration: 0.4, ease: 'easeOut' }}
+                  className={`w-full rounded-t-sm ${
+                    isSelected ? 'bg-sky-600' : 'bg-sky-500 group-hover:bg-sky-600'
+                  }`}
+                />
+              </span>
+
+              {/*
+                The axis. Both series have to touch this line or the mirror reads as
+                two detached charts — the top one anchored, the bottom one floating.
+                The score sits below the line rather than inside the gap, so the line
+                itself stays the thing both bars meet at.
+              */}
+              <span className="w-full flex flex-col items-center">
+                <span
+                  className={`w-full border-t ${
+                    isSelected ? 'border-sky-500' : 'border-gray-200 dark:border-gray-700'
+                  }`}
+                />
+                <span
+                  className={`font-sans text-[10px] tabular-nums leading-none py-1 ${
+                    isSelected
+                      ? 'text-sky-600 dark:text-sky-400 font-bold'
+                      : 'text-gray-400 dark:text-gray-500'
+                  }`}
+                >
+                  {b.label}
+                </span>
+              </span>
+
+              {/* Everyone else, growing down */}
+              <span className="flex-1 w-full flex flex-col justify-start items-center min-w-0">
+                <motion.span
+                  initial={{ height: 0 }}
+                  animate={{ height: `${barHeight(b.others)}%` }}
+                  transition={{ duration: 0.4, ease: 'easeOut', delay: 0.05 }}
+                  className={`w-full rounded-b-sm ${
+                    isSelected
+                      ? 'bg-gray-500 dark:bg-gray-400'
+                      : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500'
+                  }`}
+                />
+                <span className="font-sans text-[10px] tabular-nums leading-none mt-1 text-gray-400 dark:text-gray-500">
+                  {b.others || ''}
+                </span>
+              </span>
             </button>
           );
         })}
-      </div>
-
-      <div className="flex gap-1.5 mt-1.5">
-        {buckets.map((b) => (
-          <span
-            key={b.score}
-            className={`flex-1 text-center font-sans text-[9px] tabular-nums min-w-0 ${
-              selected === b.score
-                ? 'text-sky-600 dark:text-sky-400 font-bold'
-                : 'text-gray-400 dark:text-gray-500'
-            }`}
-          >
-            {b.label}
-          </span>
-        ))}
       </div>
 
       {hasBoth && (
