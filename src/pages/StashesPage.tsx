@@ -33,12 +33,14 @@ function relativeTime(iso: string): string {
 interface Props {
   stashes: Stash[];
   loading: boolean;
+  /** A read that failed must not be drawn as an empty account. */
+  error?: Error | null;
   recentActivity: RecentRatingActivity[];
   onCreate: (name: string) => Promise<{ stash: Stash | null; error: string | null }>;
   onJoin: (code: string) => Promise<{ stashId: string | null; error: string | null }>;
 }
 
-export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin }: Props) {
+export function StashesPage({ stashes, loading, error: loadError, recentActivity, onCreate, onJoin }: Props) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -220,6 +222,18 @@ export function StashesPage({ stashes, loading, recentActivity, onCreate, onJoin
               </div>
             </div>
           ))}
+        </div>
+      ) : loadError ? (
+        <div className="rounded-2xl border border-dashed border-red-300 dark:border-red-900/50 py-12 px-6 text-center">
+          <p className="font-display font-bold text-gray-800 dark:text-gray-200 mb-1">
+            Couldn't load your collections.
+          </p>
+          <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mb-5">
+            {loadError.message}
+          </p>
+          <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['stashes', user?.id] })}>
+            Try again
+          </Button>
         </div>
       ) : stashes.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-14">

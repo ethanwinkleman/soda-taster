@@ -67,6 +67,7 @@ function AppRoutes() {
   const {
     stashes,
     loading: stashesLoading,
+    error: stashesError,
     recentActivity,
     createStash,
     renameStash,
@@ -100,7 +101,7 @@ function AppRoutes() {
             <Routes location={location}>
               <Route
                 path="/"
-                element={<StashesPage stashes={stashes} loading={stashesLoading} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}
+                element={<StashesPage stashes={stashes} loading={stashesLoading} error={stashesError} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}
               />
               <Route
                 path="/stash/:id"

@@ -47,16 +47,23 @@ export interface TopSoda {
  * Only decides whether to *offer* the page. The data itself is protected by the RPCs,
  * which refuse a non-admin caller — the anon key ships in the bundle, so a client-side
  * check is a convenience, never a security boundary.
+ *
+ * Returns the read's `loading` and `error` alongside the flag because the three states
+ * are not interchangeable: collapsing a failed or in-flight check into `false` hides the
+ * link from an actual admin and tells them they are not one.
  */
 export function useIsAdmin(user: User | null | undefined) {
-  const { data } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['is-admin', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('app_admins')
         .select('user_id')
         .eq('user_id', user!.id)
         .maybeSingle();
+      // supabase-js resolves with { error } rather than throwing, so an unreadable
+      // table would otherwise come back indistinguishable from "no such row".
+      if (error) throw new Error(error.message);
       return !!data;
     },
     enabled: !!user?.id,
@@ -64,7 +71,11 @@ export function useIsAdmin(user: User | null | undefined) {
     // and a fresh-looking one blocks the refetch that would correct it.
     staleTime: 30 * 1000,
   });
-  return data ?? false;
+  return {
+    isAdmin: data ?? false,
+    loading: !!user?.id && isLoading,
+    error: error as Error | null,
+  };
 }
 
 /** The browser's timezone, so days break at local midnight rather than UTC. */

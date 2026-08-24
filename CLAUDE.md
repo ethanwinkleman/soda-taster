@@ -145,6 +145,10 @@ Variables must be JSON-serialisable, which is why a `File` cannot ride along —
 
 `src/lib/supabase.ts` exports only the client. Each hook defines its own inline `fromDb` mappers for snake_case → camelCase conversion. All auth is Google OAuth managed by `AuthContext`.
 
+**supabase-js resolves with `{ error }` rather than throwing.** An unchecked call therefore renders a failure as its empty value, which is the single most common bug in this codebase: `editSoda` reported a save that never happened, `loadStashes` showed the "your collection starts here" empty state to people who had collections, and `useIsAdmin` told an admin they were not one. Every read and write must act on `error` — `if (error) throw new Error(error.message)` in a query function, so TanStack Query surfaces it.
+
+A hook that can fail should return that error, and the UI must draw three distinct states — loading, failed, empty. Collapsing the first two into the third is what made all three bugs invisible. `useStashes` and `useIsAdmin` both return `{ ..., error }` for this reason.
+
 RLS helpers are `SECURITY DEFINER` functions (`is_stash_member`, `shares_stash_with`) specifically to avoid infinite recursion when a policy needs to read the table it protects. Reuse that pattern rather than inlining a subquery.
 
 ### Admin analytics

@@ -21,7 +21,7 @@ interface Props {
 export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
   const { user, signOut } = useAuth();
   const { profile, saveProfile } = useProfile(user);
-  const isAdmin = useIsAdmin(user);
+  const { isAdmin } = useIsAdmin(user);
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
 
