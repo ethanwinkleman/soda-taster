@@ -43,23 +43,61 @@ const RELOAD_KEY = 'reload-on-chunk-error';
  */
 const GUARD_MS = 10_000;
 
-/**
- * Reload at most once. A chunk that is genuinely missing — or a device that is
- * simply offline — must not put the tab in a reload loop.
- *
- * Returns whether it actually reloaded, so callers can decide what to render.
- */
-export function reloadOnce(): boolean {
+/** Spend the one-reload budget. False means it was already spent. */
+export function claimReloadBudget(): boolean {
   try {
     if (sessionStorage.getItem(RELOAD_KEY)) return false;
     sessionStorage.setItem(RELOAD_KEY, '1');
     setTimeout(() => {
       try { sessionStorage.removeItem(RELOAD_KEY); } catch { /* storage gone */ }
     }, GUARD_MS);
+    return true;
   } catch {
     // Private mode or storage disabled: fail closed rather than reload unguarded.
     return false;
   }
+}
+
+/**
+ * Throw away everything this origin has cached, and the worker serving it.
+ *
+ * A plain reload could not fix this. While the SPA rewrite was answering missing
+ * chunks with index.html and a 200, those HTML bodies were cacheable and got stored
+ * under .js URLs. A cache entry that claims to be a script and is actually a document
+ * survives every reload, which is why the app failed in a normal window and worked in
+ * a private one — the private window simply had none of it.
+ *
+ * Unregistering the worker matters as much as emptying the caches: leaving it
+ * installed means it can serve the same poisoned entries straight back. The next load
+ * installs a clean one.
+ *
+ * Every step is best-effort. Recovery must not be the thing that throws.
+ */
+export async function purgeOrigin(): Promise<void> {
+  try {
+    if ('caches' in globalThis) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch { /* storage partitioned or unavailable */ }
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+  } catch { /* no worker, or already gone */ }
+}
+
+/**
+ * Recover once: empty the caches, drop the worker, reload.
+ *
+ * Returns whether it actually started recovering, so callers can decide what to
+ * render while the document is being replaced.
+ */
+export async function recoverOnce(): Promise<boolean> {
+  if (!claimReloadBudget()) return false;
+  await purgeOrigin();
   window.location.reload();
   return true;
 }
@@ -70,14 +108,14 @@ export function reloadOnce(): boolean {
  */
 export async function loadChunk<T>(
   factory: () => Promise<T>,
-  reload: () => boolean = reloadOnce,
+  recover: () => boolean | Promise<boolean> = recoverOnce,
 ): Promise<T> {
   try {
     return await factory();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error ?? '');
     if (!isChunkLoadError(message)) throw error;   // a real bug in the module, not a stale build
-    if (!reload()) throw error;                    // already spent our one reload
+    if (!(await recover())) throw error;           // already spent our one attempt
 
     // The reload replaces the document. A promise that never settles keeps Suspense
     // showing its fallback until that happens, rather than flashing an error screen

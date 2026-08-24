@@ -16,7 +16,7 @@ import vercelConfig from '../../vercel.json';
  * would notice, and it only shows up for users who were already on the site. Hence a
  * test on a config file.
  *
- * The client-side half of this lives in main.tsx (isChunkLoadError + reloadOnce) and
+ * The client-side half of this lives in main.tsx (isChunkLoadError + recoverOnce) and
  * in the workbox navigateFallbackDenylist. Both were already correct; this was the
  * server-side hole underneath them.
  */
