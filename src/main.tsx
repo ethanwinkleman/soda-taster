@@ -4,30 +4,12 @@ import { Analytics } from '@vercel/analytics/react'
 import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
+import { isChunkLoadError, reloadOnce } from './lib/chunkRecovery'
 
-// When the user has an old tab open and a new version deploys, lazy-loaded
-// chunks under their previous filenames stop existing. The browser then
-// reports "text/html is not a valid JavaScript MIME type" (because the SW
-// served index.html instead of the missing JS chunk). Detect that and reload
-// once so the client picks up the new chunk names.
-function isChunkLoadError(message: string | undefined): boolean {
-  if (!message) return false;
-  return (
-    /Failed to fetch dynamically imported module/i.test(message) ||
-    /Importing a module script failed/i.test(message) ||
-    /is not a valid JavaScript MIME type/i.test(message) ||
-    /Loading chunk \d+ failed/i.test(message)
-  );
-}
-
-function reloadOnce() {
-  const key = 'reload-on-chunk-error';
-  if (sessionStorage.getItem(key)) return;
-  sessionStorage.setItem(key, '1');
-  setTimeout(() => sessionStorage.removeItem(key), 10_000);
-  window.location.reload();
-}
-
+// A tab left open across a deploy asks for chunk filenames that no longer exist.
+// These two listeners cover dynamic imports React is not managing; route chunks
+// are handled in lazyWithRetry, because React converts a lazy import's rejection
+// into an error-boundary throw and it never reaches either of these.
 window.addEventListener('error', (e) => {
   if (isChunkLoadError(e.message)) reloadOnce();
 });

@@ -1,16 +1,33 @@
 import { Component, type ReactNode } from 'react';
+import { isChunkLoadError, reloadOnce } from '../lib/chunkRecovery';
 
 interface Props { children: ReactNode }
-interface State { error: Error | null }
+interface State { error: Error | null; recovering: boolean }
 
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = { error: null };
+  state: State = { error: null, recovering: false };
 
   static getDerivedStateFromError(error: Error): State {
-    return { error };
+    // A stale build is not "something went wrong" — it is a page that needs
+    // reloading, and the user cannot be expected to know the difference. React
+    // routes a lazy import's rejection here rather than to window's error events,
+    // so without this the deploy-recovery path dead-ends on this screen.
+    return { error, recovering: isChunkLoadError(error.message) };
+  }
+
+  componentDidCatch(error: Error) {
+    // Reloading belongs here, not in getDerivedStateFromError, which must stay pure.
+    if (isChunkLoadError(error.message)) reloadOnce();
   }
 
   render() {
+    if (this.state.recovering) {
+      // The reload is already in flight. Show nothing rather than an error the user
+      // would have no time to read — and if the guard has spent its one reload, this
+      // is still a calmer failure than a stack trace.
+      return <div className="min-h-screen bg-gray-50 dark:bg-gray-950" aria-busy="true" />;
+    }
+
     if (this.state.error) {
       return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-6">

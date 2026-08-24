@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import { lazyWithRetry } from './lib/chunkRecovery';
 import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Toaster } from 'sonner';
@@ -30,17 +31,17 @@ const persister = createSyncStoragePersister({
   key: 'soda-taster-rq',
 });
 
-const StashesPage       = lazy(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
-const StashPage         = lazy(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
-const AddSodaPage       = lazy(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
-const SodaDetailPage    = lazy(() => import('./pages/SodaDetailPage').then(m => ({ default: m.SodaDetailPage })));
-const StashActivityPage = lazy(() => import('./pages/StashActivityPage').then(m => ({ default: m.StashActivityPage })));
-const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
-const JoinStashPage     = lazy(() => import('./pages/JoinStashPage').then(m => ({ default: m.JoinStashPage })));
-const BarcodeScanPage   = lazy(() => import('./pages/BarcodeScanPage').then(m => ({ default: m.BarcodeScanPage })));
-const BarcodeResultPage = lazy(() => import('./pages/BarcodeResultPage').then(m => ({ default: m.BarcodeResultPage })));
-const AdminPage         = lazy(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
-const NotFoundPage      = lazy(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const StashesPage       = lazyWithRetry(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
+const StashPage         = lazyWithRetry(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
+const AddSodaPage       = lazyWithRetry(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
+const SodaDetailPage    = lazyWithRetry(() => import('./pages/SodaDetailPage').then(m => ({ default: m.SodaDetailPage })));
+const StashActivityPage = lazyWithRetry(() => import('./pages/StashActivityPage').then(m => ({ default: m.StashActivityPage })));
+const PublicProfilePage = lazyWithRetry(() => import('./pages/PublicProfilePage').then(m => ({ default: m.PublicProfilePage })));
+const JoinStashPage     = lazyWithRetry(() => import('./pages/JoinStashPage').then(m => ({ default: m.JoinStashPage })));
+const BarcodeScanPage   = lazyWithRetry(() => import('./pages/BarcodeScanPage').then(m => ({ default: m.BarcodeScanPage })));
+const BarcodeResultPage = lazyWithRetry(() => import('./pages/BarcodeResultPage').then(m => ({ default: m.BarcodeResultPage })));
+const AdminPage         = lazyWithRetry(() => import('./pages/AdminPage').then(m => ({ default: m.AdminPage })));
+const NotFoundPage      = lazyWithRetry(() => import('./pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthGate } from './components/AuthGate';
 import { ConfirmProvider } from './contexts/ConfirmContext';
