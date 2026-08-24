@@ -212,4 +212,8 @@ Toasts are already announced: sonner renders its own `aria-live="polite"` region
 
 `vite-plugin-pwa` runs with `registerType: 'autoUpdate'` and generates a service worker, so a production build precaches the app shell.
 
+**The social card (`public/og.png`) is committed, not built.** Its source is `scripts/og-template.html` — a standalone 1200×630 page that inlines the Cherry Fizz palette, for the same reason `TastingCard` does: it is rasterised rather than served by Tailwind. `node scripts/generate-og.mjs` re-shoots it, and needs `npm i -D playwright` (deliberately not a project dependency — one asset uses it). `CHROMIUM_PATH` points at a browser you already have; `OG_FONT_DIR` inlines local woff2 files when fonts.googleapis.com is unreachable.
+
+Two traps it now guards against: `document.fonts.check()` returns `true` for a family that never loaded, so the script asserts against `document.fonts` itself and aborts rather than shipping a card set in a fallback face; and a `file://` page is an opaque origin whose webfonts never load at all, hence the throwaway HTTP server. `og.png` is excluded from the Workbox precache in `vite.config.ts` — scrapers fetch it, the app never does.
+
 ESLint uses the flat config format (ESLint 9), configured in `eslint.config.js`.
