@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface Props {
   open: boolean;
@@ -21,10 +22,11 @@ interface Props {
 export function Modal({ open, onClose, title, variant = 'dialog', bodyClassName, children }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // Moves focus in, keeps Tab inside, and hands focus back to the trigger on close.
+  useFocusTrap(panelRef, open);
+
   useEffect(() => {
     if (!open) return;
-    // Move focus into the dialog so keyboard/screen-reader users aren't left behind it
-    panelRef.current?.focus();
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
     }

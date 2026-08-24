@@ -193,6 +193,12 @@ The app is meant to feel carbonated, so motion is part of the design rather than
 - **`FloatingBubbles`** is the signature motif — an ambient rise behind a `CupSoda` icon. It belongs in empty states and placeholders, *not* in list rows: four looping animations per row gets expensive and noisy fast.
 - **Shared-element transitions** via `layoutId` morph a soda card into its detail page (`card`, `thumb`, `name`, `score`). Keep the ids in sync across both files or the morph silently degrades to a cut.
 
+### Dialog focus
+
+`Modal` and the confirm dialog both call `useFocusTrap(panelRef, open)`. It moves focus in, keeps Tab inside, and hands focus back to whatever opened the dialog on close — without it, Tab walks straight out into the page behind the backdrop. Any new dialog needs the same hook plus `role="dialog"`, `aria-modal="true"` and `tabIndex={-1}` on the panel.
+
+Toasts are already announced: sonner renders its own `aria-live="polite"` region, so a `toast.success` reaches a screen reader without extra markup. Don't add a second live region for the same message.
+
 **`MotionConfig reducedMotion="user"` wraps the whole app** in `App.tsx`, so every Framer Motion animation honours the OS setting automatically — transforms and layout morphs drop, opacity fades stay. Tailwind's CSS animations are outside its reach: pair decorative ones with `motion-reduce:animate-none` (as `Skeleton` does). Spinners are deliberately left running, since they are the only signal that something is in progress.
 
 ### Build notes
