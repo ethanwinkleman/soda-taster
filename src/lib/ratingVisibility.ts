@@ -58,7 +58,10 @@ export function toBucket(score: number): number {
 export interface DistributionBucket {
   score: number;
   label: string;
+  /** Everyone's visible ratings at this score — your own included. */
   count: number;
+  /** Yours alone. Always <= count, since your rating is one of the visible ones. */
+  mine: number;
 }
 
 /**
@@ -70,17 +73,28 @@ export interface DistributionBucket {
  */
 export function ratingDistribution(sodas: Soda[]): DistributionBucket[] {
   const counts = new Map<number, number>(RATING_BUCKETS.map((s) => [s, 0]));
+  const mine = new Map<number, number>(RATING_BUCKETS.map((s) => [s, 0]));
+
+  const bump = (map: Map<number, number>, score: number) => {
+    const bucket = toBucket(score);
+    const current = map.get(bucket);
+    if (current !== undefined) map.set(bucket, current + 1);
+  };
+
   for (const soda of sodas) {
-    for (const rating of visibleRatings(soda)) {
-      const bucket = toBucket(rating.score);
-      const current = counts.get(bucket);
-      if (current !== undefined) counts.set(bucket, current + 1);
-    }
+    for (const rating of visibleRatings(soda)) bump(counts, rating.score);
+    // Your own rating is also one of the visible ones, so it is counted in both.
+    // That is deliberate: the comparison is "you against the room", and the room
+    // includes you. It also guarantees mine <= count, which is what lets the chart
+    // draw yours inset inside everyone's rather than as a second competing bar.
+    if (soda.myRating) bump(mine, soda.myRating.score);
   }
+
   return RATING_BUCKETS.map((score) => ({
     score,
     label: score % 1 === 0 ? String(score) : score.toFixed(1),
     count: counts.get(score) ?? 0,
+    mine: mine.get(score) ?? 0,
   }));
 }
 
