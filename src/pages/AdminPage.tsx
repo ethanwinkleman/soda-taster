@@ -9,6 +9,19 @@ import { MetricChart } from '../components/MetricChart';
 import { Skeleton } from '../components/Skeleton';
 import { PageHeader } from '../components/ui';
 
+
+/** "3d ago" style, or a dash when they have never done anything. */
+function since(iso: string | null): string {
+  if (!iso) return '—';
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 60) return `${Math.max(mins, 0)}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
 function Tile({ icon: Icon, label, value, sub }: {
   icon: typeof Users; label: string; value: number; sub?: string;
 }) {
@@ -53,7 +66,7 @@ export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const isAdmin = useIsAdmin(user);
-  const { daily, summary, topSodas, loading, refreshing, error, timezone, refetch } = useAdminMetrics(isAdmin);
+  const { daily, summary, topSodas, users, loading, refreshing, error, timezone, refetch } = useAdminMetrics(isAdmin);
   const [justUpdated, setJustUpdated] = useState(false);
 
   async function handleRefresh() {
@@ -176,6 +189,59 @@ export function AdminPage() {
           <MetricChart label="Active users" values={series('active_users')} color="var(--color-cyan-500)" />
           <MetricChart label="Sodas added"  values={series('new_sodas')}    color="var(--color-sky-400)" />
           <MetricChart label="Ratings"      values={series('new_ratings')}  color="var(--color-amber-500)" />
+        </div>
+      )}
+
+      {users.length > 0 && (
+        <div className="mb-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] overflow-hidden">
+          <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-baseline justify-between">
+            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+              Who's contributing
+            </p>
+            <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500">
+              Top {users.length} by ratings
+            </p>
+          </div>
+          {/* Scrolls sideways rather than squeezing the columns on a phone. */}
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[26rem]">
+              <thead>
+                <tr className="font-sans text-[9px] uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  <th className="px-4 pt-3 pb-1.5 text-left font-bold">Member</th>
+                  <th className="px-2 pt-3 pb-1.5 text-right font-bold">Ratings</th>
+                  <th className="px-2 pt-3 pb-1.5 text-right font-bold">Sodas</th>
+                  <th className="px-2 pt-3 pb-1.5 text-right font-bold">Colls</th>
+                  <th className="px-4 pt-3 pb-1.5 text-right font-bold">Last active</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                {users.map((u) => (
+                  <tr key={u.user_id}>
+                    <td className="px-4 py-2.5 min-w-0">
+                      <p className="font-sans text-sm font-bold text-gray-900 dark:text-gray-100 truncate max-w-[12rem]">
+                        {u.user_name ?? u.user_email.split('@')[0]}
+                      </p>
+                      <p className="font-sans text-[11px] text-gray-400 dark:text-gray-500 truncate max-w-[12rem]">
+                        {u.user_email}
+                      </p>
+                    </td>
+                    <td className="px-2 py-2.5 text-right font-sans text-sm tabular-nums text-gray-900 dark:text-gray-100">
+                      {u.ratings_count}
+                    </td>
+                    <td className="px-2 py-2.5 text-right font-sans text-sm tabular-nums text-gray-900 dark:text-gray-100">
+                      {u.sodas_count}
+                    </td>
+                    <td className="px-2 py-2.5 text-right font-sans text-sm tabular-nums text-gray-900 dark:text-gray-100">
+                      {u.collections_count}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-sans text-[11px] text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                      {since(u.last_active)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
