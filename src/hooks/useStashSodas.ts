@@ -202,13 +202,16 @@ export function useStashSodas(
     patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, ...updates } : s));
     try {
       const { error } = await supabase.from('stash_sodas').update(updates).eq('id', sodaId);
-      if (!error) {
-        await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
-      }
+      // supabase-js resolves with { error } rather than throwing, so a rejected write
+      // has to be checked for explicitly. Without this the catch never ran: nothing
+      // rolled back, nothing was reported, and the refetch below quietly restored the
+      // old values while the page had already said it saved.
+      if (error) throw new Error(error.message);
+      await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_edited', sodaId, sodaName: updates.name ?? soda?.name });
       await invalidate();
-    } catch {
+    } catch (err) {
       if (previous) queryClient.setQueryData(queryKey, previous);
-      throw new Error('Failed to update soda');
+      throw err instanceof Error ? err : new Error('Failed to update soda');
     }
   }
 
