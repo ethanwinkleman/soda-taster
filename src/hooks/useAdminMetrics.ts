@@ -23,6 +23,17 @@ export interface SummaryMetrics {
   retention_pct: number | null;
 }
 
+export interface UserActivity {
+  user_id: string;
+  user_name: string | null;
+  user_email: string;
+  ratings_count: number;
+  sodas_count: number;
+  collections_count: number;
+  last_active: string | null;
+  signed_up: string;
+}
+
 export interface TopSoda {
   soda_name: string;
   soda_brand: string;
@@ -90,6 +101,17 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     staleTime: 5 * 60 * 1000,
   });
 
+  const users = useQuery({
+    queryKey: ['admin-user-activity'],
+    queryFn: async (): Promise<UserActivity[]> => {
+      const { data, error } = await supabase.rpc('admin_user_activity', { p_limit: 25 });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const topSodas = useQuery({
     queryKey: ['admin-top-sodas'],
     queryFn: async (): Promise<TopSoda[]> => {
@@ -105,13 +127,14 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     daily: daily.data ?? [],
     summary: summary.data ?? null,
     topSodas: topSodas.data ?? [],
+    users: users.data ?? [],
     // isLoading is only true before there is any data. A refetch over existing data
     // leaves it false, which is why refreshing looked like nothing happened — isFetching
     // is the one that reports a refresh in progress.
     loading: daily.isLoading || summary.isLoading,
-    refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching,
-    error: daily.error ?? summary.error ?? topSodas.error ?? null,
+    refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching || users.isFetching,
+    error: daily.error ?? summary.error ?? topSodas.error ?? users.error ?? null,
     timezone: tz,
-    refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch()]),
+    refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch(), users.refetch()]),
   };
 }
