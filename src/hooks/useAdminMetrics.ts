@@ -144,7 +144,11 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     // is the one that reports a refresh in progress.
     loading: daily.isLoading || summary.isLoading,
     refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching || users.isFetching,
-    error: daily.error ?? summary.error ?? topSodas.error ?? users.error ?? null,
+    // Reported per section rather than as one page-wide failure: each RPC is applied by
+    // its own migration, so a project that is a migration behind loses exactly one of
+    // them, and blaming the whole page for that hides the three that did load.
+    error: (daily.error ?? summary.error ?? topSodas.error ?? null) as Error | null,
+    usersError: (users.error ?? null) as Error | null,
     timezone: tz,
     refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch(), users.refetch()]),
   };
