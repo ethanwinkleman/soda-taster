@@ -35,6 +35,8 @@ Tested modules, and why each is worth it:
 - `lib/score.ts` — averaging and star glyphs. Scores are half-steps, so `'★'.repeat(4.5)` silently renders four glyphs; that shipped once.
 - `lib/shoppingList.ts` — who belongs on the list, and the copied/CSV output. The filter has been wrong twice.
 - `utils/tasteProfile.ts` — flavour classification and generated prose.
+- `lib/flavorNotes.ts` — the descriptor vocabulary, style baselines, and mining notes out of free text. Both halves of the recommendation feature run through this vocabulary, so a typo'd id silently stops matching.
+- `lib/rootBeerCatalog.ts` — the curated shelf and the matching. A test asserts every catalog entry is described in the shared vocabulary; that check has already caught one dead note id.
 - `lib/ratingVisibility.ts` — what a viewer is allowed to see before they have rated. Every leak is silent: the number simply appears somewhere it should not, and no one notices until the group has already anchored on it.
 
 This is also why `stockState`/`stars`/`buildShoppingText` live in `lib/` rather than inside `ShoppingListModal`: the component imports them, so the tests exercise exactly what ships. Put new pure logic in `lib/` for the same reason.

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Plus, Minus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal, ShoppingCart,
+  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal, ShoppingCart, Compass,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -15,7 +15,7 @@ import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { revealedSodas, ratingDistribution, hasVisibleRatingAt, isRevealed } from '../lib/ratingVisibility';
+import { revealedSodas, ratingDistribution, hasVisibleRatingAt, isRevealed, visibleRatings } from '../lib/ratingVisibility';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -23,6 +23,7 @@ import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { FloatingBubbles } from '../components/FloatingBubbles';
 import { Button, Input, FieldLabel, Modal } from '../components/ui';
 import { ShoppingListModal } from '../components/ShoppingListModal';
+import { DiscoverRootBeers } from '../components/DiscoverRootBeers';
 import { hapticTap, hapticMedium } from '../lib/haptics';
 
 const ACCENT_COLORS: { label: string; value: string | null }[] = [
@@ -68,6 +69,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [topOpen, setTopOpen] = useState(false);
   const [shoppingListOpen, setShoppingListOpen] = useState(false);
+  const [discoverOpen, setDiscoverOpen] = useState(false);
   const [restockFilter, setRestockFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   // Layered over the stash name rather than copied into state when it loads.
@@ -164,7 +166,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     const rows = sodas.map((s) => [
       `"${s.name.replace(/"/g, '""')}"`,
       `"${s.brand.replace(/"/g, '""')}"`,
-      s.avgScore ?? '',
+      // A sealed soda's average stays sealed here too — an export that prints the
+      // number the app is refusing to show would make the whole thing a speed bump.
+      // Written as "sealed" rather than blank so it reads as withheld, not unrated.
+      isRevealed(s) ? (s.avgScore ?? '') : 'sealed',
       s.myRating?.score ?? '',
       s.inFridge ? 'Yes' : 'No',
       s.quantity,
@@ -197,12 +202,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         raters: raterNames,
       },
       sodas: [...sodas]
-        .sort((a, b) => (b.avgScore ?? -1) - (a.avgScore ?? -1))
+        // Same rule as the CSV, and it matters more here: this payload carries every
+        // rater's name, score and tasting note, which is precisely what the seal hides.
+        // Ordering by a sealed average would leak it too.
+        .sort((a, b) => ((isRevealed(b) ? b.avgScore : null) ?? -1) - ((isRevealed(a) ? a.avgScore : null) ?? -1))
         .map((s) => ({
           name: s.name,
           ...(s.brand ? { brand: s.brand } : {}),
-          avgScore: s.avgScore,
-          ratings: s.ratings.map((r) => ({
+          avgScore: isRevealed(s) ? s.avgScore : null,
+          ...(isRevealed(s) ? {} : { sealed: true }),
+          ratings: visibleRatings(s).map((r) => ({
             rater: r.displayName,
             score: r.score,
             ...(r.notes ? { notes: r.notes } : {}),
@@ -283,10 +292,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     if (restockFilter) {
       const aScore = scoreView === 'mine'
         ? (a.myRating?.score ?? -1)
-        : (a.myRating?.score ?? a.avgScore ?? -1);
+        : (a.myRating?.score ?? (isRevealed(a) ? a.avgScore : null) ?? -1);
       const bScore = scoreView === 'mine'
         ? (b.myRating?.score ?? -1)
-        : (b.myRating?.score ?? b.avgScore ?? -1);
+        : (b.myRating?.score ?? (isRevealed(b) ? b.avgScore : null) ?? -1);
       return bScore - aScore;
     }
     // In group view a blind soda has no score the viewer is allowed to know, so it
@@ -398,6 +407,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                           >
                             <Barcode size={14} />
                             Scan barcode
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => { setMenuOpen(false); setDiscoverOpen(true); }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 font-sans text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                          >
+                            <Compass size={14} />
+                            Find more root beers
                           </button>
                           <button
                             type="button"
@@ -1065,12 +1082,20 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       </Modal>
 
       {stash && (
-        <ShoppingListModal
-          open={shoppingListOpen}
-          onClose={() => setShoppingListOpen(false)}
-          stashName={stash.name}
-          sodas={sodas}
-        />
+        <>
+          <DiscoverRootBeers
+            open={discoverOpen}
+            onClose={() => setDiscoverOpen(false)}
+            sodas={sodas}
+          />
+
+          <ShoppingListModal
+            open={shoppingListOpen}
+            onClose={() => setShoppingListOpen(false)}
+            stashName={stash.name}
+            sodas={sodas}
+          />
+        </>
       )}
     </div>
   );
