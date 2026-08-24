@@ -208,10 +208,42 @@ describe('ratingComparison', () => {
     expect(c.shared.avgGap).toBe(3);
   });
 
+  it('never lets the headline pair disagree with the gap', () => {
+    // The trap this guards: your overall average can point the opposite way to how
+    // you actually score against other people. One soda rated 3 against their 4,
+    // plus two nobody else has tried rated 5, gives an overall 4.3 against their 4.0
+    // — while you are a full point below them on the only soda you have both tried.
+    // The headline reads the shared pair for exactly this reason.
+    const c = ratingComparison([
+      soda([rating('me', 3), rating('alice', 4)]),
+      soda([rating('me', 5)]),
+      soda([rating('me', 5)]),
+    ]);
+    expect(c.mine.avg).toBe(4.3);          // overall, and misleading on its own
+    expect(c.delta).toBe(0.3);             // points the wrong way
+    expect(c.shared.myAvg).toBe(3);        // what the card shows
+    expect(c.shared.othersAvg).toBe(4);
+    expect(c.shared.avgGap).toBe(-1);
+    // The two numbers on the card and the sentence under them must agree.
+    expect(c.shared.myAvg! - c.shared.othersAvg!).toBeCloseTo(c.shared.avgGap!, 5);
+  });
+
+  it('keeps the shown pair and the gap consistent under rounding', () => {
+    const c = ratingComparison([
+      soda([rating('me', 4), rating('alice', 3)]),
+      soda([rating('me', 3), rating('alice', 3), rating('bob', 4)]),
+      soda([rating('me', 5), rating('alice', 4)]),
+    ]);
+    expect(c.shared.avgGap).toBeCloseTo(
+      Math.round((c.shared.myAvg! - c.shared.othersAvg!) * 10) / 10, 5);
+  });
+
   it('has nothing to say about sodas only one side has rated', () => {
     const c = ratingComparison([soda([rating('me', 5)]), soda([rating('me', 1)])]);
     expect(c.shared.sodas).toBe(0);
     expect(c.shared.avgGap).toBeNull();
+    expect(c.shared.myAvg).toBeNull();
+    expect(c.shared.othersAvg).toBeNull();
     expect(c.others.avg).toBeNull();
     expect(c.delta).toBeNull();
   });
@@ -229,6 +261,6 @@ describe('ratingComparison', () => {
     expect(c.mine.avg).toBeNull();
     expect(c.others.avg).toBeNull();
     expect(c.delta).toBeNull();
-    expect(c.shared).toEqual({ sodas: 0, avgGap: null });
+    expect(c.shared).toEqual({ sodas: 0, myAvg: null, othersAvg: null, avgGap: null });
   });
 });
