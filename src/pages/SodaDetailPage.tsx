@@ -83,11 +83,13 @@ export function SodaDetailPage() {
     const name = editName.trim() || soda.name;
     const brand = editBrand.trim();
     setEditing(false);
-    toast.success('Record updated.');
     try {
       await editSoda(soda.id, { name, brand });
-    } catch {
-      toast.error('Update failed — changes reverted.');
+      // Announced only once it actually landed — this used to fire before the await,
+      // so a rejected save still congratulated you before reverting.
+      toast.success('Soda updated.');
+    } catch (err) {
+      toast.error(err instanceof Error ? `Couldn't save: ${err.message}` : 'Update failed — changes reverted.');
     }
   }
 
