@@ -1,5 +1,25 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { isChunkLoadError, loadChunk } from './chunkRecovery';
+import { isChunkLoadError, loadChunk, claimReloadBudget } from './chunkRecovery';
+
+/**
+ * This suite runs without jsdom, like the rest — so there is no `sessionStorage` global
+ * and reaching for one is a ReferenceError, not an empty store. The reload budget is
+ * the one piece of this module that needs somewhere to remember a flag, so it gets a
+ * store of its own rather than a whole DOM.
+ */
+function memoryStorage(): Storage {
+  let data = new Map<string, string>();
+  return {
+    getItem: (k) => data.get(k) ?? null,
+    setItem: (k, v) => { data.set(k, String(v)); },
+    removeItem: (k) => { data.delete(k); },
+    clear: () => { data = new Map(); },
+    key: (i) => [...data.keys()][i] ?? null,
+    get length() { return data.size; },
+  } as Storage;
+}
+
+vi.stubGlobal('sessionStorage', memoryStorage());
 
 beforeEach(() => sessionStorage.clear());
 
@@ -73,6 +93,29 @@ describe('loadChunk', () => {
       loadChunk(async () => { throw new Error('Failed to fetch dynamically imported module'); }, reload),
     ).rejects.toThrow('Failed to fetch dynamically imported module');
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('claimReloadBudget', () => {
+  it('grants the reload once and refuses after that', () => {
+    // The whole point of the guard: a reload that lands on the same broken build must
+    // not reload again, or the tab spins.
+    expect(claimReloadBudget()).toBe(true);
+    expect(claimReloadBudget()).toBe(false);
+  });
+
+  it('fails closed when storage throws, rather than reloading unguarded', () => {
+    // Private mode and blocked site data both throw on access. Without a place to
+    // remember the flag there is no way to stop at one reload, so it does not start.
+    vi.stubGlobal('sessionStorage', {
+      getItem() { throw new DOMException('denied'); },
+      setItem() { throw new DOMException('denied'); },
+    } as unknown as Storage);
+    try {
+      expect(claimReloadBudget()).toBe(false);
+    } finally {
+      vi.stubGlobal('sessionStorage', memoryStorage());
+    }
   });
 });
 

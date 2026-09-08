@@ -15,6 +15,8 @@ npm run preview    # Preview production build
 
 `npm run lint` currently reports a **baseline of 11 problems (7 errors, 4 warnings)** — mostly `exhaustive-deps` and `react-refresh/only-export-components`. Treat that number as the bar: don't add to it, and don't count it as a regression you caused.
 
+CI enforces that bar rather than a clean exit, via `scripts/lint-baseline.mjs`: it fails when the count goes above `BASELINE`, and when the count drops it says so and passes — lower `BASELINE` there and here in the same commit that fixes the problems. Gating on a clean exit would paint every PR red and teach everyone to ignore CI; dropping lint from CI would let the baseline creep.
+
 **Don't reintroduce `set-state-in-effect`.** Copying a prop or fetched value into state with an effect costs a second render and goes stale. The established fix here is to layer an edit over the source instead:
 
 ```ts
@@ -29,6 +31,8 @@ const name = nameEdit ?? stash?.name ?? '';   // ?? not ||, so '' and 0 survive
 ### Tests
 
 Vitest, no jsdom — the suite covers **pure logic only**, which is where the bugs have actually been. Components are verified by driving the real app in a browser instead.
+
+No jsdom means no DOM globals either: `sessionStorage` is a `ReferenceError`, not an empty store. `chunkRecovery.test.ts` stubs a small in-memory `Storage` with `vi.stubGlobal` rather than pulling in a DOM — reach for that pattern if a module needs one key of storage, and keep anything needing a real document in a browser check instead.
 
 Tested modules, and why each is worth it:
 
@@ -221,6 +225,12 @@ The app is meant to feel carbonated, so motion is part of the design rather than
 Toasts are already announced: sonner renders its own `aria-live="polite"` region, so a `toast.success` reaches a screen reader without extra markup. Don't add a second live region for the same message.
 
 **`MotionConfig reducedMotion="user"` wraps the whole app** in `App.tsx`, so every Framer Motion animation honours the OS setting automatically — transforms and layout morphs drop, opacity fades stay. Tailwind's CSS animations are outside its reach: pair decorative ones with `motion-reduce:animate-none` (as `Skeleton` does). Spinners are deliberately left running, since they are the only signal that something is in progress.
+
+### CI
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`: `npm ci` → the lint baseline check → `npm test` → `npm run build` (which is icons → `tsc -b` → `vite build`, so it covers the typecheck too).
+
+Nothing ran on a PR before it existed — Vercel deployed previews and that was all — which is how eight failing tests reached `main` and stayed there. If you add a check, add it here too, or it will only run for whoever remembers.
 
 ### Build notes
 
