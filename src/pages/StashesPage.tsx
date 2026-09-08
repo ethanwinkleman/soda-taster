@@ -14,6 +14,10 @@ import type { Stash, RecentRatingActivity } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useMyRatings } from '../hooks/useMyRatings';
 import { Button, Input, FieldLabel } from '../components/ui';
+import { GettingStarted } from '../components/GettingStarted';
+import { onboardingSteps, shouldShowOnboarding, type StepId } from '../lib/onboarding';
+
+const ONBOARDING_DISMISSED_KEY = 'soda-taster-onboarding-dismissed';
 
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -77,7 +81,52 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
     if (stashId) navigate(`/stash/${stashId}`);
   }
 
-  const { data: myRatings = [] } = useMyRatings(user?.id);
+  const { data: myRatings = [], error: ratingsError } = useMyRatings(user?.id);
+
+  // Read once at mount, not synced into an effect: this only ever changes because the
+  // person clicked dismiss, and the click already sets it.
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARDING_DISMISSED_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+
+  // Derived from what the account has, so it is right on a new device and undoes itself
+  // if everything is deleted. A failed ratings read counts as "unknown", not zero —
+  // otherwise the checklist would tell someone to rate their first soda when they have
+  // rated fifty.
+  const progress = {
+    stashCount: stashes.length,
+    sodaCount: stashes.reduce((n, s) => n + s.sodaCount, 0),
+    ratingCount: ratingsError ? 1 : myRatings.length,
+  };
+  const showOnboarding = !loading && !loadError
+    && shouldShowOnboarding(progress, onboardingDismissed);
+
+  function dismissOnboarding() {
+    setOnboardingDismissed(true);
+    try {
+      localStorage.setItem(ONBOARDING_DISMISSED_KEY, '1');
+    } catch {
+      // Private mode — it stays hidden for this session, which is enough.
+    }
+  }
+
+  function handleOnboardingStep(id: StepId) {
+    if (id === 'create') {
+      setCreating(true);
+      setJoining(false);
+      setError(null);
+      return;
+    }
+    // Both remaining steps happen inside a collection; the first one is as good a place
+    // as any, and someone with one collection has no ambiguity anyway.
+    const target = stashes[0];
+    if (!target) return;
+    navigate(id === 'add' ? `/stash/${target.id}/add` : `/stash/${target.id}`);
+  }
   const firstName = (user?.user_metadata?.full_name as string | undefined)?.split(' ')[0];
 
   const queryClient = useQueryClient();
@@ -208,6 +257,14 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
 
       {error && (
         <p className="mb-4 text-sm text-red-600 dark:text-red-400 font-sans">{error}</p>
+      )}
+
+      {showOnboarding && (
+        <GettingStarted
+          steps={onboardingSteps(progress)}
+          onStep={handleOnboardingStep}
+          onDismiss={dismissOnboarding}
+        />
       )}
 
       {/* Stash list */}

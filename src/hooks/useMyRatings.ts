@@ -3,10 +3,15 @@ import { supabase } from '../lib/supabase';
 import type { RatingInput } from '../utils/tasteProfile';
 
 async function loadMyRatings(userId: string): Promise<RatingInput[]> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('stash_soda_ratings')
     .select('score, stash_sodas(name, brand)')
     .eq('user_id', userId);
+
+  // supabase-js resolves with { error } rather than throwing. Unchecked, a failed read
+  // is indistinguishable from having rated nothing — which reads as an empty palate
+  // profile, and now also as an unfinished onboarding step.
+  if (error) throw new Error(error.message);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (data ?? []).map((r: any) => ({

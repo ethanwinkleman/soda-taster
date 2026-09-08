@@ -37,6 +37,7 @@ Tested modules, and why each is worth it:
 - `utils/tasteProfile.ts` — flavour classification and generated prose.
 - `lib/flavorNotes.ts` — the descriptor vocabulary, style baselines, and mining notes out of free text. Both halves of the recommendation feature run through this vocabulary, so a typo'd id silently stops matching.
 - `lib/rootBeerCatalog.ts` — the curated shelf and the matching. A test asserts every catalog entry is described in the shared vocabulary; that check has already caught one dead note id.
+- `lib/onboarding.ts` — which of the three first-run steps are done. Derived from the account's own counts, and the derivation is the whole feature (see below).
 - `lib/ratingVisibility.ts` — what a viewer is allowed to see before they have rated. Every leak is silent: the number simply appears somewhere it should not, and no one notices until the group has already anchored on it.
 
 This is also why `stockState`/`stars`/`buildShoppingText` live in `lib/` rather than inside `ShoppingListModal`: the component imports them, so the tests exercise exactly what ships. Put new pure logic in `lib/` for the same reason.
@@ -78,6 +79,18 @@ Tables, created across `supabase/migrations/`:
 - `stash_activity` — append-only feed; `soda_id` is deliberately **not** a FK and `soda_name` is a snapshot, so entries survive soda deletion (ACT-07)
 - `soda_comments` — body (≤500 chars), parent_id for one level of replies
 - `profiles` — username, is_public, display_name, avatar_url; auto-created from Google metadata on first load
+
+### First-run onboarding
+
+`GettingStarted` is a three-step checklist on the collections page: start a collection → add a soda → rate one. That is the loop the app is built around, and someone who stops after the first step sees an empty list, no palate profile, and nothing explaining why.
+
+**Every step is derived from the account's own counts** (`lib/onboarding.ts`), never from a stored "step 2 of 3" cursor. A cursor is wrong in both directions: it re-teaches someone who joined a friend's already-full collection, it stays finished for someone who deleted everything, and it does not exist on a new device where the collections do. Deriving also means the checklist needs no write path at all.
+
+It is deliberately not a modal tour — it sits in the page, each row is the shortcut to the thing it names, and it removes itself once the loop has been completed once. Finishing is the dismissal, so the common case stores nothing; the X button stores `soda-taster-onboarding-dismissed` for people who want it gone early.
+
+It never appears before the first collection exists — the page's empty state already makes that request, and two panels asking for the same thing is worse than one.
+
+**A failed ratings read counts as "has rated", not zero.** The steps are only as good as the counts behind them, and the failure mode of guessing low is telling someone with fifty ratings to go and rate their first soda.
 
 ### Ratings
 
