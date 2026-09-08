@@ -1,0 +1,41 @@
+# Nothing ran on a pull request before this: Vercel deployed previews, but no lint,
+# no typecheck, no tests. That is how eight failing tests reached main and sat there —
+# `npm test` was only ever run by whoever remembered to.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A second push to the same branch makes the first run's answer irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # v5 is the first major that runs on Node 24; v4 targets Node 20, which
+      # runners have deprecated and now force onto 24 with a warning.
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Fails only if the project got worse than the documented baseline — see the
+      # script for why the count, and not a clean exit, is the gate.
+      - name: Lint (baseline)
+        run: node scripts/lint-baseline.mjs
+
+      - name: Tests
+        run: npm test
+
+      # Covers the typecheck too: `npm run build` is icons → tsc -b → vite build.
+      - name: Build
+        run: npm run build
