@@ -41,6 +41,7 @@ Tested modules, and why each is worth it:
 - `utils/tasteProfile.ts` — flavour classification and generated prose.
 - `lib/flavorNotes.ts` — the descriptor vocabulary, style baselines, and mining notes out of free text. Both halves of the recommendation feature run through this vocabulary, so a typo'd id silently stops matching.
 - `lib/rootBeerCatalog.ts` — the curated shelf and the matching. A test asserts every catalog entry is described in the shared vocabulary; that check has already caught one dead note id.
+- `lib/appUpdate.ts` — when to check for a new build, and whether reloading right now would throw away what someone is typing. The DOM wiring lives beside it; only these two decisions are tested.
 - `lib/onboarding.ts` — which of the three first-run steps are done. Derived from the account's own counts, and the derivation is the whole feature (see below).
 - `lib/ratingVisibility.ts` — what a viewer is allowed to see before they have rated. Every leak is silent: the number simply appears somewhere it should not, and no one notices until the group has already anchored on it.
 
@@ -138,6 +139,19 @@ Three constraints follow, and breaking any of them silently loses writes:
 - **`addSoda` is non-blocking and returns `{ sodaId }` synchronously.** Do not `await` it: offline the underlying mutation is paused, so a promise would never settle and the form would hang. Failures surface through `onError` (rollback + toast), not a rejected call.
 
 Variables must be JSON-serialisable, which is why a `File` cannot ride along — photos are held in an in-memory map keyed by soda id and uploaded when the mutation runs. That survives a reconnect within the session but not a reload, where the soda simply keeps no photo.
+
+### Staying up to date
+
+Cache busting was never the hard part — filenames are content-hashed, navigations are network-first, and the worker is generated with `skipWaiting` + `clientsClaim`, so a new worker takes over the moment it is found. What was missing was the *finding*.
+
+vite-plugin-pwa's generated registration is one line: register on window `load`. That makes a page load the only thing that ever asks whether a new version exists, and **an installed PWA resumed from the app switcher is not a page load**. Measured against a real build: an app left open across a deploy saw zero update checks in 45 seconds, and none on returning to the foreground. Force-quitting was the only way to get the latest version, because a cold start was the only thing that re-registered.
+
+`lib/appUpdate.ts` adds the missing half: `registration.update()` when the app comes back to the foreground (at most once a minute — app-switching is constant and each check is a request) and every 15 minutes while it stays open. Everything downstream already existed.
+
+Two things it has to get right, both covered by tests:
+
+- **The first `controllerchange` on an uncontrolled page is the initial claim, not an update.** Reloading for it wastes a round trip on a first-ever visit. Only that first one is exempt — an earlier version of this suppressed them all for the page's lifetime, which meant a first-time visitor never picked up a deploy at all.
+- **A reload throws away whatever the page has not written yet.** Ratings save on tap and queued writes survive, but tasting notes live in the textarea and a modal usually has a half-filled form behind it. `isSafeToReload` holds the update back while a text field has focus or a dialog is open, and it is applied on the next `focusout`, foreground, or slow retry.
 
 ### Routing
 
