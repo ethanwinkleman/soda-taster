@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { isChunkLoadError, recoverOnce } from './lib/chunkRecovery'
+import { installUpdateChecks } from './lib/appUpdate'
 
 // A tab left open across a deploy asks for chunk filenames that no longer exist.
 // These two listeners cover dynamic imports React is not managing; route chunks
@@ -18,14 +19,12 @@ window.addEventListener('unhandledrejection', (e) => {
   if (isChunkLoadError(msg)) void recoverOnce();
 });
 
-// When a new service worker takes control (skipWaiting + clientsClaim), reload
-// the page so the browser fetches the new JS chunk filenames. This makes every
-// deployment apply silently — no manual reload or force-quit needed.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  });
-}
+// Checks for a new build when the app comes back to the foreground, and applies one
+// the moment doing so will not throw away something the user is typing. Registering on
+// page load — all the generated registration does — never fires again for an installed
+// PWA resumed from the app switcher, which is what made force-quitting the only way to
+// get the latest version.
+installUpdateChecks();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
