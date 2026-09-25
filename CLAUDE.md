@@ -132,6 +132,22 @@ Because the cache is keyed and shared, calling `useStashSodas` in several compon
 
 Bump `buster` in `App.tsx` when a change makes previously persisted cache shapes invalid.
 
+### Realtime
+
+The four hooks that subscribe to `postgres_changes` depend on two things no code in this repo used to set, both now in `20260101001600_realtime_publication.sql`:
+
+- **Table membership in the `supabase_realtime` publication.** This was a dashboard toggle, so live updates worked on whichever project someone had flipped it on and silently did nothing anywhere else, a fresh restore from these migrations included.
+- **`REPLICA IDENTITY FULL` on `soda_comments`.** A DELETE writes only the primary key to the WAL under the default identity, so a subscription filtered on a non-key column can never match one. `useSodaComments` filters DELETE on `soda_id`, which means a deleted comment stayed on every other member's screen until something else made them refetch. Decoded from a local WAL:
+
+  ```
+  default:  table public.soda_comments: DELETE: id[uuid]:'cb75…'
+  full:     table public.soda_comments: DELETE: id[uuid]:'7d1b…' soda_id[uuid]:'2222…' body[text]:'second'
+  ```
+
+FULL writes the whole old row to the WAL, so apply it only where a filter needs it — the other three subscriptions are unfiltered and do not. **Any new filtered DELETE subscription needs it on that table**, which includes the planned per-collection filtering of `stash_sodas` and `stash_soda_ratings`.
+
+**The unfiltered subscriptions are a known scaling problem, not a convention to copy.** `useStashSodas` and `useStashes` subscribe to every row change in their tables app-wide; Supabase authorises `postgres_changes` per subscriber, so one write costs a policy evaluation against every connected client and a refetch for each one that passes. `useSodaComments` and `useStashActivity` show the shape to copy: filter by the id the subscriber actually cares about.
+
 ### Offline writes
 
 Quick Add is built for tasting events, which is exactly where signal dies, so the two mutations on that path — `addSoda` and `saveRating` — are **resumable**: TanStack Query pauses them while offline, the persister writes paused mutations into the same `localStorage` blob as the cache, and they replay on reconnect. `OfflineBanner` surfaces the queue.
