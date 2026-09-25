@@ -146,7 +146,11 @@ The four hooks that subscribe to `postgres_changes` depend on two things no code
 
 FULL writes the whole old row to the WAL, so apply it only where a filter needs it — the other three subscriptions are unfiltered and do not. **Any new filtered DELETE subscription needs it on that table**, which includes the planned per-collection filtering of `stash_sodas` and `stash_soda_ratings`.
 
-**The unfiltered subscriptions are a known scaling problem, not a convention to copy.** `useStashSodas` and `useStashes` subscribe to every row change in their tables app-wide; Supabase authorises `postgres_changes` per subscriber, so one write costs a policy evaluation against every connected client and a refetch for each one that passes. `useSodaComments` and `useStashActivity` show the shape to copy: filter by the id the subscriber actually cares about.
+**Every subscription is filtered by collection, and new ones must be.** Supabase authorises `postgres_changes` per subscriber, so an unfiltered listener costs a policy evaluation against every connected client for every row change in that table, plus a refetch for each one that passes. `useStashSodas` and `useStashes` were both unfiltered; they are not now.
+
+`stash_soda_ratings` had no column naming its collection, which is why it could not be filtered. `20260101001700` adds one, derived by a trigger from the soda on every insert and update. **The trigger ignores whatever the client sent** — the column decides which subscribers a change reaches, and a routing key the client can write is a bad thing to leave lying about. Re-deriving unconditionally rather than only `ON UPDATE OF soda_id` is what makes that true, and it means moving a soda between collections takes its ratings' routing with it.
+
+`useStashes` belongs to several collections at once, so it registers one filtered listener per collection on a single channel. That is deliberately not an `in.()` filter: support varies by Realtime version and the failure is silent.
 
 ### Offline writes
 
