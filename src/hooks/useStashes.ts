@@ -133,9 +133,25 @@ export function useStashes(userId: string | undefined) {
   const stashes = data?.stashes ?? [];
   const recentActivity = data?.recentActivity ?? [];
 
-  // Real-time: invalidate when any member adds/removes sodas or records ratings
+  // The collections this account belongs to, as a stable string, so the effect below
+  // re-subscribes when they change and not on every render that re-derives the array.
+  const subscribedStashIds = stashes.map((s) => s.id).sort().join(',');
+
+  // Real-time: invalidate when any member adds/removes sodas or records ratings.
+  //
+  // One filtered listener per collection rather than one unfiltered listener per table.
+  // Unfiltered, this woke every connected client for every row change in stash_activity
+  // and stash_sodas app-wide; a handful of filters costs the server a comparison each
+  // and costs this client nothing it did not already want to hear about.
+  //
+  // postgres_changes filters take a single value, so membership of several collections
+  // means several listeners on the one channel — deliberately not an `in.()` filter,
+  // whose support varies by Realtime version and fails silently when absent.
   useEffect(() => {
     if (!userId) return;
+    const ids = subscribedStashIds ? subscribedStashIds.split(',') : [];
+    if (!ids.length) return;
+
     let timer: ReturnType<typeof setTimeout>;
     const invalidateDebounced = () => {
       clearTimeout(timer);
@@ -144,17 +160,24 @@ export function useStashes(userId: string | undefined) {
         300,
       );
     };
-    const channel = supabase
-      .channel(`stashes-rt-${userId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_activity' }, invalidateDebounced)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stash_sodas' }, invalidateDebounced)
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'stash_sodas' }, invalidateDebounced)
-      .subscribe();
+
+    const channel = supabase.channel(`stashes-rt-${userId}`);
+    for (const id of ids) {
+      const inStash = `stash_id=eq.${id}`;
+      channel
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_activity', filter: inStash }, invalidateDebounced)
+        // DELETE needs stash_id in the replica identity to be matchable — see
+        // 20260101001700, which sets REPLICA IDENTITY FULL on stash_sodas.
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stash_sodas', filter: inStash }, invalidateDebounced)
+        .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'stash_sodas', filter: inStash }, invalidateDebounced);
+    }
+    channel.subscribe();
+
     return () => {
       clearTimeout(timer);
       supabase.removeChannel(channel);
     };
-  }, [userId, queryClient]);
+  }, [userId, subscribedStashIds, queryClient]);
 
   function patch(updater: (prev: Stash[]) => Stash[]) {
     queryClient.setQueryData<StashesData>(queryKey, (old) =>

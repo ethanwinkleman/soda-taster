@@ -135,11 +135,20 @@ export function useStashSodas(
       );
     };
 
+    // Every subscription is scoped to this collection. Unfiltered, each of these woke
+    // every connected client for every row change in the table app-wide — Supabase
+    // authorises postgres_changes per subscriber, so one rating anywhere cost a policy
+    // evaluation against all of them and a refetch for each that passed.
+    //
+    // Filtering a DELETE needs the column in the replica identity, which is why
+    // 20260101001700 sets REPLICA IDENTITY FULL on these tables: otherwise a DELETE
+    // carries only the primary key and can never match.
+    const inThisStash = `stash_id=eq.${stashId}`;
     const channel = supabase
       .channel(`stash-sodas-rt-${stashId}-${uid}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_sodas' }, silentRefetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_soda_ratings' }, silentRefetch)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'soda_comments' }, silentRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_sodas', filter: inThisStash }, silentRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'stash_soda_ratings', filter: inThisStash }, silentRefetch)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'soda_comments', filter: inThisStash }, silentRefetch)
       .subscribe();
 
     return () => {
