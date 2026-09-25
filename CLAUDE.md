@@ -59,6 +59,10 @@ Three constraints, all of which have caused real bugs, so **run `scripts/verify-
 - **Migrations must be re-appliable.** There is no `CREATE POLICY IF NOT EXISTS`, so every policy is preceded by `DROP POLICY IF EXISTS`. Without that they cannot be safely applied to an existing project.
 - **A plpgsql body is not checked until it runs.** `RETURNS TABLE (... user_email TEXT)` selecting `auth.users.email` creates without complaint and then fails in the app with *structure of query does not match function result type* — `email` is `CHARACTER VARYING(255)`, and plpgsql wants an exact match. Cast at the SELECT (`u.email::text`). The script's third pass calls each RPC for this reason, and its `auth.users` stub mirrors the real column types, because a stub typed `TEXT` hides the bug completely.
 
+**Postgres indexes primary keys and UNIQUE constraints — not foreign keys.** Every filter the app runs on a hot path needs its own index or it is a sequential scan whose cost grows with the whole table. `20260101001500_hot_path_indexes.sql` covers the ones the app actually issues; a trailing column of a UNIQUE does not count, which is why `stash_members(user_id)` needed its own even though `UNIQUE(stash_id, user_id)` exists.
+
+Measured on a seeded 1000-user database (60k sodas, 200k activity rows): the collection page's soda query went from a sequential scan discarding 59,970 rows at 5.7 ms to an index scan at 0.21 ms, and the activity feed from 16.4 ms to 0.55 ms. Add an index alongside any new hot-path filter, and check the plan with `EXPLAIN (ANALYZE)` against seeded data rather than an empty table — an empty table always looks fast.
+
 **Environment:** requires `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. (`*.local` is gitignored.)
 
 ## Architecture
@@ -180,7 +184,7 @@ Two things it has to get right, both covered by tests:
 
 `src/lib/supabase.ts` exports only the client. Each hook defines its own inline `fromDb` mappers for snake_case → camelCase conversion. All auth is Google OAuth managed by `AuthContext`.
 
-**supabase-js resolves with `{ error }` rather than throwing.** An unchecked call therefore renders a failure as its empty value, which is the single most common bug in this codebase: `editSoda` reported a save that never happened, `loadStashes` showed the "your collection starts here" empty state to people who had collections, and `useIsAdmin` told an admin they were not one. Every read and write must act on `error` — `if (error) throw new Error(error.message)` in a query function, so TanStack Query surfaces it.
+**supabase-js resolves with `{ error }` rather than throwing.** An unchecked call therefore renders a failure as its empty value, which is the single most common bug in this codebase: `editSoda` reported a save that never happened, `loadStashes` showed the "your collection starts here" empty state to people who had collections, `useIsAdmin` told an admin they were not one, and `loadSodas` — the busiest read in the app — drew a collection as empty when the read had failed. Every read and write must act on `error` — `if (error) throw new Error(error.message)` in a query function, so TanStack Query surfaces it.
 
 A hook that can fail should return that error, and the UI must draw three distinct states — loading, failed, empty. Collapsing the first two into the third is what made all three bugs invisible. `useStashes` and `useIsAdmin` both return `{ ..., error }` for this reason.
 

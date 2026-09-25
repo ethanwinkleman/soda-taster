@@ -38,16 +38,28 @@ function ratingFromDb(row: any): SodaRating {
 }
 
 async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
-  const [{ data: sodaRows }, { data: commentRows }] = await Promise.all([
+  const [{ data: sodaRows, error: sodaError }, { data: commentRows, error: commentError }] = await Promise.all([
     supabase.from('stash_sodas').select('*').eq('stash_id', stashId).order('created_at', { ascending: false }),
     supabase.from('soda_comments').select('soda_id').eq('stash_id', stashId),
   ]);
 
+  // supabase-js resolves with { error } rather than throwing. Unchecked, a failed read
+  // of the busiest query in the app rendered as a collection with nothing in it — the
+  // same shape of bug as loadStashes showing the first-run empty state to people who
+  // had collections. StashPage already draws a distinct error state; it just never had
+  // anything to draw it from.
+  if (sodaError) throw new Error(sodaError.message);
+  if (commentError) throw new Error(commentError.message);
+
   const sodaIds = (sodaRows ?? []).map((s) => s.id);
 
-  const { data: ratingRows } = sodaIds.length
+  const { data: ratingRows, error: ratingError } = sodaIds.length
     ? await supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true })
-    : { data: [] };
+    : { data: [], error: null };
+
+  // A failed ratings read would otherwise show every soda as unrated, which reads as
+  // real data rather than as a failure.
+  if (ratingError) throw new Error(ratingError.message);
 
   const commentCountMap = new Map<string, number>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
