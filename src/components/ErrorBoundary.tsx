@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from 'react';
 import { isChunkLoadError, recoverOnce } from '../lib/chunkRecovery';
+import { report } from '../lib/errorReporter';
 
 interface Props { children: ReactNode }
 interface State { error: Error | null; recovering: boolean }
@@ -18,6 +19,9 @@ export class ErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error) {
     // Reloading belongs here, not in getDerivedStateFromError, which must stay pure.
     if (isChunkLoadError(error.message)) void recoverOnce();
+    // React turns a render error into a boundary throw rather than a window event, so
+    // without this the errors that actually blank the screen are the ones never filed.
+    void report(error);
   }
 
   render() {
