@@ -9,6 +9,8 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import { registerOfflineMutations } from './lib/offlineMutations';
 import { OfflineBanner } from './components/OfflineBanner';
 import { RouteFallback } from './components/RouteFallback';
+import { FizzTrail } from './components/FizzTrail';
+import { navDirection } from './lib/pageTransition';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +68,8 @@ function AppRoutes() {
   const { user } = useAuth();
   const location = useLocation();
   const navType = useNavigationType();
+
+  const { goingBack, goingDeeper } = navDirection(navType, location.pathname);
   const {
     stashes,
     loading: stashesLoading,
@@ -90,13 +94,22 @@ function AppRoutes() {
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
         <MobileHeader stashes={stashes} />
         <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain relative">
+          {/* Outside the animated container on purpose: a transformed ancestor would
+              make its `fixed` positioning resolve against that element instead of the
+              viewport. Keyed by path so each navigation spawns a fresh rise. */}
+          {goingDeeper && <FizzTrail key={`fizz-${location.pathname}`} />}
           <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, x: navType === 'POP' ? -20 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: navType === 'POP' ? 20 : -20 }}
-            transition={{ duration: 0.15, ease: 'easeInOut' }}
+            // Pages rise into place and sink on the way back, rather than sliding
+            // sideways — carbonation goes up, and it reads as a stack rather than a
+            // carousel. The spring is stiff enough to settle in about 200 ms: this
+            // fires on every navigation, so character has to stay cheap.
+            initial={{ opacity: 0, y: goingBack ? -10 : 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: goingBack ? 14 : -10 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7, opacity: { duration: 0.14 } }}
+            className="relative"
           >
             <ScrollToTop />
             <Suspense fallback={<RouteFallback />}>
