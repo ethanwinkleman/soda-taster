@@ -6,6 +6,7 @@ import App from './App.tsx'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { isChunkLoadError, recoverOnce } from './lib/chunkRecovery'
 import { installUpdateChecks } from './lib/appUpdate'
+import { installErrorReporting } from './lib/errorReporter'
 
 // A tab left open across a deploy asks for chunk filenames that no longer exist.
 // These two listeners cover dynamic imports React is not managing; route chunks
@@ -25,6 +26,10 @@ window.addEventListener('unhandledrejection', (e) => {
 // PWA resumed from the app switcher, which is what made force-quitting the only way to
 // get the latest version.
 installUpdateChecks();
+
+// Reports what breaks. Chunk-load failures are filtered out inside: those are already
+// self-healing above, and they would otherwise fill the log on every deploy.
+installErrorReporting();
 
 // The splash covers the window before this bundle existed. Retire it only after React
 // has actually painted, or the screen goes blank again between the two.

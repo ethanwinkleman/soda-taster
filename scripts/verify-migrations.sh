@@ -113,7 +113,8 @@ for call in \
   "admin_summary_metrics()" \
   "admin_daily_metrics(30, 'UTC')" \
   "admin_top_sodas(10)" \
-  "admin_user_activity(25)"
+  "admin_user_activity(25)" \
+  "admin_recent_errors(7, 20)"
 do
   if err=$(psql -q -v ON_ERROR_STOP=1 -At "$TEST_URL" \
       -c "SET request.jwt.claim.sub = '$ADMIN_ID'" \
@@ -128,7 +129,7 @@ done
 
 # The gate is the whole reason these functions are SECURITY DEFINER — an ordinary caller
 # must be refused, not merely shown less.
-for call in "admin_summary_metrics()" "admin_user_activity(25)"; do
+for call in "admin_summary_metrics()" "admin_user_activity(25)" "admin_recent_errors(7, 20)"; do
   refused=$(psql -q -At "$TEST_URL" \
     -c "SET request.jwt.claim.sub = '$OTHER_ID'" \
     -c "SELECT * FROM $call" 2>&1 | grep -c "admin only" || true)

@@ -34,6 +34,16 @@ export interface UserActivity {
   signed_up: string;
 }
 
+export interface ClientErrorGroup {
+  message: string;
+  occurrences: number;
+  affected: number;
+  last_seen: string;
+  first_seen: string;
+  sample_path: string | null;
+  app_version: string | null;
+}
+
 export interface TopSoda {
   soda_name: string;
   soda_brand: string;
@@ -123,6 +133,18 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     staleTime: 5 * 60 * 1000,
   });
 
+  const errors = useQuery({
+    queryKey: ['admin-errors'],
+    queryFn: async (): Promise<ClientErrorGroup[]> => {
+      const { data, error } = await supabase.rpc('admin_recent_errors', { p_days: 7, p_limit: 15 });
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+    enabled,
+    // Shorter than the rest: this is the panel you refresh when something feels wrong.
+    staleTime: 60 * 1000,
+  });
+
   const topSodas = useQuery({
     queryKey: ['admin-top-sodas'],
     queryFn: async (): Promise<TopSoda[]> => {
@@ -139,17 +161,19 @@ export function useAdminMetrics(enabled: boolean, days = 30) {
     summary: summary.data ?? null,
     topSodas: topSodas.data ?? [],
     users: users.data ?? [],
+    errors: errors.data ?? [],
     // isLoading is only true before there is any data. A refetch over existing data
     // leaves it false, which is why refreshing looked like nothing happened — isFetching
     // is the one that reports a refresh in progress.
     loading: daily.isLoading || summary.isLoading,
-    refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching || users.isFetching,
+    refreshing: daily.isFetching || summary.isFetching || topSodas.isFetching || users.isFetching || errors.isFetching,
     // Reported per section rather than as one page-wide failure: each RPC is applied by
     // its own migration, so a project that is a migration behind loses exactly one of
     // them, and blaming the whole page for that hides the three that did load.
     error: (daily.error ?? summary.error ?? topSodas.error ?? null) as Error | null,
     usersError: (users.error ?? null) as Error | null,
+    errorsError: (errors.error ?? null) as Error | null,
     timezone: tz,
-    refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch(), users.refetch()]),
+    refetch: () => Promise.all([daily.refetch(), summary.refetch(), topSodas.refetch(), users.refetch(), errors.refetch()]),
   };
 }
