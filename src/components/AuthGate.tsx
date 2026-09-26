@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, animate } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Logo } from './Logo';
@@ -14,8 +14,27 @@ const FIZZ = [
   { cx: 14.5, r: 0.6, delay: 0.5 },
 ];
 
+/** How long the boot splash's CSS fill takes; the two must agree. */
+const FILL_MS = 1200;
+
+/**
+ * How full the cup already looked when this component mounted.
+ *
+ * index.html paints a cup and starts pouring before this bundle has parsed. Starting
+ * the React one from empty would tip the level backwards at the handoff, which reads as
+ * two separate loading screens rather than one pour.
+ */
+function bootProgress(): number {
+  const startedAt = (window as unknown as { __bootAt?: number }).__bootAt;
+  if (typeof startedAt !== 'number') return 0;
+  return Math.min(1, Math.max(0, (Date.now() - startedAt) / FILL_MS));
+}
+
 function FillingCup() {
-  const fillLevel = useMotionValue(0);
+  // Lazy initialiser rather than a ref: read once at mount, and safe to read during
+  // render, which `useRef(...).current` is not.
+  const [startLevel] = useState(bootProgress);
+  const fillLevel = useMotionValue(startLevel);
   const liquidRef  = useRef<SVGRectElement>(null);
   const bubblesRef = useRef<SVGGElement>(null);
 
@@ -35,8 +54,10 @@ function FillingCup() {
   }, [fillLevel]);
 
   useEffect(() => {
-    animate(fillLevel, 1, { duration: 1.2, ease: [0.4, 0, 0.2, 1] });
-  }, [fillLevel]);
+    // Only the remaining distance, so the pour continues at its original pace.
+    const remaining = (1 - startLevel) * (FILL_MS / 1000);
+    animate(fillLevel, 1, { duration: Math.max(remaining, 0.2), ease: [0.4, 0, 0.2, 1] });
+  }, [fillLevel, startLevel]);
 
   return (
     <div className="flex flex-col items-center gap-8">
@@ -60,13 +81,20 @@ function FillingCup() {
         {/* Cherry soda rising up the cup */}
         <rect
           ref={liquidRef}
-          x="5" y="22" width="14" height="0"
+          x="5"
+          y={22 - startLevel * 14}
+          width="14"
+          height={startLevel * 14}
           fill="#ff3d78"
           clipPath="url(#cup-fill-clip)"
         />
 
         {/* Fizz */}
-        <g ref={bubblesRef} opacity="0" clipPath="url(#cup-fill-clip)">
+        <g
+          ref={bubblesRef}
+          opacity={startLevel < 0.6 ? 0 : Math.min(1, (startLevel - 0.6) / 0.25)}
+          clipPath="url(#cup-fill-clip)"
+        >
           {FIZZ.map((b, i) => (
             <motion.circle
               key={i}

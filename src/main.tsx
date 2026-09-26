@@ -26,6 +26,19 @@ window.addEventListener('unhandledrejection', (e) => {
 // get the latest version.
 installUpdateChecks();
 
+// The splash covers the window before this bundle existed. Retire it only after React
+// has actually painted, or the screen goes blank again between the two.
+function dismissBootSplash() {
+  const boot = document.getElementById('boot');
+  if (!boot) return;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    boot.classList.add('boot-done');
+    boot.addEventListener('transitionend', () => boot.remove(), { once: true });
+    // A tab in the background gets no transitionend, so it would linger forever.
+    setTimeout(() => boot.remove(), 600);
+  }));
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
@@ -34,3 +47,5 @@ createRoot(document.getElementById('root')!).render(
     <Analytics />
   </StrictMode>,
 )
+
+dismissBootSplash();

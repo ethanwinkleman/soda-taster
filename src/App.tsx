@@ -8,6 +8,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { registerOfflineMutations } from './lib/offlineMutations';
 import { OfflineBanner } from './components/OfflineBanner';
+import { RouteFallback } from './components/RouteFallback';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,7 +99,7 @@ function AppRoutes() {
             transition={{ duration: 0.15, ease: 'easeInOut' }}
           >
             <ScrollToTop />
-            <Suspense>
+            <Suspense fallback={<RouteFallback />}>
             <Routes location={location}>
               <Route
                 path="/"
@@ -168,7 +169,7 @@ export default function App() {
                 },
               }}
             />
-            <Suspense>
+            <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="/join/:code" element={<JoinStashPage />} />

@@ -254,6 +254,8 @@ The app is meant to feel carbonated, so motion is part of the design rather than
 - **Everything tappable gives way.** `Button` and `BottomNav` use `whileTap={{ scale: 0.97 }}` on a stiff spring; `SodaCard` and the collection cards match. A new interactive element without press feedback will feel dead next to them.
 - **Lists stagger in** at `staggerChildren: 0.03–0.04` with a 6–8px rise. Used by the soda list, collections, activity feed and public profile.
 - **`FloatingBubbles`** is the signature motif — an ambient rise behind a `CupSoda` icon. It belongs in empty states and placeholders, *not* in list rows: four looping animations per row gets expensive and noisy fast.
+- **Two blank windows used to sit either side of the motion.** `index.html` now paints a CSS-only cup that fills and fizzes before any JavaScript has parsed — measured on Slow 3G, `#root` was empty with nothing on screen for the first ~600 ms. `window.__bootAt` records when that pour started so `AuthGate`'s `FillingCup` resumes from the same level rather than restarting; the two cups are drawn at identical size and position (verified: both centre at the same pixel, and the 30 px spacer under the splash matches the `Logo`'s line box), so it reads as one pour.
+- **`Suspense` needs a `fallback`.** Both boundaries had none, so React rendered `null` for the whole route-chunk download — a blank page, measured. `RouteFallback` waits 250 ms via `animation-delay` before fading in, so a fast navigation still looks instant and only a genuinely slow one shows anything.
 - **Shared-element transitions** via `layoutId` morph a soda card into its detail page (`card`, `thumb`, `name`, `score`). Keep the ids in sync across both files or the morph silently degrades to a cut.
 
 ### Dialog focus
