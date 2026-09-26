@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Share2, Download } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { TastingCard } from './TastingCard';
+import { useSodaRatings } from '../hooks/useSodaRatings';
 import { hapticSuccess, hapticError } from '../lib/haptics';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -14,6 +15,8 @@ export function ShareCardButton({ soda }: Props) {
   const [generating, setGenerating] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  // The card names the raters, which the collection list no longer carries.
+  const { ratings } = useSodaRatings(soda.id);
   const sharedBy = soda.myRating?.displayName
     ?? (user?.user_metadata?.full_name ?? user?.email ?? null) as string | null;
   const sharedAt = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -75,7 +78,7 @@ export function ShareCardButton({ soda }: Props) {
     <>
       {createPortal(
         <div style={{ position: 'fixed', left: -9999, top: 0, pointerEvents: 'none', zIndex: -1 }}>
-          <TastingCard soda={soda} cardRef={cardRef} sharedBy={sharedBy} sharedAt={sharedAt} />
+          <TastingCard soda={soda} ratings={ratings} cardRef={cardRef} sharedBy={sharedBy} sharedAt={sharedAt} />
         </div>,
         document.body,
       )}

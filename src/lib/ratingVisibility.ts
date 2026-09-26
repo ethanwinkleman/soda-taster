@@ -1,4 +1,4 @@
-import type { Soda, SodaRating } from '../types/stash';
+import type { Soda } from '../types/stash';
 
 /**
  * Blind rating: a soda's group verdict stays hidden until you have filed your own.
@@ -12,13 +12,24 @@ import type { Soda, SodaRating } from '../types/stash';
  *   - the only rating is your own
  */
 export function isRevealed(soda: Soda): boolean {
-  return soda.myRating !== null || soda.ratings.length === 0;
+  return soda.myRating !== null || soda.ratingCount === 0;
 }
 
-/** Ratings you may see: all of them once revealed, otherwise only your own. */
-export function visibleRatings(soda: Soda): SodaRating[] {
-  if (isRevealed(soda)) return soda.ratings;
-  return soda.myRating ? [soda.myRating] : [];
+/**
+ * Other people's scores, if you are allowed to see them.
+ *
+ * The server already withholds them while blind, so this agrees with what arrived
+ * rather than filtering it — the check stays because the two must not be able to
+ * disagree silently if the query ever changes.
+ */
+export function visibleOtherScores(soda: Soda): number[] {
+  return isRevealed(soda) ? soda.otherScores : [];
+}
+
+/** Every score you may see for this soda, yours included. */
+export function visibleScores(soda: Soda): number[] {
+  const mine = soda.myRating ? [soda.myRating.score] : [];
+  return [...mine, ...visibleOtherScores(soda)];
 }
 
 /** The group average, or null while the soda is still blind. */
@@ -33,7 +44,8 @@ export function visibleAvg(soda: Soda): number | null {
  * the thing, and unlike the scores it gives nothing away about what they said.
  */
 export function hiddenCount(soda: Soda): number {
-  return isRevealed(soda) ? 0 : soda.ratings.length - visibleRatings(soda).length;
+  // While blind you have no rating of your own, so every one of them is withheld.
+  return isRevealed(soda) ? 0 : soda.ratingCount;
 }
 
 /**
@@ -87,10 +99,8 @@ export function ratingDistribution(sodas: Soda[]): DistributionBucket[] {
     // compares you against a group that is mostly you, so the averages converge and
     // the bars have to be drawn nested to stay truthful. Splitting them makes the
     // comparison real and lets the bars sit side by side.
-    for (const rating of visibleRatings(soda)) {
-      if (rating.userId === soda.myRating?.userId) bump(mine, rating.score);
-      else bump(counts, rating.score);
-    }
+    if (soda.myRating) bump(mine, soda.myRating.score);
+    for (const score of visibleOtherScores(soda)) bump(counts, score);
   }
 
   return RATING_BUCKETS.map((score) => ({
@@ -103,7 +113,7 @@ export function ratingDistribution(sodas: Soda[]): DistributionBucket[] {
 
 /** Whether a soda carries at least one visible rating at the given score. */
 export function hasVisibleRatingAt(soda: Soda, score: number): boolean {
-  return visibleRatings(soda).some((r) => toBucket(r.score) === score);
+  return visibleScores(soda).some((s) => toBucket(s) === score);
 }
 
 
@@ -137,9 +147,8 @@ export function ratingComparison(sodas: Soda[]): RatingComparison {
   const sharedOthers: number[] = [];
 
   for (const soda of sodas) {
-    const visible = visibleRatings(soda);
     const myScore = soda.myRating?.score ?? null;
-    const theirs = visible.filter((r) => r.userId !== soda.myRating?.userId).map((r) => r.score);
+    const theirs = visibleOtherScores(soda);
 
     if (myScore !== null) mineScores.push(myScore);
     otherScores.push(...theirs);

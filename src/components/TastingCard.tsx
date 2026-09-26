@@ -1,7 +1,9 @@
-import type { Soda } from '../types/stash';
+import type { Soda, SodaRating } from '../types/stash';
 
 interface Props {
   soda: Soda;
+  /** Who said what. Fetched per soda — the collection list carries scores only. */
+  ratings: SodaRating[];
   cardRef: React.RefObject<HTMLDivElement | null>;
   sharedBy?: string | null;
   sharedAt?: string | null;
@@ -23,13 +25,13 @@ const rule = '#2e2440';    // gray-800
 const DISPLAY = "'Fredoka', system-ui, sans-serif";
 const SANS = "'Plus Jakarta Sans', system-ui, sans-serif";
 
-export function TastingCard({ soda, cardRef, sharedBy, sharedAt }: Props) {
-  const topNote = soda.ratings.find((r) => r.notes)?.notes ?? null;
+export function TastingCard({ soda, ratings, cardRef, sharedBy, sharedAt }: Props) {
+  const topNote = ratings.find((r) => r.notes)?.notes ?? null;
   const hasImage = !!soda.imageUrl;
   const imgH = hasImage ? 280 : 0;
 
   // Show up to 4 individual rater rows
-  const raterRows = soda.ratings.slice(0, 4);
+  const raterRows = ratings.slice(0, 4);
 
   return (
     <div
@@ -115,7 +117,7 @@ export function TastingCard({ soda, cardRef, sharedBy, sharedAt }: Props) {
               <div style={{
                 fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: muted,
               }}>
-                {soda.ratings.length} Rating{soda.ratings.length !== 1 ? 's' : ''}
+                {soda.ratingCount} Rating{soda.ratingCount !== 1 ? 's' : ''}
               </div>
             </div>
           </div>

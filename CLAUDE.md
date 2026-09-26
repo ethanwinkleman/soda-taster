@@ -109,6 +109,12 @@ Scores are `NUMERIC(3,1)` in **half steps from 0.5 to 5.0** — `StarRating` map
 
 Anything formatting a score for display must handle halves (see `stars()` in `ShoppingListModal.tsx`).
 
+**Blind rating is enforced by the database, not by the renderer.** `members_view_ratings` hands back your own rating always, and everyone else's only once you have filed yours for that soda (`20260101002000`). Before that, `select('*')` sent every score in the collection and the UI simply declined to draw the sealed ones — so the group verdict was in the network tab, and readable directly with the anon key that ships in the bundle. Proven as an unprivileged role: a member who has not rated reads **0 rows** for that soda and gets `others=WITHHELD, avg=WITHHELD` from the list RPC, then sees `{4.5,2.0}` and the average the moment they rate.
+
+The count is deliberately still visible while blind — "2 ratings hidden" says there is something to be spoiled without saying what. It comes from `soda_rating_count`, a SECURITY DEFINER helper, because a plain `count(*)` under the tightened policy would count only the rows you may read.
+
+**The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
+
 ### Data flow
 
 ```

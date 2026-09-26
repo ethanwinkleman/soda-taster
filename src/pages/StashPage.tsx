@@ -9,13 +9,13 @@ import {
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
-import { useStashSodas } from '../hooks/useStashSodas';
+import { useStashSodas, fetchVisibleRatings } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { revealedSodas, ratingDistribution, ratingComparison, hasVisibleRatingAt, isRevealed, visibleRatings } from '../lib/ratingVisibility';
+import { revealedSodas, ratingDistribution, ratingComparison, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -185,12 +185,27 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   }
 
   async function copyAsJson() {
-    if (!stash || sodas.length === 0) return;
+    if (!stash || sodas.length === 0 || !stashId) return;
+
+    // Names and notes are not in the collection list — it carries scores only — so the
+    // export fetches them at the moment it needs them. What comes back is already
+    // sealed by the policy: no rows for sodas this person has not rated.
+    let allRatings;
+    try {
+      allRatings = await fetchVisibleRatings(stashId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not read the ratings.');
+      return;
+    }
+    const ratingsBySoda = new Map<string, typeof allRatings>();
+    for (const r of allRatings) {
+      const list = ratingsBySoda.get(r.sodaId);
+      if (list) list.push(r);
+      else ratingsBySoda.set(r.sodaId, [r]);
+    }
 
     // Collect unique rater display names for the summary
-    const raterNames = [...new Set(
-      sodas.flatMap((s) => s.ratings.map((r) => r.displayName)).filter(Boolean)
-    )];
+    const raterNames = [...new Set(allRatings.map((r) => r.displayName).filter(Boolean))];
 
     const payload = {
       collection: stash.name,
@@ -211,7 +226,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           ...(s.brand ? { brand: s.brand } : {}),
           avgScore: isRevealed(s) ? s.avgScore : null,
           ...(isRevealed(s) ? {} : { sealed: true }),
-          ratings: visibleRatings(s).map((r) => ({
+          ratings: (ratingsBySoda.get(s.id) ?? []).map((r) => ({
             rater: r.displayName,
             score: r.score,
             ...(r.notes ? { notes: r.notes } : {}),
@@ -244,10 +259,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   // Most controversial: soda with highest rating variance (requires 2+ ratings, variance > 0)
   const controversialSodaId = (() => {
-    const candidates = visibleForMetrics.filter((s) => s.ratings.length >= 2);
+    const candidates = visibleForMetrics.filter((s) => visibleScores(s).length >= 2);
     if (!candidates.length) return null;
     const variance = (s: typeof candidates[0]) => {
-      const scores = s.ratings.map((r) => r.score);
+      const scores = visibleScores(s);
       const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
       return scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
     };
@@ -265,7 +280,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     .slice(0, 3);
 
   // Show toggle only when the stash has any soda with more than one rating (group view is meaningful)
-  const showScoreToggle = sodas.some((s) => s.ratings.length > 1);
+  const showScoreToggle = sodas.some((s) => s.ratingCount > 1);
 
   const activeAvg = scoreView === 'mine' ? myOverallAvg : overallAvg;
   const activeTopThree = scoreView === 'mine' ? myTopThree : topThree;

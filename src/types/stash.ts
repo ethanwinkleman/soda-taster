@@ -38,7 +38,15 @@ export interface Soda {
   quantity: number;
   imageUrl: string | null;
   createdAt: string;
-  ratings: SodaRating[];
+  /**
+   * Everyone else's scores — numbers only, and empty until the group is revealed to
+   * you. The database withholds them rather than the UI hiding them, so a blind
+   * verdict is not sitting in the network tab.
+   */
+  otherScores: number[];
+  /** Every rating including your own. Shown while blind: a count spoils nothing. */
+  ratingCount: number;
+  /** The group average, or null while blind. */
   avgScore: number | null;
   myRating: SodaRating | null;
   commentCount: number;

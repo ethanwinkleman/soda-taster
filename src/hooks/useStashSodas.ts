@@ -10,7 +10,7 @@ import {
 import type { Soda, SodaRating } from '../types/stash';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sodaFromDb(row: any): Omit<Soda, 'ratings' | 'avgScore' | 'myRating' | 'commentCount'> {
+function sodaFromDb(row: any): Omit<Soda, 'otherScores' | 'ratingCount' | 'avgScore' | 'myRating' | 'commentCount'> {
   return {
     id: row.id,
     stashId: row.stash_id,
@@ -25,7 +25,7 @@ function sodaFromDb(row: any): Omit<Soda, 'ratings' | 'avgScore' | 'myRating' | 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ratingFromDb(row: any): SodaRating {
+export function ratingFromDb(row: any): SodaRating {
   return {
     id: row.id,
     sodaId: row.soda_id,
@@ -38,41 +38,60 @@ function ratingFromDb(row: any): SodaRating {
 }
 
 async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
-  const [{ data: sodaRows, error: sodaError }, { data: commentRows, error: commentError }] = await Promise.all([
-    supabase.from('stash_sodas').select('*').eq('stash_id', stashId).order('created_at', { ascending: false }),
-    supabase.from('soda_comments').select('soda_id').eq('stash_id', stashId),
-  ]);
+  // One row per soda rather than one per rating. The old query pulled every rating row
+  // in the collection — uuid, rater name, notes, timestamps — to end up drawing a
+  // number and a count, and it sent the scores of sodas this viewer had not rated yet,
+  // leaving the blind-rating rule to the renderer. See 20260101002100.
+  const { data, error } = await supabase.rpc('stash_soda_list', { p_stash_id: stashId });
 
   // supabase-js resolves with { error } rather than throwing. Unchecked, a failed read
-  // of the busiest query in the app rendered as a collection with nothing in it — the
-  // same shape of bug as loadStashes showing the first-run empty state to people who
-  // had collections. StashPage already draws a distinct error state; it just never had
-  // anything to draw it from.
-  if (sodaError) throw new Error(sodaError.message);
-  if (commentError) throw new Error(commentError.message);
+  // of the busiest query in the app renders as a collection with nothing in it.
+  if (error) throw new Error(error.message);
 
-  const sodaIds = (sodaRows ?? []).map((s) => s.id);
-
-  const { data: ratingRows, error: ratingError } = sodaIds.length
-    ? await supabase.from('stash_soda_ratings').select('*').in('soda_id', sodaIds).order('created_at', { ascending: true })
-    : { data: [], error: null };
-
-  // A failed ratings read would otherwise show every soda as unrated, which reads as
-  // real data rather than as a failure.
-  if (ratingError) throw new Error(ratingError.message);
-
-  const commentCountMap = new Map<string, number>();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (commentRows ?? []).forEach((r: any) =>
-    commentCountMap.set(r.soda_id, (commentCountMap.get(r.soda_id) ?? 0) + 1),
-  );
+  return (data ?? []).map((row: any): Soda => ({
+    ...sodaFromDb(row),
+    ratingCount: Number(row.rating_count ?? 0),
+    commentCount: Number(row.comment_count ?? 0),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    otherScores: (row.other_scores ?? []).map((n: any) => Number(n)),
+    avgScore: row.avg_score === null || row.avg_score === undefined ? null : Number(row.avg_score),
+    myRating: row.my_rating_id
+      ? {
+          id: row.my_rating_id,
+          sodaId: row.id,
+          userId,
+          displayName: '',
+          score: Number(row.my_score),
+          notes: row.my_notes ?? null,
+          createdAt: row.my_created_at,
+        }
+      : null,
+  }));
+}
 
-  return (sodaRows ?? []).map((s) => {
-    const ratings = (ratingRows ?? []).filter((r) => r.soda_id === s.id).map(ratingFromDb);
-    const avgScore = averageScore(ratings.map((r) => r.score));
-    const myRating = ratings.find((r) => r.userId === userId) ?? null;
-    return { ...sodaFromDb(s), ratings, avgScore, myRating, commentCount: commentCountMap.get(s.id) ?? 0 };
-  });
+/**
+ * Every rating in a collection that the caller is allowed to read.
+ *
+ * Not part of the list query: the list needs scores, and this needs names and notes for
+ * every soda at once. It is fetched on demand — pressing Export — so the collection
+ * page never pays for it. Since 20260101002000 the policy returns only your own rows
+ * for sodas you have not rated, which is the same seal the export used to apply itself.
+ */
+export async function fetchVisibleRatings(stashId: string): Promise<SodaRating[]> {
+  const { data: sodaRows, error: sodaError } = await supabase
+    .from('stash_sodas').select('id').eq('stash_id', stashId);
+  if (sodaError) throw new Error(sodaError.message);
+
+  const ids = (sodaRows ?? []).map((r) => r.id);
+  if (!ids.length) return [];
+
+  const { data, error } = await supabase
+    .from('stash_soda_ratings').select('*').in('soda_id', ids)
+    .order('created_at', { ascending: true });
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map(ratingFromDb);
 }
 
 export function useStashSodas(
@@ -190,7 +209,8 @@ export function useStashSodas(
       inFridge: false, quantity: 0,
       imageUrl: imageFile ? null : externalImageUrl ?? null,
       createdAt: new Date().toISOString(),
-      ratings: optimisticRating ? [optimisticRating] : [],
+      otherScores: [],
+      ratingCount: optimisticRating ? 1 : 0,
       avgScore: score, myRating: optimisticRating, commentCount: 0,
     }, ...prev]);
 
@@ -278,11 +298,12 @@ export function useStashSodas(
       const optimistic: SodaRating = s.myRating
         ? { ...s.myRating, score, notes: trimmedNotes }
         : { id: 'optimistic', sodaId, userId: userId!, displayName: dn, score, notes: trimmedNotes, createdAt: new Date().toISOString() };
-      const ratings = isUpdate
-        ? s.ratings.map((r) => r.userId === userId ? optimistic : r)
-        : [...s.ratings, optimistic];
-      const avgScore = averageScore(ratings.map((r) => r.score));
-      return { ...s, ratings, avgScore, myRating: optimistic };
+      // Rating a blind soda reveals the group, but this client has never been sent
+      // those scores — so the average stays optimistic-yours until the refetch brings
+      // the rest. Showing a number derived from data we do not have would be a guess.
+      const ratingCount = isUpdate ? s.ratingCount : s.ratingCount + 1;
+      const avgScore = averageScore([score, ...s.otherScores]);
+      return { ...s, ratingCount, avgScore, myRating: optimistic };
     }));
 
     // Queued rather than awaited: offline this pauses instead of throwing, and the
@@ -306,9 +327,16 @@ export function useStashSodas(
 
     patch((prev) => prev.map((s) => {
       if (s.id !== sodaId) return s;
-      const ratings = s.ratings.filter((r) => r.id !== ratingId);
-      const avgScore = averageScore(ratings.map((r) => r.score));
-      return { ...s, ratings, avgScore, myRating: null };
+      // Withdrawing your rating makes the soda blind again, so the group scores this
+      // client holds are no longer yours to see — drop them rather than keep showing
+      // an average the server would now refuse to send.
+      return {
+        ...s,
+        ratingCount: Math.max(0, s.ratingCount - 1),
+        otherScores: [],
+        avgScore: null,
+        myRating: null,
+      };
     }));
 
     try {

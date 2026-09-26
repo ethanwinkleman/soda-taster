@@ -6,11 +6,12 @@ import { toast } from 'sonner';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
+import { useSodaRatings } from '../hooks/useSodaRatings';
 import { StarRating } from '../components/StarRating';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SodaComments } from '../components/SodaComments';
-import { isRevealed, hiddenCount, visibleRatings } from '../lib/ratingVisibility';
+import { isRevealed, hiddenCount, visibleScores } from '../lib/ratingVisibility';
 import { FlavorNotes } from '../components/FlavorNotes';
 import { sodaFlavorProfile } from '../lib/flavorNotes';
 import { ShareCardButton } from '../components/ShareCardButton';
@@ -26,6 +27,10 @@ export function SodaDetailPage() {
   const confirm = useConfirm();
   const { sodas, loading, error, editSoda, removeSoda, setFridgeStatus, updateSodaImage, saveRating, deleteRating, refresh } =
     useStashSodas(stashId, user?.id, displayName);
+
+  // Who said what, for the breakdown below. The collection list carries scores only,
+  // and the policy hands back just your own row while the soda is still blind.
+  const { ratings } = useSodaRatings(sodaId);
 
   const sodaIndex = sodas.findIndex((s) => s.id === sodaId);
   const soda = sodaIndex >= 0 ? sodas[sodaIndex] : undefined;
@@ -45,10 +50,12 @@ export function SodaDetailPage() {
   }
 
   const isControversial = (() => {
-    const candidates = sodas.filter((s) => s.ratings.length >= 2);
+    // Only revealed sodas can be judged divisive: on a blind one this client has no
+    // scores to measure a spread with, and inferring one would leak the verdict.
+    const candidates = sodas.filter((s) => visibleScores(s).length >= 2);
     if (!candidates.length) return false;
     const variance = (s: typeof candidates[0]) => {
-      const scores = s.ratings.map((r) => r.score);
+      const scores = visibleScores(s);
       const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
       return scores.reduce((a, b) => a + (b - mean) ** 2, 0) / scores.length;
     };
@@ -273,7 +280,7 @@ export function SodaDetailPage() {
   const sealedCount = hiddenCount(soda);
   // Someone else's tasting note anchors you as surely as their score, so the notes
   // ride the same seal — only ratings you may see feed the flavour profile.
-  const flavorProfile = sodaFlavorProfile(soda, visibleRatings(soda).map((r) => r.notes));
+  const flavorProfile = sodaFlavorProfile(soda, ratings.map((r) => r.notes));
 
   return (
     <div className="overflow-x-hidden">
@@ -433,7 +440,7 @@ export function SodaDetailPage() {
                 </span>
                 <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} burst />
                 <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                  {soda.ratings.length} rating{soda.ratings.length !== 1 ? 's' : ''}
+                  {soda.ratingCount} rating{soda.ratingCount !== 1 ? 's' : ''}
                 </span>
               </motion.div>
             ) : (
@@ -550,7 +557,7 @@ export function SodaDetailPage() {
 
       {/* Rating breakdown */}
       <AnimatePresence>
-      {revealed && soda.ratings.length > 1 && (
+      {revealed && ratings.length > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -562,7 +569,7 @@ export function SodaDetailPage() {
             Everyone's Ratings
           </FieldLabel>
           <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
-            {soda.ratings.map((r) => {
+            {ratings.map((r) => {
               const ratingBg = [
                 'var(--color-rating-1)',
                 'var(--color-rating-2)',
