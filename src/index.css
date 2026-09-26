@@ -101,3 +101,20 @@ body {
     font-family: 'Fredoka', system-ui, sans-serif;
   }
 }
+
+/* Route-chunk fallback. The 250 ms delay is the whole point: a fast navigation should
+   look instant rather than flashing a loading state on its way past. */
+@keyframes route-fallback-in {
+  to { opacity: 1; }
+}
+@keyframes route-fizz {
+  0%   { transform: translateY(0);     opacity: 0; }
+  25%  { opacity: 0.9; }
+  100% { transform: translateY(-9px);  opacity: 0; }
+}
+@utility animate-route-fallback {
+  animation: route-fallback-in 0.2s ease-out 0.25s forwards;
+}
+@utility animate-route-fizz {
+  animation: route-fizz 1.6s ease-out infinite;
+}

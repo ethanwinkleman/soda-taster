@@ -48,6 +48,72 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
+    <!-- Boot splash. Inline and CSS-only: it has to paint before any JavaScript has
+         parsed, which is exactly the window React cannot cover. Measured on Slow 3G,
+         #root sat empty for the first ~600 ms with nothing on screen at all.
+
+         The cup is drawn at the same size and position as AuthGate's FillingCup, and
+         window.__bootAt lets that component pick the fill up where this leaves off, so
+         the two read as one continuous pour rather than a cut. -->
+    <style>
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        background: #fffbf7;
+        transition: opacity .28s ease-out;
+        z-index: 1;
+      }
+      #boot.boot-done { opacity: 0; pointer-events: none; }
+      /* Matches the Logo's line box under the cup, so nothing shifts on handoff. */
+      #boot .boot-wordmark-space { height: 30px; }
+      #boot .cup-outline { stroke: #2e2440; }
+      #boot .liquid { transform: translateY(14px); animation: boot-fill 1.2s cubic-bezier(.4,0,.2,1) forwards; }
+      #boot .fizz circle { opacity: 0; animation: boot-fizz 1.6s ease-out infinite; }
+      #boot .fizz circle:nth-child(1) { animation-delay: .70s; }
+      #boot .fizz circle:nth-child(2) { animation-delay: .95s; }
+      #boot .fizz circle:nth-child(3) { animation-delay: 1.2s; }
+      @keyframes boot-fill { to { transform: translateY(0); } }
+      @keyframes boot-fizz {
+        0%   { transform: translateY(0);     opacity: 0; }
+        25%  { opacity: .9; }
+        100% { transform: translateY(-10px); opacity: 0; }
+      }
+      @media (prefers-color-scheme: dark) {
+        #boot { background: #15101c; }
+        #boot .cup-outline { stroke: #efe4f0; }
+      }
+      /* Still shows the cup, just poured already — the point is that something is
+         there, not that it moves. */
+      @media (prefers-reduced-motion: reduce) {
+        #boot .liquid { animation: none; transform: translateY(0); }
+        #boot .fizz { display: none; }
+      }
+    </style>
+    <div id="boot" aria-hidden="true">
+      <svg width="96" height="96" viewBox="0 0 24 24" fill="none">
+        <defs><clipPath id="boot-cup"><path d="M6 8 L7.75 20.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8 Z"/></clipPath></defs>
+        <g clip-path="url(#boot-cup)">
+          <rect class="liquid" x="5" y="8" width="14" height="14" fill="#ff3d78"/>
+          <g class="fizz">
+            <circle cx="9.5" cy="20" r=".7" fill="#fffbf7"/>
+            <circle cx="12"  cy="20" r=".9" fill="#fffbf7"/>
+            <circle cx="14.5" cy="20" r=".6" fill="#fffbf7"/>
+          </g>
+        </g>
+        <g class="cup-outline" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"/>
+          <path d="M5 8h14"/>
+          <path d="m12 8 1-6h2"/>
+        </g>
+      </svg>
+      <div class="boot-wordmark-space"></div>
+    </div>
+    <script>window.__bootAt = Date.now();</script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
