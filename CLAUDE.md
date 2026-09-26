@@ -42,6 +42,7 @@ Tested modules, and why each is worth it:
 - `lib/flavorNotes.ts` — the descriptor vocabulary, style baselines, and mining notes out of free text. Both halves of the recommendation feature run through this vocabulary, so a typo'd id silently stops matching.
 - `lib/rootBeerCatalog.ts` — the curated shelf and the matching. A test asserts every catalog entry is described in the shared vocabulary; that check has already caught one dead note id.
 - `lib/appUpdate.ts` — when to check for a new build, and whether reloading right now would throw away what someone is typing. The DOM wiring lives beside it; only these two decisions are tested.
+- `lib/errorReporting.ts` — what is worth reporting when the app breaks, and what a path may say. Split from the reporter so the tests do not drag in the Supabase client.
 - `lib/pageTransition.ts` — which way a navigation is going, which decides whether a page rises or sinks and whether the fizz plays at all.
 - `lib/onboarding.ts` — which of the three first-run steps are done. Derived from the account's own counts, and the derivation is the whole feature (see below).
 - `lib/ratingVisibility.ts` — what a viewer is allowed to see before they have rated. Every leak is silent: the number simply appears somewhere it should not, and no one notices until the group has already anchored on it.
@@ -210,6 +211,19 @@ Two things it has to get right, both covered by tests:
 A hook that can fail should return that error, and the UI must draw three distinct states — loading, failed, empty. Collapsing the first two into the third is what made all three bugs invisible. `useStashes` and `useIsAdmin` both return `{ ..., error }` for this reason.
 
 RLS helpers are `SECURITY DEFINER` functions (`is_stash_member`, `shares_stash_with`) specifically to avoid infinite recursion when a policy needs to read the table it protects. Reuse that pattern rather than inlining a subquery.
+
+### Client error reporting
+
+`@vercel/analytics` reports page views and Web Vitals, not exceptions, so a broken deploy used to reach you through a person noticing. `lib/errorReporter.ts` files what breaks into `client_errors`; `/admin` shows the last seven days grouped by message.
+
+Four rules, all of them load-bearing:
+
+- **The table is append-only from the client.** INSERT is allowed, SELECT is not — the anon key ships in the bundle, and a readable error log is a list of other people's user ids, routes and stack traces. Reading is `admin_recent_errors`, the same boundary the metrics use. Verified as an unprivileged role: a member can file their own error, cannot file one under another user id, and reads zero rows even when SELECT is granted at the table level.
+- **Paths are normalised before they are stored**, and the first reason is not grouping: `/join/ABC123` carries a working invite code in the path itself. Ids collapse to `:id` so one broken page is one row rather than one per soda.
+- **Length caps live in the database as well as the client.** A client-side cap is a courtesy; anyone holding the anon key can post what they like.
+- **Chunk-load failures are filtered out.** `chunkRecovery` already reloads into the new build, so reporting them would fill the table on every deploy with something that needs no action.
+
+`report` never throws — a reporter that can break the app it is watching is worse than none — and a session files at most five distinct messages, so a render loop cannot flood the table.
 
 ### Admin analytics
 

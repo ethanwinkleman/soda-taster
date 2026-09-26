@@ -66,7 +66,7 @@ export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading, error: adminError } = useIsAdmin(user);
-  const { daily, summary, topSodas, users, loading, refreshing, error, usersError, timezone, refetch } = useAdminMetrics(isAdmin);
+  const { daily, summary, topSodas, users, errors, loading, refreshing, error, usersError, errorsError, timezone, refetch } = useAdminMetrics(isAdmin);
   const [justUpdated, setJustUpdated] = useState(false);
 
   async function handleRefresh() {
@@ -205,6 +205,42 @@ export function AdminPage() {
           <MetricChart label="Ratings"      values={series('new_ratings')}  color="var(--color-amber-500)" />
         </div>
       )}
+
+      {/* What is breaking. Nothing here is the good news case: an empty panel means a
+          quiet week, so it says so rather than disappearing. */}
+      <div className="mb-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] overflow-hidden">
+        <div className="px-4 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-baseline justify-between">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
+            Errors, last 7 days
+          </p>
+          <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500">
+            {errorsError ? 'unavailable' : `${errors.length} grouped`}
+          </p>
+        </div>
+
+        {errorsError ? (
+          <p className="px-4 py-5 font-sans text-sm text-red-600 dark:text-red-400">{errorsError.message}</p>
+        ) : errors.length === 0 ? (
+          <p className="px-4 py-6 font-sans text-sm text-gray-500 dark:text-gray-400">
+            Nothing reported. Either it is a quiet week or the reporter is not running —
+            worth a glance after a deploy.
+          </p>
+        ) : (
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            {errors.map((e) => (
+              <li key={e.message} className="px-4 py-3">
+                <p className="font-sans text-sm text-gray-900 dark:text-gray-100 break-words">{e.message}</p>
+                <p className="mt-1 font-sans text-[11px] text-gray-500 dark:text-gray-400">
+                  <span className="font-bold text-gray-700 dark:text-gray-300">{Number(e.occurrences)}×</span>
+                  {Number(e.affected) > 0 && <> · {Number(e.affected)} {Number(e.affected) === 1 ? 'account' : 'accounts'}</>}
+                  {e.sample_path && <> · <code className="text-gray-600 dark:text-gray-400">{e.sample_path}</code></>}
+                  {' · '}last {since(e.last_seen)}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {usersError && (
         <div className="mb-6 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 px-4 py-5">
