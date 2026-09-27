@@ -14,7 +14,7 @@ function rating(score: number): SodaRating {
 function soda(over: Partial<Soda> & { id: string; name: string }): Soda {
   return {
     stashId: 'st', brand: '', addedBy: 'me', inFridge: false, quantity: 0, imageUrl: null,
-    createdAt: '2026-01-01T00:00:00Z', ratings: [], avgScore: null, myRating: null,
+    createdAt: '2026-01-01T00:00:00Z', otherScores: [], ratingCount: 0, avgScore: null, myRating: null,
     commentCount: 0, ...over,
   };
 }

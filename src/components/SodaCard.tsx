@@ -92,7 +92,7 @@ export function SodaCard({
                 ? (soda.myRating ? 'My rating' : 'Not rated')
                 : blindCount > 0
                   ? `${blindCount} rating${blindCount !== 1 ? 's' : ''} hidden`
-                  : `${soda.ratings.length} rating${soda.ratings.length !== 1 ? 's' : ''}`}
+                  : `${soda.ratingCount} rating${soda.ratingCount !== 1 ? 's' : ''}`}
             </span>
             {soda.commentCount > 0 && (
               <>

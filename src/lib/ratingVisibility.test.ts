@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   ratingComparison,
   isRevealed,
-  visibleRatings,
+  visibleOtherScores,
+  visibleScores,
   visibleAvg,
   hiddenCount,
   revealedSodas,
@@ -24,15 +25,29 @@ function rating(userId: string, score: number): SodaRating {
   };
 }
 
+/**
+ * A soda shaped the way the server now sends one.
+ *
+ * Written from a list of ratings because that reads clearly, but it applies the seal
+ * the database applies: while you have not rated, no other scores and no average come
+ * down the wire at all. Building the fixture any other way would test the client
+ * against a payload it will never receive.
+ */
 function soda(ratings: SodaRating[], me = 'me'): Soda {
   const mine = ratings.find((r) => r.userId === me) ?? null;
+  const others = ratings.filter((r) => r.userId !== me).map((r) => r.score);
   const avg = ratings.length
     ? Math.round((ratings.reduce((s, r) => s + r.score, 0) / ratings.length) * 10) / 10
     : null;
+  const sealed = mine === null && ratings.length > 0;
   return {
     id: 'soda', stashId: 'stash', name: 'Root Beer', brand: 'Acme', addedBy: 'me',
     inFridge: false, quantity: 0, imageUrl: null, createdAt: '2026-01-01',
-    ratings, avgScore: avg, myRating: mine, commentCount: 0,
+    otherScores: sealed ? [] : others,
+    ratingCount: ratings.length,
+    avgScore: sealed ? null : avg,
+    myRating: mine,
+    commentCount: 0,
   };
 }
 
@@ -57,13 +72,17 @@ describe('isRevealed', () => {
 describe('what a blind soda exposes', () => {
   const blind = soda([rating('alice', 4.5), rating('bob', 5)]);
 
-  it('withholds the group average', () => {
-    expect(blind.avgScore).not.toBeNull();   // the data is there
-    expect(visibleAvg(blind)).toBeNull();    // the view does not show it
+  it('never receives the group average in the first place', () => {
+    // It used to arrive and be hidden when rendering, which put the verdict in the
+    // network tab. Now the seal is applied before it is sent.
+    expect(blind.avgScore).toBeNull();
+    expect(visibleAvg(blind)).toBeNull();
   });
 
-  it('withholds every rating', () => {
-    expect(visibleRatings(blind)).toEqual([]);
+  it('carries no other scores at all', () => {
+    expect(blind.otherScores).toEqual([]);
+    expect(visibleOtherScores(blind)).toEqual([]);
+    expect(visibleScores(blind)).toEqual([]);
   });
 
   it('still says how many are being withheld, which gives nothing away', () => {
@@ -146,7 +165,7 @@ describe('ratingDistribution', () => {
       soda([rating('me', 5), rating('alice', 5), rating('bob', 1)]),
       soda([rating('me', 2), rating('bob', 2)]),
     ];
-    const total = list.reduce((n, s) => n + s.ratings.length, 0);
+    const total = list.reduce((n, s) => n + s.ratingCount, 0);
     const d = ratingDistribution(list);
     expect(d.reduce((n, b) => n + b.mine + b.others, 0)).toBe(total);
   });
