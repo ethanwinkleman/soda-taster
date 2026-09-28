@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
+import { imageRejection } from './imageUpload';
 import { logActivity } from './activity';
 
 /**
@@ -55,6 +56,13 @@ export function holdImageFor(sodaId: string, file: File) {
 async function uploadHeldImage(stashId: string, sodaId: string) {
   const file = pendingImages.get(sodaId);
   if (!file) return null;
+  // A held photo was checked when it was picked, but this runs on resume — possibly in
+  // a later session — and the soda is better off with no photo than with a write the
+  // bucket will refuse.
+  if (imageRejection(file)) {
+    pendingImages.delete(sodaId);
+    return null;
+  }
   const path = `${stashId}/${sodaId}`;
   const { error } = await supabase.storage
     .from('soda-images')

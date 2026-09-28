@@ -1,6 +1,7 @@
 import { useEffect, useId } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { imageRejection } from '../lib/imageUpload';
 import { logActivity } from '../lib/activity';
 import { averageScore } from '../lib/score';
 import {
@@ -224,6 +225,10 @@ export function useStashSodas(
 
   async function updateSodaImage(sodaId: string, file: File): Promise<string | null> {
     if (!stashId) return 'No stash';
+    // The picker checks first so the message arrives before the upload; this is the
+    // same check on the one path any caller can reach.
+    const why = imageRejection(file);
+    if (why) return why;
     const path = `${stashId}/${sodaId}`;
     const { error } = await supabase.storage
       .from('soda-images')

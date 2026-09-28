@@ -15,6 +15,12 @@
 # auth.users.email (varchar) creates cleanly and fails only in the app. It also asserts
 # that a non-admin caller is refused, since that check is the security boundary.
 #
+# The fourth pass exercises the storage policies as an ordinary `authenticated` role.
+# Photo objects live at `{stash_id}/{soda_id}`, so the policies have to read the path;
+# a check that only asks whether the caller is signed in lets anyone overwrite anyone
+# else's photo, which is what shipped. Policies are not enforced for the table owner, so
+# this has to SET ROLE — asserting as the migrating superuser proves nothing.
+#
 # Usage:
 #   DATABASE_URL=postgresql://user:pass@localhost:5432/postgres ./scripts/verify-migrations.sh
 #
@@ -53,13 +59,24 @@ CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID LANGUAGE sql STABLE AS
   $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 CREATE OR REPLACE FUNCTION auth.role() RETURNS TEXT LANGUAGE sql STABLE AS
   $$ SELECT coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), 'anon') $$;
-CREATE TABLE IF NOT EXISTS storage.buckets (id TEXT PRIMARY KEY, name TEXT, public BOOLEAN DEFAULT false);
+-- file_size_limit and allowed_mime_types exist on a real project and a migration sets
+-- them; without them here the UPDATE that applies the caps would fail unnoticed.
+CREATE TABLE IF NOT EXISTS storage.buckets (
+  id TEXT PRIMARY KEY, name TEXT, public BOOLEAN DEFAULT false,
+  file_size_limit BIGINT, allowed_mime_types TEXT[]
+);
 CREATE TABLE IF NOT EXISTS storage.objects (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   bucket_id TEXT REFERENCES storage.buckets(id),
   name TEXT
 );
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Supabase's role for a signed-in caller. Pass 4 becomes this role, because RLS is not
+-- applied to the owner of a table.
+DO $$ BEGIN
+  CREATE ROLE authenticated NOLOGIN;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 SQL
 )
 
@@ -146,9 +163,96 @@ if [ "$rpc_failed" -ne 0 ]; then
   exit 1
 fi
 
+echo "→ pass 4: storage policies as an ordinary authenticated role"
+
+MEMBER_ID="33333333-3333-3333-3333-333333333333"
+OUTSIDER_ID="44444444-4444-4444-4444-444444444444"
+STASH_ID="55555555-5555-5555-5555-555555555555"
+
+psql -q -v ON_ERROR_STOP=1 "$TEST_URL" >/dev/null <<SQL
+INSERT INTO auth.users (id, email) VALUES ('$MEMBER_ID', 'member2@example.test')
+  ON CONFLICT (id) DO NOTHING;
+INSERT INTO auth.users (id, email) VALUES ('$OUTSIDER_ID', 'outsider@example.test')
+  ON CONFLICT (id) DO NOTHING;
+INSERT INTO stashes (id, name, owner_id, join_code)
+  VALUES ('$STASH_ID', 'Photos', '$MEMBER_ID', 'PHOTO1') ON CONFLICT (id) DO NOTHING;
+INSERT INTO stash_members (stash_id, user_id) VALUES ('$STASH_ID', '$MEMBER_ID')
+  ON CONFLICT (stash_id, user_id) DO NOTHING;
+GRANT USAGE ON SCHEMA public, storage TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA storage TO authenticated;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated;
+SQL
+
+storage_failed=0
+
+MINE="$STASH_ID/mine.jpg"
+
+# Runs one statement as `authenticated` with the given subject.
+as_user() {
+  psql -q -At "$TEST_URL" \
+    -c "SET request.jwt.claim.sub = '$1'" \
+    -c "SET request.jwt.claim.role = 'authenticated'" \
+    -c "SET ROLE authenticated" \
+    -c "$2" 2>&1 || true
+}
+
+# Row state, read back as the owner. A denied UPDATE or DELETE is a *no-op*, not an
+# error — asserting on the error text alone passes whether or not the policy holds.
+objects_at() { psql -q -At "$TEST_URL" -c "SELECT count(*) FROM storage.objects WHERE name = '$1'"; }
+
+expect_objects() {
+  local label="$1" path="$2" want="$3" out="$4" got
+  got=$(objects_at "$path")
+  if [ "$got" != "$want" ]; then
+    echo "  ✗ $label — expected $want object(s) at $path, found $got"
+    [ -n "$out" ] && echo "$out" | sed 's/^/      /'
+    storage_failed=1
+  else
+    echo "  ✓ $label"
+  fi
+}
+
+out=$(as_user "$MEMBER_ID" "INSERT INTO storage.objects (bucket_id, name) VALUES ('soda-images', '$MINE')")
+expect_objects "a member uploads into their own collection" "$MINE" 1 "$out"
+
+out=$(as_user "$OUTSIDER_ID" "INSERT INTO storage.objects (bucket_id, name) VALUES ('soda-images', '$STASH_ID/theirs.jpg')")
+expect_objects "a non-member cannot upload into it" "$STASH_ID/theirs.jpg" 0 "$out"
+
+# What `upsert: true` meant under the old policy: replacing a photo that is not yours.
+out=$(as_user "$OUTSIDER_ID" "UPDATE storage.objects SET bucket_id = 'soda-images' WHERE name = '$MINE'")
+expect_objects "a non-member cannot overwrite an existing photo" "$MINE" 1 "$out"
+
+out=$(as_user "$OUTSIDER_ID" "DELETE FROM storage.objects WHERE name = '$MINE'")
+expect_objects "a non-member cannot delete one" "$MINE" 1 "$out"
+
+# A path whose first segment is not a uuid must be denied, not raise a cast error.
+malformed=$(as_user "$MEMBER_ID" "INSERT INTO storage.objects (bucket_id, name) VALUES ('soda-images', 'not-a-uuid/x.jpg')")
+if echo "$malformed" | grep -q "invalid input syntax"; then
+  echo "  ✗ a malformed path raised a cast error instead of being denied"
+  echo "$malformed" | sed 's/^/      /'
+  storage_failed=1
+else
+  expect_objects "a malformed path is denied" "not-a-uuid/x.jpg" 0 "$malformed"
+fi
+
+caps=$(psql -At "$TEST_URL" -c "SELECT coalesce(file_size_limit::text,'none') || ' / ' || coalesce(array_length(allowed_mime_types,1)::text,'none') FROM storage.buckets WHERE id='soda-images'")
+if [ "${caps%% *}" = "none" ] || [ "${caps##* }" = "none" ]; then
+  echo "  ✗ the bucket carries no size limit or mime allow-list ($caps)"
+  storage_failed=1
+else
+  echo "  ✓ bucket caps applied (bytes / mime types: $caps)"
+fi
+
+if [ "$storage_failed" -ne 0 ]; then
+  echo "✗ pass 4 failed"
+  exit 1
+fi
+
 echo
 psql -At "$TEST_URL" -c "SELECT 'tables:   ' || count(*) FROM pg_tables WHERE schemaname='public'"
 psql -At "$TEST_URL" -c "SELECT 'policies: ' || count(*) FROM pg_policies WHERE schemaname IN ('public','storage')"
 psql -At "$TEST_URL" -c "SELECT 'functions:' || count(*) FROM pg_proc WHERE pronamespace='public'::regnamespace"
 echo
-echo "✓ migrations are ordered, re-appliable, and their RPCs run and refuse non-admins"
+echo "✓ migrations are ordered, re-appliable, their RPCs run and refuse non-admins,"
+echo "  and photo uploads are confined to the collection that owns them"
