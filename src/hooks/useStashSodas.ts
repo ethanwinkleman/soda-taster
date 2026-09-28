@@ -302,7 +302,7 @@ export function useStashSodas(
       // those scores — so the average stays optimistic-yours until the refetch brings
       // the rest. Showing a number derived from data we do not have would be a guess.
       const ratingCount = isUpdate ? s.ratingCount : s.ratingCount + 1;
-      const avgScore = averageScore([score, ...s.otherScores]);
+      const avgScore = averageScore([score, ...(s.otherScores ?? [])]);
       return { ...s, ratingCount, avgScore, myRating: optimistic };
     }));
 

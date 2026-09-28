@@ -283,3 +283,27 @@ describe('ratingComparison', () => {
     expect(c.shared).toEqual({ sodas: 0, myAvg: null, othersAvg: null, avgGap: null });
   });
 });
+
+describe('a soda restored from a cache written before the shape changed', () => {
+  // The persisted TanStack cache survives a deploy. A soda stored by the previous
+  // build has `ratings` and no `otherScores`, so every spread of it threw
+  // "Spread syntax requires ...iterable not be null or undefined" and took the
+  // collection page down. Bumping the cache buster is the real fix; these keep the
+  // readers from being the thing that crashes.
+  const stale = { ...soda([rating('me', 4)]), otherScores: undefined } as unknown as Soda;
+
+  it('does not throw when reading other scores', () => {
+    expect(() => visibleOtherScores(stale)).not.toThrow();
+    expect(visibleOtherScores(stale)).toEqual([]);
+  });
+
+  it('does not throw when spreading them together', () => {
+    expect(() => visibleScores(stale)).not.toThrow();
+    expect(visibleScores(stale)).toEqual([4]);
+  });
+
+  it('does not throw while drawing the charts', () => {
+    expect(() => ratingDistribution([stale])).not.toThrow();
+    expect(() => ratingComparison([stale])).not.toThrow();
+  });
+});

@@ -140,6 +140,8 @@ Because the cache is keyed and shared, calling `useStashSodas` in several compon
 
 Bump `buster` in `App.tsx` when a change makes previously persisted cache shapes invalid.
 
+**This has already been forgotten once, and it takes the app down rather than degrading it.** `stash_soda_list` changed `Soda` from `ratings[]` to `otherScores[]` + `ratingCount` without a bump, so the first load after the deploy rehydrated a soda written by the previous build and the charts spread an array that was not there: *Spread syntax requires ...iterable not be null or undefined*, and a blank collection page. The cache outlives the deploy — it is the one piece of state a release cannot migrate — so treat any change to a persisted shape as a `buster` change, and read the arrays defensively anyway, because a bump only takes effect once a client loads the new build.
+
 ### Realtime
 
 The four hooks that subscribe to `postgres_changes` depend on two things no code in this repo used to set, both now in `20260101001600_realtime_publication.sql`:

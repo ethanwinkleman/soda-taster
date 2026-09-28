@@ -157,7 +157,11 @@ export default function App() {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: 'v2' }}
+      // v3: stash_soda_list changed Soda's shape (ratings[] became otherScores[] +
+      // ratingCount), and a cache written by the previous build rehydrates into the new
+      // code. Without this bump the collection page threw on the first spread of a
+      // missing array — the exact failure CLAUDE.md's "bump the buster" line exists for.
+      persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: 'v3' }}
       // Fires once the cache has been read back from localStorage. Writes queued in a
       // previous session are replayed here — before this, they only resumed on reconnect
       // within the same session, so closing the app mid-tasting would have stranded them.
