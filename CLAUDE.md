@@ -132,6 +132,10 @@ What was missing was any way to *ask* for them. **Try Next** (`lib/untasted.ts`)
 - **The chip is only offered when something is untasted** (or while it is on, so it can be turned off from where it was turned on). A control that always returns nothing is worse than no control.
 - Ordering is stock-first via `stockState`, not `inFridge` — a soda can sit in the fridge at quantity 0, and that is out, not something you can open.
 
+**The filter row wraps, and has to.** It sits inside `overflow-x-hidden` (the shell in `App.tsx`), so a control past the right edge is not scrolled to — it is invisible, at every width. Adding Try Next as a fourth control pushed it off-screen on every phone *and* on the 420px I had checked at. Anything added to that row wraps or it disappears.
+
+**Driving an element is not the same as seeing it.** Playwright's `click()` scrolls an off-screen element into view first, so the chip passed every functional check while being invisible to a person. A control's verification needs its box measured against the viewport, not just a successful click.
+
 ### Photos
 
 A soda photo is downscaled before it is sent: 1200px on the longest edge, JPEG at 0.82. The app draws these at 36–48px in a list and ~150px on the detail page, and the biggest use is the share card; a 12MP phone photo uploaded whole is several megabytes to render a thumbnail. Quick Add is built for tasting events, which is where the connection is worst, so this is the upload that least wants them.
