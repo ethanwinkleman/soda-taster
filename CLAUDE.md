@@ -121,6 +121,17 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 **The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
 
+### Untasted sodas
+
+A soda can be added without a rating — `AddSodaPage` sends `score > 0 ? score : null`, so no rating row is created. It is not a blind soda: `isRevealed` is true at `ratingCount === 0` because there is nothing being withheld, so the card simply draws a dashed em-dash and "0 ratings". Sorting already handles them deliberately (`-1` under "highest rated", `999` under "lowest", so they sink to the bottom either way rather than reading as a 0.5), and the shopping list and the group metrics exclude them.
+
+What was missing was any way to *ask* for them. **Try Next** (`lib/untasted.ts`) is the mirror of Restock: Restock is "rated 4+ and out of stock" — buy this again; Try Next is "you have not rated it" — try this next. Same chip, same banner, same place.
+
+- **Untasted means *you* have not rated it, not that nobody has.** A soda the rest of the group has already scored is the one you most want to get to, and rating it is also what unseals their verdict. Filtering on `ratingCount === 0` would hide exactly those.
+- **The two filters are mutually exclusive**, and each turns the other off. Restock needs a rating of 4+ and Try Next needs no rating, so together they can only ever return nothing.
+- **The chip is only offered when something is untasted** (or while it is on, so it can be turned off from where it was turned on). A control that always returns nothing is worse than no control.
+- Ordering is stock-first via `stockState`, not `inFridge` — a soda can sit in the fridge at quantity 0, and that is out, not something you can open.
+
 ### Photos
 
 A soda photo is downscaled before it is sent: 1200px on the longest edge, JPEG at 0.82. The app draws these at 36–48px in a list and ~150px on the detail page, and the biggest use is the share card; a 12MP phone photo uploaded whole is several megabytes to render a thumbnail. Quick Add is built for tasting events, which is where the connection is worst, so this is the upload that least wants them.
