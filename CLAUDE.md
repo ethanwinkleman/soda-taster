@@ -115,6 +115,18 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 **The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
 
+### Long lists
+
+The collection page reveals sodas ten at a time (`useInfiniteScroll`). The whole collection is already in memory — this is not pagination against the database, it is about not mounting several hundred `SodaCard`s at once on a phone.
+
+**The sentinel is a button that an observer also watches, not an observer with a label.** Three ways it stopped dead, all reproduced in a browser against the real page:
+
+- **An effect cannot re-run because a ref was filled.** The observer was attached in an effect that read `useRef`, so a sentinel mounting on a *later* render than the effect's last run was never observed — nothing in the dependency list changes when a node appears. Any render that hides the list while `total` is already known (a loading or empty branch) left the list frozen at the first ten, forever. The sentinel node is state now, so attaching it re-runs the effect.
+- **IntersectionObserver reports crossings, not visibility.** After a page loads, a sentinel still on screen produces no second callback, so the list stops one page short of the end — permanently, on any viewport tall enough that the remaining rows do not push it out of view. Measured at 1280×2400: stuck at "20 of 22" with nowhere left to scroll. `visibleCount` is therefore a dependency, so each page re-observes and gets a fresh initial entry.
+- **There was no non-scroll path at all.** Keyboard and screen-reader users could not reach past the first ten, and neither could anyone whose observer quietly stopped. Pressing the sentinel calls the same `loadMore`.
+
+Reach for the same shape in any new incremental list: the observer is the nicety, the press is the guarantee.
+
 ### Data flow
 
 ```
