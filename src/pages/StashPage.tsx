@@ -16,6 +16,8 @@ import { SodaCard } from '../components/SodaCard';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { revealedSodas, ratingDistribution, ratingComparison, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
+import { isUntasted, untastedCount } from '../lib/untasted';
+import { stockState } from '../lib/shoppingList';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
@@ -71,6 +73,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [shoppingListOpen, setShoppingListOpen] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
   const [restockFilter, setRestockFilter] = useState(false);
+  const [untastedFilter, setUntastedFilter] = useState(false);
   const [members, setMembers] = useState<StashMember[]>([]);
   // Layered over the stash name rather than copied into state when it loads.
   const [renameEdit, setRenameEdit] = useState<string | null>(null);
@@ -290,6 +293,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
   const filtered = sodas.filter((s) => {
     if (scoreFilter !== null && !hasVisibleRatingAt(s, scoreFilter)) return false;
+    if (untastedFilter && !isUntasted(s)) return false;
     if (restockFilter && s.inFridge) return false;
     if (restockFilter) {
       const score = scoreView === 'mine'
@@ -305,6 +309,14 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   });
 
   const sorted = [...filtered].sort((a, b) => {
+    // Its own order, like Restock's: what you can open right now comes first, newest
+    // within each group. The sort control is disabled while it is on.
+    if (untastedFilter) {
+      const aStocked = stockState(a) !== 'out';
+      const bStocked = stockState(b) !== 'out';
+      if (aStocked !== bStocked) return aStocked ? -1 : 1;
+      return b.createdAt.localeCompare(a.createdAt);
+    }
     if (restockFilter) {
       const aScore = scoreView === 'mine'
         ? (a.myRating?.score ?? -1)
@@ -338,7 +350,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   // into the middle of a list you have not seen the top of.
   const { visibleCount, hasMore, sentinelRef, loadMore } = useInfiniteScroll({
     total: sorted.length,
-    resetKey: `${search}|${sort}|${scoreView}|${restockFilter}|${scoreFilter}`,
+    resetKey: `${search}|${sort}|${scoreView}|${restockFilter}|${untastedFilter}|${scoreFilter}`,
   });
   const visibleSodas = sorted.slice(0, visibleCount);
 
@@ -623,7 +635,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
-          disabled={restockFilter}
+          disabled={restockFilter || untastedFilter}
           className="px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
         >
           <option value="newest">Newest</option>
@@ -634,7 +646,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </select>
         <button
           type="button"
-          onClick={() => setRestockFilter((v) => !v)}
+          onClick={() => { setRestockFilter((v) => !v); setUntastedFilter(false); }}
           title="Show sodas not in stock, sorted by your rating"
           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
             restockFilter
@@ -645,6 +657,24 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <ListFilter size={13} />
           <span>Restock</span>
         </button>
+        {/* Offered only when there is something untasted — a chip that always returns
+            nothing is worse than no chip. It stays visible while it is on, so turning it
+            off is possible from the same place it was turned on. */}
+        {(untastedCount(sodas) > 0 || untastedFilter) && (
+          <button
+            type="button"
+            onClick={() => { setUntastedFilter((v) => !v); setRestockFilter(false); }}
+            title="Show sodas you haven't rated yet, the ones in your fridge first"
+            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
+              untastedFilter
+                ? 'bg-sky-600 dark:bg-sky-400 border-sky-600 dark:border-sky-400 text-white dark:text-gray-950'
+                : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-sky-500 dark:hover:border-sky-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            <CupSoda size={13} />
+            <span>Try Next</span>
+          </button>
+        )}
       </div>}
 
       {/* Active filter banner */}
@@ -667,7 +697,26 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
-      {!loading && !restockFilter && <div className="mb-3" />}
+      {!loading && untastedFilter && (
+        <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+            Try next — what you haven't rated, in stock first
+            <span className="ml-2 text-gray-500 dark:text-gray-400">
+              ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={() => setUntastedFilter(false)}
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            aria-label="Clear filter"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {!loading && !restockFilter && !untastedFilter && <div className="mb-3" />}
 
       {/* Rating spread — hidden while loading and when nothing is rated yet */}
       {!loading && (
@@ -696,7 +745,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       ) : sorted.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
-          {restockFilter ? (
+          {untastedFilter ? (
+            <div className="text-center py-12">
+              <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
+              <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Nothing left to try.</p>
+              <p className="font-sans text-xs text-gray-400 dark:text-gray-500">You've rated everything in this collection.</p>
+            </div>
+          ) : restockFilter ? (
             <div className="text-center py-12">
               <CupSoda size={28} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
               <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Fridge fully stocked!</p>
