@@ -336,7 +336,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   // The list starts at 10 and grows as you reach the bottom. Anything that
   // reorders or re-filters it starts the window over, so you are never dropped
   // into the middle of a list you have not seen the top of.
-  const { visibleCount, hasMore, sentinelRef } = useInfiniteScroll({
+  const { visibleCount, hasMore, sentinelRef, loadMore } = useInfiniteScroll({
     total: sorted.length,
     resetKey: `${search}|${sort}|${scoreView}|${restockFilter}|${scoreFilter}`,
   });
@@ -767,14 +767,27 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             />
           ))}
 
-          {/* Scrolling this into view loads the next ten. It carries the count so
-              the bottom of a long list says where you are rather than going blank. */}
+          {/* Scrolling this into view loads the next ten, and so does pressing it. The
+              observer is the nicety; the button is the guarantee — it is the only way
+              through this list with a keyboard or a screen reader, and the only one
+              left if the observer stops firing. It carries the count so the bottom of
+              a long list says where you are rather than going blank. */}
           {hasMore && (
-            <div ref={sentinelRef} className="py-4 text-center">
-              <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 tabular-nums">
+            <motion.button
+              ref={sentinelRef}
+              type="button"
+              onClick={() => { hapticTap(); loadMore(); }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className="w-full py-4 flex flex-col items-center gap-1 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+            >
+              <span className="font-display text-sm font-bold">
+                Show {Math.min(10, sorted.length - visibleCount)} more
+              </span>
+              <span className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 tabular-nums">
                 {visibleCount} of {sorted.length}
-              </p>
-            </div>
+              </span>
+            </motion.button>
           )}
         </motion.div>
       )}
