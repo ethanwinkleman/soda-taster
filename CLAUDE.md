@@ -121,6 +121,22 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 **The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
 
+### Photos
+
+A soda photo is downscaled before it is sent: 1200px on the longest edge, JPEG at 0.82. The app draws these at 36–48px in a list and ~150px on the detail page, and the biggest use is the share card; a 12MP phone photo uploaded whole is several megabytes to render a thumbnail. Quick Add is built for tasting events, which is where the connection is worst, so this is the upload that least wants them.
+
+**The resize happens at the two calls that reach storage — `updateSodaImage` and `uploadHeldImage` — not at the picker.** Those two are the only ways a file gets to the bucket, so covering them covers every path, including a write that was queued offline and resumes in a later session. `lib/imageResize.ts` holds the canvas; the decisions (`fitWithin`, `needsReencode`) are pure and live in `lib/imageUpload.ts` with the tests.
+
+Three things it has to get right:
+
+- **An image already small enough is left exactly as it is.** Re-encoding a small PNG costs quality for no saving and flattens transparency onto black. Measured: a 6 KB flat PNG comes back as the same `File` object.
+- **heic is always re-encoded**, whatever its size — iOS hands one through from the Files picker and nothing outside Apple draws one, so JPEG is what makes it displayable at all.
+- **A decode failure is not automatically a rejection.** A JPEG the browser could not decode falls back to uploading the original, since it may still render elsewhere; a heic that could not be decoded is rejected, because the app could never have shown it. Both paths verified in a browser.
+
+`fitWithin` rounds rather than floors: flooring a 10000×1 image gives a zero-height canvas, which draws nothing.
+
+**Deleting a soda deletes its object too**, and deleting a collection clears its whole folder (its sodas go by cascade, which would otherwise strand every photo at once). Both are best effort and both run *after* the row is gone, in their own `try`: the delete has already succeeded, so a storage hiccup must not roll the list back or report a failure. The collection sweep re-lists from offset 0 each pass, because each pass deletes what it listed and advancing the offset would step over what moved up.
+
 ### Long lists
 
 The collection page reveals sodas ten at a time (`useInfiniteScroll`). The whole collection is already in memory — this is not pagination against the database, it is about not mounting several hundred `SodaCard`s at once on a phone.

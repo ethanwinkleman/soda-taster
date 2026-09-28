@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { imageRejection } from './imageUpload';
+import { prepareImageForUpload } from './imageResize';
 import { logActivity } from './activity';
 
 /**
@@ -63,11 +64,15 @@ async function uploadHeldImage(stashId: string, sodaId: string) {
     pendingImages.delete(sodaId);
     return null;
   }
+  // Downscaled at the moment of sending rather than when it was picked: this may run on
+  // a resumed connection, which is the link that least wants four megabytes.
+  const prepared = await prepareImageForUpload(file);
+  pendingImages.delete(sodaId);
+  if ('error' in prepared) return null;
   const path = `${stashId}/${sodaId}`;
   const { error } = await supabase.storage
     .from('soda-images')
-    .upload(path, file, { upsert: true, contentType: file.type });
-  pendingImages.delete(sodaId);
+    .upload(path, prepared.file, { upsert: true, contentType: prepared.file.type });
   if (error) return null;
   const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
   return publicUrl;

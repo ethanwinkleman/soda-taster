@@ -225,8 +225,32 @@ export function useStashes(userId: string | undefined) {
   async function deleteStash(id: string): Promise<string | null> {
     const { error } = await supabase.from('stashes').delete().eq('id', id);
     if (error) return error.message;
+    // The sodas go by cascade, which leaves every one of their photos behind. Same
+    // defect as deleting a single soda, one level up — and worse, because a collection
+    // takes all of them at once.
+    await removeStashImages(id);
     patch((prev) => prev.filter((s) => s.id !== id));
     return null;
+  }
+
+  /**
+   * Best effort, and never fatal: the collection is already gone, so a storage failure
+   * must not be reported as a failed delete. Paged because list() caps at 100 and a
+   * collection can hold more sodas than that.
+   */
+  async function removeStashImages(stashId: string) {
+    try {
+      // Always from offset 0: each pass deletes what it listed, so advancing the offset
+      // would step over the items that just moved up into its place.
+      for (let pass = 0; pass < 50; pass += 1) {
+        const { data, error } = await supabase.storage
+          .from('soda-images')
+          .list(stashId, { limit: 100 });
+        if (error || !data?.length) return;
+        await supabase.storage.from('soda-images').remove(data.map((f) => `${stashId}/${f.name}`));
+        if (data.length < 100) return;
+      }
+    } catch { /* the collection is gone; stranded objects are not worth failing on */ }
   }
 
   async function joinStash(code: string, displayName?: string): Promise<{ stashId: string | null; error: string | null }> {

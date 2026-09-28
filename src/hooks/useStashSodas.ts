@@ -2,6 +2,7 @@ import { useEffect, useId } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { imageRejection } from '../lib/imageUpload';
+import { prepareImageForUpload } from '../lib/imageResize';
 import { logActivity } from '../lib/activity';
 import { averageScore } from '../lib/score';
 import {
@@ -229,10 +230,14 @@ export function useStashSodas(
     // same check on the one path any caller can reach.
     const why = imageRejection(file);
     if (why) return why;
+    // Downscaled here rather than at the picker, because this and uploadHeldImage are
+    // the only two places that reach storage — covering both covers every upload.
+    const prepared = await prepareImageForUpload(file);
+    if ('error' in prepared) return prepared.error;
     const path = `${stashId}/${sodaId}`;
     const { error } = await supabase.storage
       .from('soda-images')
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, prepared.file, { upsert: true, contentType: prepared.file.type });
     if (error) return error.message;
     const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
     const url = `${publicUrl}?t=${Date.now()}`;
@@ -268,6 +273,18 @@ export function useStashSodas(
     try {
       const { error } = await supabase.from('stash_sodas').delete().eq('id', sodaId);
       if (error) throw error;
+      // Best effort, and deliberately after the row is gone: the soda is deleted either
+      // way, and a storage hiccup must not roll back a delete that already happened or
+      // report a failure for one that did not. Without this the object outlives every
+      // soda it belonged to and the bucket only ever grows.
+      // Its own try: supabase-js resolves with { error }, but the call can still reject
+      // on a dropped connection, and the outer catch rolls the list back and reports a
+      // failed delete — for a delete that has already succeeded.
+      if (soda?.imageUrl) {
+        try {
+          await supabase.storage.from('soda-images').remove([`${stashId}/${sodaId}`]);
+        } catch { /* the row is gone; a stranded object is not worth failing the delete */ }
+      }
       if (soda) {
         await act({ stashId: stashId!, userId: userId!, displayName: displayName!, action: 'soda_removed', sodaId, sodaName: soda.name });
       }
