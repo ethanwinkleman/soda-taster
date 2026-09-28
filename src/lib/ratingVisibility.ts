@@ -23,7 +23,9 @@ export function isRevealed(soda: Soda): boolean {
  * disagree silently if the query ever changes.
  */
 export function visibleOtherScores(soda: Soda): number[] {
-  return isRevealed(soda) ? soda.otherScores : [];
+  // ?? [] rather than a bare read: a soda restored from a cache written before this
+  // field existed has no array at all, and every caller spreads the result.
+  return isRevealed(soda) ? soda.otherScores ?? [] : [];
 }
 
 /** Every score you may see for this soda, yours included. */
