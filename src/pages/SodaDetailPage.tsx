@@ -3,6 +3,7 @@ import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { imageRejection } from '../lib/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
 import { useConfirm } from '../contexts/ConfirmContext';
 import { useStashSodas } from '../hooks/useStashSodas';
@@ -178,6 +179,9 @@ export function SodaDetailPage() {
     const file = e.target.files?.[0];
     if (!file || !soda) return;
     e.target.value = '';
+    // Same caps as the bucket, checked here so the message can name the file.
+    const why = imageRejection(file);
+    if (why) { setImageError(why); toast.error(why); return; }
     setImageError(null);
     setUploadingImage(true);
     const err = await updateSodaImage(soda.id, file);

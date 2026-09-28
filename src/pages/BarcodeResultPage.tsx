@@ -5,6 +5,7 @@ import {
   ChevronLeft, CupSoda, Check, Pencil, Camera, X, Scan,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { imageRejection } from '../lib/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
 import { Button, PageHeader } from '../components/ui';
@@ -101,6 +102,15 @@ export function BarcodeResultPage() {
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Caught here so the message names the file, rather than surfacing as a storage
+    // error after the upload has already been attempted. The bucket enforces the same
+    // caps — this half is the one that can explain itself.
+    const why = imageRejection(file);
+    if (why) {
+      toast.error(why);
+      e.target.value = '';
+      return;
+    }
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     const url = URL.createObjectURL(file);
     previewUrlRef.current = url;
