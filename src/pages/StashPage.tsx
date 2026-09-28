@@ -622,8 +622,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       )}
 
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
-      {!loading && <div className="flex gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
-        <div className="flex-1 relative">
+      {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
+        <div className="basis-full sm:basis-0 sm:flex-1 relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           <Input
             value={search}
@@ -636,7 +636,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
           disabled={restockFilter || untastedFilter}
-          className="px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
+          className="flex-1 min-w-0 sm:flex-none px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
