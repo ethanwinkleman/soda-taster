@@ -236,6 +236,32 @@ else
   expect_objects "a malformed path is denied" "not-a-uuid/x.jpg" 0 "$malformed"
 fi
 
+# Reading is the half 20260101002300 closed: a public bucket serves objects without
+# consulting a policy at all, so this only means anything once the bucket is private.
+readable=$(as_user "$MEMBER_ID" "SELECT count(*) FROM storage.objects WHERE name = '$MINE'")
+if [ "$readable" != "1" ]; then
+  echo "  ✗ a member cannot read their own collection's photo (got '$readable')"
+  storage_failed=1
+else
+  echo "  ✓ a member can read their own collection's photo"
+fi
+
+hidden=$(as_user "$OUTSIDER_ID" "SELECT count(*) FROM storage.objects WHERE name = '$MINE'")
+if [ "$hidden" != "0" ]; then
+  echo "  ✗ a NON-member can read that photo (got '$hidden')"
+  storage_failed=1
+else
+  echo "  ✓ a non-member cannot read it"
+fi
+
+is_public=$(psql -At "$TEST_URL" -c "SELECT public FROM storage.buckets WHERE id='soda-images'")
+if [ "$is_public" != "f" ]; then
+  echo "  ✗ the bucket is still public ($is_public) — a policy does not gate a public bucket"
+  storage_failed=1
+else
+  echo "  ✓ the bucket is private"
+fi
+
 caps=$(psql -At "$TEST_URL" -c "SELECT coalesce(file_size_limit::text,'none') || ' / ' || coalesce(array_length(allowed_mime_types,1)::text,'none') FROM storage.buckets WHERE id='soda-images'")
 if [ "${caps%% *}" = "none" ] || [ "${caps##* }" = "none" ]; then
   echo "  ✗ the bucket carries no size limit or mime allow-list ($caps)"

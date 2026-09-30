@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { imageRejection } from '../lib/imageUpload';
 import { prepareImageForUpload } from '../lib/imageResize';
+import { newSodaImagePath, storageObjectPath } from '../lib/imageUrls';
+import { attachSignedImages, signOne } from '../lib/imageSigning';
 import { logActivity } from '../lib/activity';
 import { averageScore } from '../lib/score';
 import {
@@ -51,7 +53,7 @@ async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
   if (error) throw new Error(error.message);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (data ?? []).map((row: any): Soda => ({
+  const sodas = (data ?? []).map((row: any): Soda => ({
     ...sodaFromDb(row),
     ratingCount: Number(row.rating_count ?? 0),
     commentCount: Number(row.comment_count ?? 0),
@@ -70,6 +72,11 @@ async function loadSodas(stashId: string, userId: string): Promise<Soda[]> {
         }
       : null,
   }));
+
+  // The bucket is private, so what the row holds is an object path. Signed here rather
+  // than at each of the six places that draw a photo, so there is one rule.
+  await attachSignedImages(sodas);
+  return sodas;
 }
 
 /**
@@ -234,16 +241,29 @@ export function useStashSodas(
     // the only two places that reach storage — covering both covers every upload.
     const prepared = await prepareImageForUpload(file);
     if ('error' in prepared) return prepared.error;
-    const path = `${stashId}/${sodaId}`;
+    // A new object rather than an overwrite. A signed URL carries a token that changes on
+    // every signing, so the service worker matches these ignoring the query string —
+    // which means a replaced photo is only noticed if the path itself changes. That also
+    // makes every other member's cache correct, not just the one doing the replacing.
+    const previous = storageObjectPath(sodas.find((s) => s.id === sodaId)?.imageUrl);
+    const path = newSodaImagePath(stashId, sodaId);
     const { error } = await supabase.storage
       .from('soda-images')
       .upload(path, prepared.file, { upsert: true, contentType: prepared.file.type });
     if (error) return error.message;
-    const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
-    const url = `${publicUrl}?t=${Date.now()}`;
-    const { error: dbErr } = await supabase.from('stash_sodas').update({ image_url: url }).eq('id', sodaId);
+
+    // The path is what is stored: a signed URL expires, so persisting one would rot.
+    const { error: dbErr } = await supabase.from('stash_sodas').update({ image_url: path }).eq('id', sodaId);
     if (dbErr) return dbErr.message;
+
+    const url = await signOne(path);
     patch((prev) => prev.map((s) => s.id === sodaId ? { ...s, imageUrl: url } : s));
+
+    // Best effort, and last: the photo is already replaced, so a failure here strands an
+    // object rather than undoing anything.
+    if (previous && previous !== path) {
+      try { await supabase.storage.from('soda-images').remove([previous]); } catch { /* stranded, not fatal */ }
+    }
     return null;
   }
 
@@ -280,9 +300,12 @@ export function useStashSodas(
       // Its own try: supabase-js resolves with { error }, but the call can still reject
       // on a dropped connection, and the outer catch rolls the list back and reports a
       // failed delete — for a delete that has already succeeded.
-      if (soda?.imageUrl) {
+      // The stored path, not one rebuilt from ids: photos are versioned by upload time
+      // now, and a barcode soda's image is an external URL that is not ours to delete.
+      const objectPath = storageObjectPath(soda?.imageUrl);
+      if (objectPath) {
         try {
-          await supabase.storage.from('soda-images').remove([`${stashId}/${sodaId}`]);
+          await supabase.storage.from('soda-images').remove([objectPath]);
         } catch { /* the row is gone; a stranded object is not worth failing the delete */ }
       }
       if (soda) {

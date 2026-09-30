@@ -61,6 +61,12 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'soda-images',
+              // The bucket is private, so these are signed URLs whose token changes on
+              // every signing. Keyed by the full URL, the same photo would be a fresh
+              // entry each load: never a cache hit, and 200 entries of churn. Matching
+              // without the query string makes one object one entry — which is only safe
+              // because replacing a photo now writes a new *path* (see imageUrls.ts).
+              matchOptions: { ignoreSearch: true },
               expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
               cacheableResponse: { statuses: [0, 200] },
             },
