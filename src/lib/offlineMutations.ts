@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { imageRejection } from './imageUpload';
 import { prepareImageForUpload } from './imageResize';
+import { newSodaImagePath } from './imageUrls';
 import { logActivity } from './activity';
 
 /**
@@ -69,13 +70,14 @@ async function uploadHeldImage(stashId: string, sodaId: string) {
   const prepared = await prepareImageForUpload(file);
   pendingImages.delete(sodaId);
   if ('error' in prepared) return null;
-  const path = `${stashId}/${sodaId}`;
+  const path = newSodaImagePath(stashId, sodaId);
   const { error } = await supabase.storage
     .from('soda-images')
     .upload(path, prepared.file, { upsert: true, contentType: prepared.file.type });
   if (error) return null;
-  const { data: { publicUrl } } = supabase.storage.from('soda-images').getPublicUrl(path);
-  return publicUrl;
+  // The path, not a URL. The bucket is private, so a URL has to be signed at read time
+  // and would expire long before some of these rows are looked at again.
+  return path;
 }
 
 async function addSodaFn(v: AddSodaVars) {
