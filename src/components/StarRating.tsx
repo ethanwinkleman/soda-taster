@@ -41,9 +41,16 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
   const rowRef = useRef<HTMLDivElement>(null);
   const interactive = !readOnly && !!onChange;
   const display = interactive ? (preview || value) : value;
-  const sizeClass = size === 'sm' ? 'text-xl' : size === 'lg' ? 'text-6xl' : 'text-2xl';
-  const gapClass = size === 'lg' ? 'gap-2' : 'gap-1';
-  const readoutClass = size === 'lg' ? 'ml-3 text-xl w-10' : 'ml-2 text-sm w-8';
+  // `lg` is fluid rather than a fixed 3.75rem. At that size the five glyphs plus the
+  // readout wanted 389px, and the card it sits in offers 254-364px on every common
+  // phone — so the score was clipped off the right edge of the screen on all of them,
+  // and only fitted at 430px. The upper bound keeps the original size once there is
+  // room, because the container stops growing at max-w-md.
+  const sizeClass = size === 'sm' ? 'text-xl'
+    : size === 'lg' ? 'text-[clamp(2rem,11vw,3.75rem)]'
+    : 'text-2xl';
+  const gapClass = size === 'lg' ? 'gap-1 sm:gap-2' : 'gap-1';
+  const readoutClass = size === 'lg' ? 'ml-2 sm:ml-3 text-lg sm:text-xl w-8 sm:w-10' : 'ml-2 text-sm w-8';
 
   function getFill(star: number): 'full' | 'half' | 'empty' {
     if (display >= star) return 'full';
@@ -98,7 +105,7 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center w-full min-w-0">
       <div
         ref={rowRef}
         role={interactive ? 'slider' : undefined}
@@ -106,7 +113,7 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
         aria-valuemin={interactive ? 0.5 : undefined}
         aria-valuemax={interactive ? 5 : undefined}
         aria-valuenow={interactive ? (value || undefined) : undefined}
-        className={`relative flex items-center ${gapClass} ${interactive ? 'touch-none cursor-pointer py-2 -my-2 pr-2 -mr-2' : ''}`}
+        className={`relative flex min-w-0 flex-1 items-center justify-between ${gapClass} ${interactive ? 'touch-none cursor-pointer py-2 -my-2' : ''}`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -130,7 +137,7 @@ export function StarRating({ value, onChange, size = 'md', readOnly = false }: P
         </AnimatePresence>
       </div>
       {interactive && (
-        <span className={`${readoutClass} text-gray-500 dark:text-gray-400 font-medium tabular-nums`}>
+        <span className={`${readoutClass} shrink-0 text-right text-gray-500 dark:text-gray-400 font-medium tabular-nums`}>
           {display > 0 ? display.toFixed(1) : '—'}
         </span>
       )}
