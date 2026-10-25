@@ -147,8 +147,11 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
 
       {/* Page masthead */}
       <div className="mb-8">
-        <div className="flex items-baseline justify-between gap-4">
-          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
+        {/* Wraps rather than overflows. The heading was whitespace-nowrap beside
+            shrink-0 buttons, so neither side could give and "New" was clipped off the
+            right edge at 320px — invisible, because the shell is overflow-x-hidden. */}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+          <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             My Collections
           </h1>
           <div className="flex gap-2 shrink-0">

@@ -138,6 +138,16 @@ What was missing was any way to *ask* for them. **Try Next** (`lib/untasted.ts`)
 
 **The filter row wraps, and has to.** It sits inside `overflow-x-hidden` (the shell in `App.tsx`), so a control past the right edge is not scrolled to — it is invisible, at every width. Adding Try Next as a fourth control pushed it off-screen on every phone *and* on the 420px I had checked at. Anything added to that row wraps or it disappears.
 
+**Sweeping for mobile overflow.** The shell is `overflow-x-hidden`, so anything past the right edge is invisible rather than scrollable — it will never show up as a page that scrolls sideways. The way to find it is to drive the *real* app (only `lib/supabase.ts` and `contexts/AuthContext.tsx` stubbed, so the real `index.html`, router, header and bottom nav are exercised) across every route at 320/375/390 and measure each element's box against the viewport.
+
+Three things make that sweep worth trusting:
+
+- **Fixtures need an unbroken token**, not just a long phrase. A long phrase wraps; `Henryweinhardscraftbeveragecompanyincorporated` and a bare URL are what actually break a layout, and a fixture full of spaces never exercises it.
+- **Skip anything inside a horizontally scrollable ancestor.** `/admin`'s table is `min-w-[26rem]` inside `overflow-x-auto` on purpose, and reporting it is a false positive.
+- **Skip the parked share card.** `ShareCardButton` keeps a `TastingCard` at `left:-9999px` so html2canvas can rasterise it; that is parked, not clipped.
+
+Modals and sheets need opening — none of them is a route, and `/stash/:id` alone leaves Settings, Inventory, Top Rated and the shopping list unmeasured.
+
 **Driving an element is not the same as seeing it.** Playwright's `click()` scrolls an off-screen element into view first, so the chip passed every functional check while being invisible to a person. A control's verification needs its box measured against the viewport, not just a successful click.
 
 ### Photos
