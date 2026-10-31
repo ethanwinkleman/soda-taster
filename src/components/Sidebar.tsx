@@ -113,7 +113,7 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
 
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/collections')}
             className="w-full flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 transition-colors border-l-2 border-transparent"
           >
             <span className="w-5 h-5 rounded-md border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center shrink-0">
