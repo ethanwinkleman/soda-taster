@@ -491,17 +491,21 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                 </div>
               </div>
             </div>
-            {/* Full-width primary CTA */}
-            <Button
-              onClick={() => navigate(`/stash/${stashId}/add`)}
-              className="tap-44 w-full mt-3 py-2.5"
-            >
-              <Plus size={13} />
-              Add Soda
-            </Button>
           </div>
         </div>
       </div>
+
+      {/* Sized rather than stretched. Spanning the full width made it read as a banner
+          instead of a button, and 12px type did not help. Outside the title row so it
+          centres on the page rather than on the column beside the back arrow. */}
+      <Button
+        size="lg"
+        onClick={() => navigate(`/stash/${stashId}/add`)}
+        className="tap-44 mt-4 mb-5 mx-auto flex"
+      >
+        <Plus size={16} />
+        Add Soda
+      </Button>
 
 
       {/* Group / Mine score toggle — only when multiple people have rated */}

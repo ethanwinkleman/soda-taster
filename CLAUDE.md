@@ -141,6 +141,12 @@ Rating happens **inline in the search result**: the row expands, you set the sta
 
 Two earlier passes at this did not land, and both failed the same way: they **added** a surface instead of reorganising. A dashboard of lists is still lists, and a new front door on top of an unchanged collection page just made the app bigger. What fixed it was moving things *off* the busy screen — the rating spread and the score tiles were sitting between the filters and the first soda on `/stash/:id`, so the rare job owned the top of the most-used page. The chart moved to `/stats`; the tiles moved below the list, because they are also the way into the inventory and top-rated sheets and deleting them would have cost real functionality.
 
+**Adding a soda has one mode.** `AddSodaPage` used to open in Quick Add, which hid the manufacturer and the photo and turned the submit button into "Add & Next" so you stayed on the form. Full Details is now the only path: the form always shows name, manufacturer, photo and rating, and saving returns to the collection. The branches it removed — `quickMode ? '' : brand`, `quickMode ? null : imageFile` — existed to avoid saving fields the user could not currently see, and with nothing hidden there is nothing to guard.
+
+**A full-width bar does not read as a button.** The collection page's primary action was `w-full` at `text-xs`, which is 12px of tracked-out uppercase across the whole viewport — a banner. It is `size="lg"` now (165×51 at 15px), sized rather than stretched, and rendered *outside* the title row so it centres on the page rather than on the column beside the back arrow. `Button`'s default `sm` also went from `text-xs` to 13px: the same 12px was on every button in the app.
+
+**The bottom nav is three tabs, and three is the limit.** A fourth appeared inside a collection — an Add tab — and it overflowed the bar by **83px at 320 and 13px at 390**. Adding is already on the Sodas screen and on the collection page's own button, so it went rather than the labels being shrunk. Anything added here needs the overflow sweep run again; the bar is `fixed`, so a tab past the edge is invisible rather than scrollable.
+
 ### The collections page answers "what now", not "what do I own"
 
 `StashesPage` (now at `/collections`) was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
