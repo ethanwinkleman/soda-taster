@@ -123,9 +123,22 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 **The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
 
-### The home page answers "what now", not "what do I own"
+### The act is the front door; the archive is a place you go
 
-`StashesPage` was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
+`/` is `TastePage` — "what are you drinking?" — and the collections list moved to `/collections`. The bottom nav is **Taste** then **Collections**.
+
+The reason is that an archive of your own ratings cannot be interesting on its own: you already know what you think, so every screen built on it reflects you back. Reordering those screens does not fix it, which is what an earlier pass at this tried. There are only three sources of information the app can actually add — other people's opinions, the world outside your fridge, and patterns you cannot see in yourself — and the first was built months ago and never surfaced.
+
+**The loop is drink → rate → find out.** The third step did not exist: rating was a silent write that printed back the number you chose. `lib/reveal.ts` is the wording, and it is pure because the wording is the feature:
+
+- **Someone else has rated it** → their score unseals in front of you, and the line names whoever you disagree with *most*, not whoever is first in the list: *"2.5 stars between you and Dana — you liked it more."*
+- **You are first** → *"You rated it first. Nobody can see your score until they rate it too."* This is the half nobody ever sees, and it is not nothing happening: it is you setting what the other person walks into. With two people it is half of all ratings.
+
+`useTasteSodas` is what the search box reads, because "what are you drinking" has to find a soda you have had before as readily as one you have not, and `home_untasted` by definition only knows the latter. It joins **only your own ratings** — this read must not become a second way to see a sealed verdict.
+
+### The collections page answers "what now", not "what do I own"
+
+`StashesPage` (now at `/collections`) was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
 
 The order is now **Waiting on you → In your fridge → Recently Tasted → Your Collections → Your Palate**: what to do, then what the group did, then what you own, then who you are.
 

@@ -358,7 +358,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="font-sans text-gray-400 dark:text-gray-500">Collection not found.</p>
-        <NavLink to="/" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
+        <NavLink to="/collections" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
       </div>
     );
   }
@@ -388,7 +388,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         <div className="flex items-start gap-2">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/collections')}
             className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0 mt-0.5"
           >
             <ChevronLeft size={20} />
