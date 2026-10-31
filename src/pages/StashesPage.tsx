@@ -15,6 +15,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useMyRatings } from '../hooks/useMyRatings';
 import { Button, Input, FieldLabel } from '../components/ui';
 import { GettingStarted } from '../components/GettingStarted';
+import { UntastedSection } from '../components/UntastedSection';
+import { useHomeUntasted } from '../hooks/useHomeUntasted';
+import { waitingOnYou, readyToTry } from '../lib/homeFeed';
 import { onboardingSteps, shouldShowOnboarding, type StepId } from '../lib/onboarding';
 
 const ONBOARDING_DISMISSED_KEY = 'soda-taster-onboarding-dismissed';
@@ -137,6 +140,11 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
     ]);
   }, [queryClient, user?.id]);
   const { pullDistance, refreshing } = usePullToRefresh(handleRefresh);
+
+  // What the viewer could act on right now, across every collection they are in.
+  const { sodas: untasted } = useHomeUntasted(user?.id);
+  const sealed = waitingOnYou(untasted);
+  const inFridge = readyToTry(untasted);
 
   // Build a stashId → stash name lookup for the Recently Tasted section
   const stashNameMap = new Map(stashes.map((s) => [s.id, s.name]));
@@ -270,6 +278,80 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
         />
       )}
 
+      {/* What now, before what do I own. These answer the question someone opens the app
+          with; the collections list below answers the one they already know. */}
+      {!loading && (
+        <>
+          <UntastedSection
+            title="Waiting on you"
+            blurb="Your group has rated these. Rate one to see what they said."
+            sodas={sealed}
+            tone="sealed"
+          />
+          <UntastedSection
+            title="In your fridge"
+            blurb="Nobody has tried these yet — and you can open one now."
+            sodas={inFridge}
+            tone="fridge"
+          />
+        </>
+      )}
+
+      {/* Recently Tasted supplemental section */}
+      {!loading && recentActivity.length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-baseline gap-3 mb-3">
+            <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+              Recently Tasted
+            </h2>
+            <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
+          </div>
+          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {recentActivity.map((entry, i) => {
+              const stashName = stashNameMap.get(entry.stashId) ?? 'Unknown collection';
+              return (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center gap-3"
+                >
+                  {entry.score !== null ? (
+                    <ScoreBadge score={entry.score} size="sm" />
+                  ) : (
+                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                      <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">
+                      {entry.sodaName}
+                    </p>
+                    <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-0.5 truncate">
+                      {stashName}
+                      <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
+                      {entry.displayName}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                    {relativeTime(entry.createdAt)}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* The list needs its own heading now that it is no longer the top of the page:
+          the h1 labels the page, not this. */}
+      {!loading && stashes.length > 0 && (
+        <div className="flex items-baseline gap-3 mb-3 mt-8">
+          <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+            Your Collections
+          </h2>
+          <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
+        </div>
+      )}
+
       {/* Stash list */}
       {loading ? (
         <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -399,49 +481,6 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
       {/* Taste profile */}
       {!loading && <TasteProfile ratings={myRatings} />}
 
-      {/* Recently Tasted supplemental section */}
-      {!loading && recentActivity.length > 0 && (
-        <div className="mt-10">
-          <div className="flex items-baseline gap-3 mb-3">
-            <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
-              Recently Tasted
-            </h2>
-            <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
-          </div>
-          <div className="divide-y divide-gray-200 dark:divide-gray-700 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            {recentActivity.map((entry, i) => {
-              const stashName = stashNameMap.get(entry.stashId) ?? 'Unknown collection';
-              return (
-                <div
-                  key={i}
-                  className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center gap-3"
-                >
-                  {entry.score !== null ? (
-                    <ScoreBadge score={entry.score} size="sm" />
-                  ) : (
-                    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
-                      <CupSoda size={14} className="text-gray-400 dark:text-gray-500" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">
-                      {entry.sodaName}
-                    </p>
-                    <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-0.5 truncate">
-                      {stashName}
-                      <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
-                      {entry.displayName}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide">
-                    {relativeTime(entry.createdAt)}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

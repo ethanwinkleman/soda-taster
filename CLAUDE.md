@@ -123,6 +123,20 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 **The collection list carries scores, not rating rows.** `stash_soda_list` returns one row per soda — `other_scores numeric[]`, `avg_score`, `rating_count`, your own rating — instead of every rating row with its uuid, rater name, notes and timestamps. Measured on realistic shapes: 200 sodas × 3 raters goes 203 KB → 95 KB (53% smaller), × 6 raters 340 KB → 96 KB (72%). The two places that name people — the detail page's breakdown and the share card — fetch ratings for the one soda they are showing (`useSodaRatings`), and the export fetches the collection's ratings when you press it (`fetchVisibleRatings`). All three come back already sealed by the policy, so there is one rule rather than a client copy of it.
 
+### The home page answers "what now", not "what do I own"
+
+`StashesPage` was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
+
+The order is now **Waiting on you → In your fridge → Recently Tasted → Your Collections → Your Palate**: what to do, then what the group did, then what you own, then who you are.
+
+**Waiting on you is the point.** Under blind rating, a soda somebody else has scored stays sealed until you rate it — so those sodas carry a verdict you cannot see, and rating one is what reveals it. Nothing in the app said so. `home_untasted` (`20260101002400`) returns every unrated soda across all of the viewer's collections in one call, rather than a round trip per collection.
+
+- **It returns no score column at all.** Every soda in it is unrated by the viewer and therefore sealed by definition; sending a number would reopen what `20260101002000` closed. Pass 5 of the verifier asserts the signature has no score column, that a member sees their own collections' unrated sodas with the other raters' *count*, that a soda drops off once they rate it, and that a non-member sees nothing.
+- **The count comes from `soda_rating_count`**, not `count(*)`: under the blind-rating policy a plain count sees only rows the caller may read, which here is none of them.
+- The split between the two lists is pure and lives in `lib/homeFeed.ts`, so a soda appears in exactly one — a sealed soda belongs to "waiting on you" even when it is sitting in the fridge.
+
+**The verifier's `authenticated` role needs usage on the `auth` schema.** Every policy of the form `user_id = auth.uid()` is evaluated as the *calling* role, so without that grant a signed-in caller cannot read its own rows. Supabase grants it; the stub did not, which did not make the tests stricter — it limited passes 4 and 5 to whatever happened to run SECURITY DEFINER, and `home_untasted` failed outright on a database that does not exist.
+
 ### Untasted sodas
 
 A soda can be added without a rating — `AddSodaPage` sends `score > 0 ? score : null`, so no rating row is created. It is not a blind soda: `isRevealed` is true at `ratingCount === 0` because there is nothing being withheld, so the card simply draws a dashed em-dash and "0 ratings". Sorting already handles them deliberately (`-1` under "highest rated", `999` under "lowest", so they sink to the bottom either way rather than reading as a 0.5), and the shopping list and the group metrics exclude them.
