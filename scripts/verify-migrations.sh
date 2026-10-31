@@ -77,6 +77,14 @@ DO $$ BEGIN
   CREATE ROLE authenticated NOLOGIN;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
+-- Supabase grants these, and the whole schema depends on it: every policy of the form
+-- `user_id = auth.uid()` is evaluated as the *calling* role, so without usage on the
+-- auth schema a signed-in caller cannot read its own rows. Omitting it here does not
+-- make the tests stricter, it makes them test a database that does not exist — and it
+-- silently limited passes 4 and 5 to whatever runs SECURITY DEFINER.
+GRANT USAGE ON SCHEMA auth TO authenticated;
+GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;
+GRANT EXECUTE ON FUNCTION auth.role() TO authenticated;
 SQL
 )
 
@@ -272,6 +280,77 @@ fi
 
 if [ "$storage_failed" -ne 0 ]; then
   echo "✗ pass 4 failed"
+  exit 1
+fi
+
+echo "→ pass 5: home_untasted as an ordinary member"
+
+SODA_ID="66666666-6666-6666-6666-666666666666"
+
+psql -q -v ON_ERROR_STOP=1 "$TEST_URL" >/dev/null <<SQL
+INSERT INTO stash_sodas (id, stash_id, name, brand, added_by)
+  VALUES ('$SODA_ID', '$STASH_ID', 'Sealed Soda', 'Brand', '$MEMBER_ID')
+  ON CONFLICT (id) DO NOTHING;
+-- A second member rates it. The first member has not, so it is sealed for them.
+INSERT INTO stash_members (stash_id, user_id) VALUES ('$STASH_ID', '$ADMIN_ID')
+  ON CONFLICT (stash_id, user_id) DO NOTHING;
+INSERT INTO stash_soda_ratings (soda_id, user_id, display_name, score)
+  VALUES ('$SODA_ID', '$ADMIN_ID', 'Admin', 4.5)
+  ON CONFLICT (soda_id, user_id) DO NOTHING;
+SQL
+
+home_failed=0
+
+mine=$(as_user "$MEMBER_ID" "SELECT count(*) FROM home_untasted(24) WHERE id = '$SODA_ID'")
+if [ "$mine" != "1" ]; then
+  echo "  ✗ a member does not see their own collection's unrated soda (got '$mine')"
+  home_failed=1
+else
+  echo "  ✓ a member sees an unrated soda from their own collection"
+fi
+
+# The count is the whole point: it says someone has an opinion without saying what it is.
+cnt=$(as_user "$MEMBER_ID" "SELECT rating_count FROM home_untasted(24) WHERE id = '$SODA_ID'")
+if [ "$cnt" != "1" ]; then
+  echo "  ✗ rating_count is '$cnt', expected 1 — a plain count(*) counts only rows the"
+  echo "    caller may read under the blind-rating policy, which is none of them here"
+  home_failed=1
+else
+  echo "  ✓ it carries the other rater's count without their score"
+fi
+
+# Rated by the viewer means it is no longer waiting on them.
+as_user "$MEMBER_ID" "INSERT INTO stash_soda_ratings (soda_id, user_id, display_name, score) VALUES ('$SODA_ID', '$MEMBER_ID', 'Member', 3)" >/dev/null
+after=$(as_user "$MEMBER_ID" "SELECT count(*) FROM home_untasted(24) WHERE id = '$SODA_ID'")
+if [ "$after" != "0" ]; then
+  echo "  ✗ a soda the viewer has now rated is still listed as waiting (got '$after')"
+  home_failed=1
+else
+  echo "  ✓ it drops off once the viewer rates it"
+fi
+
+outsider=$(as_user "$OUTSIDER_ID" "SELECT count(*) FROM home_untasted(24)")
+if [ "$outsider" != "0" ]; then
+  echo "  ✗ a non-member sees $outsider row(s) — RLS is not confining this"
+  home_failed=1
+else
+  echo "  ✓ a non-member sees nothing"
+fi
+
+# Structural, but worth asserting: the signature carries no score column at all, so a
+# sealed verdict cannot be read out of this call however it is used.
+leak=$(psql -At "$TEST_URL" -c "SELECT count(*) FROM information_schema.routines r
+  JOIN information_schema.parameters p ON p.specific_name = r.specific_name
+  WHERE r.routine_name = 'home_untasted' AND p.parameter_name ~ 'score'")
+if [ "$leak" != "0" ]; then
+  echo "  ✗ home_untasted returns a score column ($leak) — it must not"
+  home_failed=1
+else
+  echo "  ✓ it returns no score column at all"
+fi
+
+if [ "$home_failed" -ne 0 ]; then
+  echo "✗ pass 5 failed"
   exit 1
 fi
 
