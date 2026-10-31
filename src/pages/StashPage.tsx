@@ -389,7 +389,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0 mt-0.5"
+            className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0 mt-0.5"
           >
             <ChevronLeft size={20} />
           </button>
@@ -405,7 +405,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                   <button
                     type="button"
                     onClick={() => setMenuOpen((v) => !v)}
-                    className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     aria-label="More actions"
                   >
                     <MoreHorizontal size={18} />
@@ -497,7 +497,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             {/* Full-width primary CTA */}
             <Button
               onClick={() => navigate(`/stash/${stashId}/add`)}
-              className="w-full mt-3 py-2.5"
+              className="tap-44 w-full mt-3 py-2.5"
             >
               <Plus size={13} />
               Add Soda
@@ -648,7 +648,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           type="button"
           onClick={() => { setRestockFilter((v) => !v); setUntastedFilter(false); }}
           title="Show sodas not in stock, sorted by your rating"
-          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
+          className={`tap-44 flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
             restockFilter
               ? 'bg-sky-600 dark:bg-sky-400 border-sky-600 dark:border-sky-400 text-white dark:text-gray-950'
               : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-sky-500 dark:hover:border-sky-400 hover:text-gray-900 dark:hover:text-gray-100'
@@ -665,7 +665,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             type="button"
             onClick={() => { setUntastedFilter((v) => !v); setRestockFilter(false); }}
             title="Show sodas you haven't rated yet, the ones in your fridge first"
-            className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
+            className={`tap-44 flex items-center gap-1.5 px-3 py-2.5 rounded-xl border font-sans text-xs font-bold uppercase tracking-wider transition-colors shrink-0 ${
               untastedFilter
                 ? 'bg-sky-600 dark:bg-sky-400 border-sky-600 dark:border-sky-400 text-white dark:text-gray-950'
                 : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-sky-500 dark:hover:border-sky-400 hover:text-gray-900 dark:hover:text-gray-100'
@@ -689,7 +689,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <button
             type="button"
             onClick={() => setRestockFilter(false)}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            className="tap-44 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             aria-label="Clear filter"
           >
             <X size={13} />
@@ -708,7 +708,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           <button
             type="button"
             onClick={() => setUntastedFilter(false)}
-            className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            className="tap-44 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
             aria-label="Clear filter"
           >
             <X size={13} />

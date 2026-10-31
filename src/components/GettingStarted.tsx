@@ -41,7 +41,7 @@ export function GettingStarted({ steps, onStep, onDismiss }: Props) {
           type="button"
           onClick={onDismiss}
           aria-label="Hide getting started"
-          className="p-2 -m-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="tap-44 p-2 -m-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <X size={15} />
         </button>

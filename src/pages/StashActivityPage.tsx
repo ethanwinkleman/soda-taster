@@ -65,7 +65,7 @@ export function StashActivityPage() {
             disabled={refreshing || loading}
             animate={{ rotate: refreshing ? 360 : 0 }}
             transition={{ duration: 0.6, ease: 'linear', repeat: refreshing ? Infinity : 0 }}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
+            className="tap-44 p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors disabled:opacity-40"
             aria-label="Refresh activity"
           >
             <RefreshCw size={14} />

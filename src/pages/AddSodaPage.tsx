@@ -127,7 +127,7 @@ export function AddSodaPage() {
         <button
           type="button"
           onClick={() => setQuickMode(true)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
+          className={`tap-44 flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
             quickMode
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -139,7 +139,7 @@ export function AddSodaPage() {
         <button
           type="button"
           onClick={() => setQuickMode(false)}
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
+          className={`tap-44 flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
             !quickMode
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
@@ -271,7 +271,7 @@ export function AddSodaPage() {
                     <button
                       type="button"
                       onClick={clearImage}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                      className="tap-44 absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
                       aria-label="Remove photo"
                     >
                       <X size={14} />
@@ -279,7 +279,7 @@ export function AddSodaPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute bottom-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                      className="tap-44 absolute bottom-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
                       aria-label="Change photo"
                     >
                       <Camera size={14} />

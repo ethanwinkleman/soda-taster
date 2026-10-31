@@ -118,3 +118,23 @@ body {
 @utility animate-route-fizz {
   animation: route-fizz 1.6s ease-out infinite;
 }
+
+/* Grows what a thumb can hit to 44px without moving the control or changing how it
+   looks. Measured on a phone, the icon buttons were 20x20 (change photo), 26x26 (edit
+   soda, refresh) and 30x30 (the collection menu) — well under the 44px guidance, and
+   the smallest of them is genuinely hard to land on.
+   Padding plus a negative margin would do the same, but the amount differs per icon and
+   a large negative margin starts stealing taps from whatever sits next to it. A centred
+   pseudo-element only grows the dimension that is short, whatever the control's size. */
+@utility tap-44 {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}

@@ -148,6 +148,12 @@ Three things make that sweep worth trusting:
 
 Modals and sheets need opening — none of them is a route, and `/stash/:id` alone leaves Settings, Inventory, Top Rated and the shopping list unmeasured.
 
+**Tap targets use `.tap-44`, not padding.** Measured on a phone, the icon buttons were 20x20 (change photo), 26x26 (edit soda, refresh, delete comment) and 30x30 (the collection menu) — the smallest genuinely hard to land on. The utility in `index.css` centres an invisible pseudo-element of at least 44px over the control, so it grows only the dimension that is short and moves nothing. Padding plus a negative margin does the same thing, but the amount differs per icon and a large negative margin starts stealing taps from the control next to it.
+
+Two deliberate exceptions, both because widening would make things worse: the ten `RatingDistribution` bars are adjacent segments 26px wide, and expanding them to 44 would overlap their neighbours so a tap lands on the wrong bucket; and a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker.
+
+**A pseudo-element hit area is invisible to `getBoundingClientRect`.** Measuring tap targets by their box says nothing about `.tap-44`; ask `document.elementFromPoint` how far from the centre a tap still lands on the control. Scroll each one to the middle of the viewport first — `elementFromPoint` returns null outside the viewport, which reads as a 0x0 target and is not a finding.
+
 **Driving an element is not the same as seeing it.** Playwright's `click()` scrolls an off-screen element into view first, so the chip passed every functional check while being invisible to a person. A control's verification needs its box measured against the viewport, not just a successful click.
 
 ### Photos
