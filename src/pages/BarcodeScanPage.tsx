@@ -2,7 +2,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast as sonnerToast } from 'sonner';
-import { ChevronLeft, Keyboard, AlertCircle, Settings, Loader2 } from 'lucide-react';
+import { Keyboard, AlertCircle, Settings, Loader2 } from 'lucide-react';
+import { BackButton } from '../components/ui';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 import { lookupBarcode } from '../lib/barcodeApi';
 import type { BarcodeResult } from '../lib/barcodeApi';
@@ -103,13 +104,10 @@ export function BarcodeScanPage() {
     <div className="flex flex-col min-h-dvh bg-black">
       {/* Header bar */}
       <div className="flex items-center gap-2 px-3 py-3 bg-black/80 backdrop-blur z-10 shrink-0">
-        <button
-          type="button"
+        <BackButton
           onClick={() => { setScanActive(false); navigate(`/stash/${stashId}`); }}
-          className="p-2 text-white/80 hover:text-white transition-colors"
-        >
-          <ChevronLeft size={22} />
-        </button>
+          className="ml-0 text-white/80 hover:text-white hover:bg-white/10 dark:text-white/80 dark:hover:text-white"
+        />
         <h1 className="font-display font-bold text-white text-lg flex-1">Scan a Soda</h1>
       </div>
 
