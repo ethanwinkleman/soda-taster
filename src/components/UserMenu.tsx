@@ -36,7 +36,7 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="tap-44 flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         {avatarUrl ? (
           <img src={avatarUrl} alt={name} className="w-7 h-7 rounded-full object-cover" />

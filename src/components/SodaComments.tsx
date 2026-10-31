@@ -64,7 +64,7 @@ function CommentRow({
           <button
             type="button"
             onClick={() => onReply(comment.id)}
-            className="font-sans text-[10px] uppercase tracking-[0.15em] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+            className="tap-44 font-sans text-[10px] uppercase tracking-[0.15em] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
           >
             {replyingTo === comment.id ? 'Cancel' : 'Reply'}
           </button>
@@ -72,7 +72,7 @@ function CommentRow({
             <button
               type="button"
               onClick={() => onDelete(comment.id)}
-              className="p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
+              className="tap-44 p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
               aria-label="Delete comment"
             >
               <Trash2 size={11} />
@@ -109,7 +109,7 @@ function CommentRow({
                   <button
                     type="button"
                     onClick={() => onDelete(reply.id)}
-                    className="mt-1.5 p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
+                    className="tap-44 mt-1.5 p-2 -m-2 text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors opacity-60 group-hover:opacity-100"
                     aria-label="Delete reply"
                   >
                     <Trash2 size={11} />
@@ -152,7 +152,7 @@ function CommentRow({
                 onClick={() => onReplySubmit(comment.id)}
                 disabled={!replyDraft.trim() || submitting}
                 aria-label="Send reply"
-                className="shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
+                className="tap-44 shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
               >
                 <Send size={13} />
               </button>
@@ -253,7 +253,7 @@ export function SodaComments({ sodaId, stashId, userId, displayName }: Props) {
           type="submit"
           disabled={!draft.trim() || submitting}
           aria-label="Post remark"
-          className="shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
+          className="tap-44 shrink-0 p-2.5 -m-1.5 text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 disabled:opacity-30 transition-colors"
         >
           <Send size={14} />
         </button>

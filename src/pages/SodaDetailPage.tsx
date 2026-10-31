@@ -302,7 +302,7 @@ export function SodaDetailPage() {
         <button
           type="button"
           onClick={() => navigate(`/stash/${stashId}`)}
-          className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 mt-1"
+          className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 mt-1"
         >
           <ChevronLeft size={20} />
         </button>
@@ -368,7 +368,7 @@ export function SodaDetailPage() {
           <button
             type="button"
             onClick={startEditing}
-            className="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 mt-1"
+            className="tap-44 p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 mt-1"
             aria-label="Edit soda"
           >
             <Pencil size={14} />
@@ -402,7 +402,7 @@ export function SodaDetailPage() {
                 type="button"
                 onClick={() => imgInputRef.current?.click()}
                 disabled={uploadingImage}
-                className="absolute bottom-2 right-1.5 p-1 bg-black/60 text-white hover:bg-black/80 transition-colors disabled:opacity-50"
+                className="tap-44 absolute bottom-2 right-1.5 p-1 bg-black/60 text-white hover:bg-black/80 transition-colors disabled:opacity-50"
                 aria-label="Change photo"
               >
                 {uploadingImage
@@ -545,7 +545,7 @@ export function SodaDetailPage() {
             </Button>
           )}
           {soda.myRating && (
-            <Button variant="danger" onClick={handleDeleteRating} className="px-4">
+            <Button variant="danger" onClick={handleDeleteRating} className="tap-44 px-4">
               Remove
             </Button>
           )}
@@ -618,7 +618,7 @@ export function SodaDetailPage() {
           <button
             type="button"
             onClick={handleFridgeToggle}
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+            className={`tap-44 w-11 h-6 rounded-full transition-colors duration-200 ${
               soda.inFridge
                 ? 'bg-sky-600 dark:bg-sky-400'
                 : 'bg-gray-200 dark:bg-gray-700'
@@ -642,7 +642,7 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(-1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="tap-44 w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Minus size={12} />
               </motion.button>
@@ -654,7 +654,7 @@ export function SodaDetailPage() {
                 onClick={() => handleQtyChange(1)}
                 whileTap={{ scale: 0.8 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                className="w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="tap-44 w-10 h-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <Plus size={12} />
               </motion.button>
