@@ -35,7 +35,8 @@ const persister = createSyncStoragePersister({
 });
 
 const StashesPage       = lazyWithRetry(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
-const TastePage         = lazyWithRetry(() => import('./pages/TastePage').then(m => ({ default: m.TastePage })));
+const SodasPage         = lazyWithRetry(() => import('./pages/SodasPage').then(m => ({ default: m.SodasPage })));
+const StatsPage         = lazyWithRetry(() => import('./pages/StatsPage').then(m => ({ default: m.StatsPage })));
 const StashPage         = lazyWithRetry(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
 const AddSodaPage       = lazyWithRetry(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
 const SodaDetailPage    = lazyWithRetry(() => import('./pages/SodaDetailPage').then(m => ({ default: m.SodaDetailPage })));
@@ -115,10 +116,12 @@ function AppRoutes() {
             <ScrollToTop />
             <Suspense fallback={<RouteFallback />}>
             <Routes location={location}>
-              {/* The act is the front door; the archive is a place you go. Rating a
-                  soda is what someone opens this app to do, and the collections list
-                  answered "what do I own", which is not a question anyone has. */}
-              <Route path="/" element={<TastePage stashes={stashes} loading={stashesLoading} />} />
+              {/* Ordered by how often each is actually used. Searching for a soda —
+                  which answers "have we had this?" and "rate this now" with one box —
+                  happens constantly; checking your ratings happens sometimes; managing
+                  collections almost never. */}
+              <Route path="/" element={<SodasPage stashes={stashes} loading={stashesLoading} />} />
+              <Route path="/stats" element={<StatsPage stashes={stashes} loading={stashesLoading} />} />
               <Route
                 path="/collections"
                 element={<StashesPage stashes={stashes} loading={stashesLoading} error={stashesError} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}

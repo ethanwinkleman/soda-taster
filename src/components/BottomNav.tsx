@@ -1,6 +1,6 @@
 import { NavLink, useLocation, matchPath } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Layers, Plus, CupSoda } from 'lucide-react';
+import { Layers, Plus, CupSoda, BarChart3 } from 'lucide-react';
 
 /** Shared so the active indicator slides between tabs rather than cutting. */
 const INDICATOR = 'bottomnav-active';
@@ -38,7 +38,7 @@ export function BottomNav() {
           to="/"
           end
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center px-8 h-full transition-colors font-sans ${
+            `flex flex-col items-center justify-center px-6 h-full transition-colors font-sans ${
               isActive ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'
             }`
           }
@@ -46,14 +46,29 @@ export function BottomNav() {
           {({ isActive }) => (
             <TabContents active={isActive}>
               <CupSoda size={20} strokeWidth={isActive ? 2.5 : 1.75} />
-              <span className="text-[10px] uppercase tracking-widest">Taste</span>
+              <span className="text-[10px] uppercase tracking-widest">Sodas</span>
+            </TabContents>
+          )}
+        </NavLink>
+        <NavLink
+          to="/stats"
+          className={({ isActive }) =>
+            `flex flex-col items-center justify-center px-6 h-full transition-colors font-sans ${
+              isActive ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <TabContents active={isActive}>
+              <BarChart3 size={20} strokeWidth={isActive ? 2.5 : 1.75} />
+              <span className="text-[10px] uppercase tracking-widest">Ratings</span>
             </TabContents>
           )}
         </NavLink>
         <NavLink
           to="/collections"
           className={({ isActive }) =>
-            `flex flex-col items-center justify-center px-8 h-full transition-colors font-sans ${
+            `flex flex-col items-center justify-center px-6 h-full transition-colors font-sans ${
               isActive ? 'text-sky-600 dark:text-sky-400' : 'text-gray-400 dark:text-gray-500'
             }`
           }

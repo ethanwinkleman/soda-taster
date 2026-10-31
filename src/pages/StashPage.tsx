@@ -13,9 +13,8 @@ import { useStashSodas, fetchVisibleRatings } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
-import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { revealedSodas, ratingDistribution, ratingComparison, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
+import { revealedSodas, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
 import { isUntasted, untastedCount } from '../lib/untasted';
 import { stockState } from '../lib/shoppingList';
 import { ScoreBadge } from '../components/ScoreBadge';
@@ -288,8 +287,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const activeAvg = scoreView === 'mine' ? myOverallAvg : overallAvg;
   const activeTopThree = scoreView === 'mine' ? myTopThree : topThree;
 
-  const distribution = ratingDistribution(sodas);
-  const comparison = ratingComparison(sodas);
 
   const filtered = sodas.filter((s) => {
     if (scoreFilter !== null && !hasVisibleRatingAt(s, scoreFilter)) return false;
@@ -506,78 +503,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       </div>
 
-      {/* Metrics row — skeleton while loading, real data once ready */}
-      {loading ? (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
-              <Skeleton className="h-2 w-14" />
-              <Skeleton className="h-6 w-10 mt-0.5" />
-              <Skeleton className="h-2 w-12" />
-            </div>
-          ))}
-        </div>
-      ) : sodas.length > 0 && (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
-          <button
-            type="button"
-            onClick={() => setInventoryOpen(true)}
-            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-          >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-              {fridgeSodas.length}
-            </span>
-            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-              {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTopOpen(true)}
-            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-          >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
-            </div>
-            {activeTopThree.length > 0 ? (
-              <>
-                <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-                  {scoreView === 'mine'
-                    ? activeTopThree[0].myRating?.score.toFixed(1)
-                    : activeTopThree[0].avgScore?.toFixed(1)}
-                </span>
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                  {activeTopThree[0].name}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-display text-2xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
-              </>
-            )}
-          </button>
-
-          <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Star size={12} className="text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-              {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
-            </span>
-            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-              {(scoreView === 'mine' ? myRatedSodas : ratedSodas).length} rated
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Group / Mine score toggle — only when multiple people have rated */}
       {!loading && showScoreToggle && (
@@ -718,15 +643,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {!loading && !restockFilter && !untastedFilter && <div className="mb-3" />}
 
-      {/* Rating spread — hidden while loading and when nothing is rated yet */}
-      {!loading && (
-        <RatingDistribution
-          buckets={distribution}
-          comparison={comparison}
-          selected={scoreFilter}
-          onSelect={setScoreFilter}
-        />
-      )}
+      {/* The rating spread and the score tiles moved to /stats: they answer "how am
+          I doing", which is occasional, and they were sitting between the filters
+          and the first soda on the screen used most. */}
 
       {/* Soda list */}
       {loading ? (
@@ -845,6 +764,82 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             </motion.button>
           )}
         </motion.div>
+      )}
+
+      {/* Below the list on purpose. These are a summary and the way into the
+          inventory and top-rated sheets — worth having, but not worth putting
+          between someone and the soda they came to find. */}
+      {/* Metrics row — skeleton while loading, real data once ready */}
+      {loading ? (
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
+              <Skeleton className="h-2 w-14" />
+              <Skeleton className="h-6 w-10 mt-0.5" />
+              <Skeleton className="h-2 w-12" />
+            </div>
+          ))}
+        </div>
+      ) : sodas.length > 0 && (
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
+          <button
+            type="button"
+            onClick={() => setInventoryOpen(true)}
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
+            </div>
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+              {fridgeSodas.length}
+            </span>
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTopOpen(true)}
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
+            </div>
+            {activeTopThree.length > 0 ? (
+              <>
+                <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+                  {scoreView === 'mine'
+                    ? activeTopThree[0].myRating?.score.toFixed(1)
+                    : activeTopThree[0].avgScore?.toFixed(1)}
+                </span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                  {activeTopThree[0].name}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-display text-2xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
+              </>
+            )}
+          </button>
+
+          <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Star size={12} className="text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
+            </div>
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+              {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
+            </span>
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {(scoreView === 'mine' ? myRatedSodas : ratedSodas).length} rated
+            </span>
+          </div>
+        </div>
       )}
 
       {/* Settings modal */}
