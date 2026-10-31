@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ChevronLeft, CupSoda, Check, Pencil, Camera, X, Scan,
+  CupSoda, Check, Pencil, Camera, X, Scan,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { imageRejection } from '../lib/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
 import { useStashSodas } from '../hooks/useStashSodas';
-import { Button, PageHeader } from '../components/ui';
+import { BackButton, Button, PageHeader } from '../components/ui';
 import type { BarcodeResult } from '../lib/barcodeApi';
 
 function ProductImage({
@@ -289,19 +289,13 @@ export function BarcodeResultPage() {
     <div className="max-w-md mx-auto">
       {/* Back button */}
       <div className="px-4 pt-6 pb-2 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
+        <BackButton onClick={() => {
             if (isAmbiguous) {
               setView('disambiguation');
             } else {
               navigate(`/stash/${stashId}/scan`);
             }
-          }}
-          className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        >
-          <ChevronLeft size={20} />
-        </button>
+          }} />
       </div>
 
       {/* Product image — full width, 4:3 */}

@@ -1,5 +1,5 @@
-import { ChevronLeft } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { BackButton } from './BackButton';
 
 interface Props {
   title?: React.ReactNode;
@@ -16,17 +16,10 @@ export function PageHeader({ title, onBack, backVisibility = 'always', size = 'l
   return (
     <div className={twMerge('flex items-start gap-2 mb-8', className)}>
       {onBack && (
-        <button
-          type="button"
+        <BackButton
           onClick={onBack}
-          aria-label="Back"
-          className={twMerge(
-            'p-3 -m-1.5 mt-[-3px] shrink-0 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
-            backVisibility === 'mobile' && 'md:hidden',
-          )}
-        >
-          <ChevronLeft size={20} />
-        </button>
+          className={twMerge('-mt-1', backVisibility === 'mobile' && 'md:hidden')}
+        />
       )}
       <div className="flex-1 min-w-0">
         {children ?? (

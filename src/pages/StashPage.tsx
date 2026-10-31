@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import {
   Plus, Minus, Settings, Copy, Check, Trash2, UserMinus, LogOut,
-  ChevronLeft, Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal, ShoppingCart, Compass,
+  Search, CupSoda, X, Refrigerator, Trophy, Star, ListFilter, History, Download, Barcode, MoreHorizontal, ShoppingCart, Compass,
 } from 'lucide-react';
 import type { Stash, StashMember, SortOption } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,7 +22,7 @@ import { StashIcon, STASH_ICON_DEFS } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { FloatingBubbles } from '../components/FloatingBubbles';
-import { Button, Input, FieldLabel, Modal } from '../components/ui';
+import { BackButton, Button, Input, FieldLabel, Modal } from '../components/ui';
 import { ShoppingListModal } from '../components/ShoppingListModal';
 import { DiscoverRootBeers } from '../components/DiscoverRootBeers';
 import { hapticTap, hapticMedium } from '../lib/haptics';
@@ -383,13 +383,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       {/* Section masthead */}
       <div className="mb-6">
         <div className="flex items-start gap-2">
-          <button
-            type="button"
-            onClick={() => navigate('/collections')}
-            className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden shrink-0 mt-0.5"
-          >
-            <ChevronLeft size={20} />
-          </button>
+          <BackButton onClick={() => navigate('/collections')} className="md:hidden" />
           <div className="flex-1 min-w-0">
             {/* Name row — ⋯ floats top-right, name fills remaining width */}
             <div className="relative pr-9">

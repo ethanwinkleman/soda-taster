@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda, EyeOff } from 'lucide-react';
+import { Refrigerator, Minus, Plus, Trash2, Check, X, Pencil, Camera, Flame, CupSoda, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { imageRejection } from '../lib/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
@@ -16,7 +16,7 @@ import { isRevealed, hiddenCount, visibleScores } from '../lib/ratingVisibility'
 import { FlavorNotes } from '../components/FlavorNotes';
 import { sodaFlavorProfile } from '../lib/flavorNotes';
 import { ShareCardButton } from '../components/ShareCardButton';
-import { Button, Textarea, FieldLabel } from '../components/ui';
+import { BackButton, Button, Textarea, FieldLabel } from '../components/ui';
 import { hapticTap, hapticMedium, hapticSuccess, hapticError } from '../lib/haptics';
 
 export function SodaDetailPage() {
@@ -299,13 +299,7 @@ export function SodaDetailPage() {
 
       {/* Article header */}
       <div className="flex items-start gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate(`/stash/${stashId}`)}
-          className="tap-44 p-1.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 mt-1"
-        >
-          <ChevronLeft size={20} />
-        </button>
+        <BackButton onClick={() => navigate(`/stash/${stashId}`)} />
 
         <div className="flex-1 min-w-0">
           {editing ? (
