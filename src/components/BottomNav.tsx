@@ -1,6 +1,6 @@
-import { NavLink, useLocation, matchPath } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Layers, Plus, CupSoda, BarChart3 } from 'lucide-react';
+import { Layers, CupSoda, BarChart3 } from 'lucide-react';
 
 /** Shared so the active indicator slides between tabs rather than cutting. */
 const INDICATOR = 'bottomnav-active';
@@ -25,11 +25,6 @@ function TabContents({ active, children }: { active: boolean; children: React.Re
 }
 
 export function BottomNav() {
-  const { pathname } = useLocation();
-  const match = matchPath('/stash/:id/*', pathname) ?? matchPath('/stash/:id', pathname);
-  const stashId = match?.params.id;
-  const onAddPage = !!matchPath('/stash/:id/add', pathname);
-
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-(--z-header) bg-gray-50 dark:bg-gray-950 border-t border-gray-200 dark:border-gray-700 pb-safe">
       <div className="flex items-center justify-around h-16">
@@ -80,21 +75,10 @@ export function BottomNav() {
             </TabContents>
           )}
         </NavLink>
-        {stashId && (
-          <NavLink
-            to={`/stash/${stashId}/add`}
-            className={`flex flex-col items-center justify-center px-8 h-full transition-colors font-sans ${
-              onAddPage
-                ? 'text-sky-600 dark:text-sky-400'
-                : 'text-gray-400 dark:text-gray-500'
-            }`}
-          >
-            <TabContents active={onAddPage}>
-              <Plus size={20} strokeWidth={onAddPage ? 2.5 : 1.75} />
-              <span className="text-[10px] uppercase tracking-widest">Add</span>
-            </TabContents>
-          </NavLink>
-        )}
+        {/* There used to be a fourth tab here, linking to a collection's add page.
+            It made the bar four wide inside a collection, which overflowed by 83px at
+            320 and 13px at 390 — and it is redundant now: adding is on the Sodas screen
+            and on the collection page's own button. */}
       </div>
     </nav>
   );

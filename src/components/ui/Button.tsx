@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { twMerge } from 'tailwind-merge';
 
 type Variant = 'primary' | 'secondary' | 'danger';
-type Size = 'sm' | 'md';
+type Size = 'sm' | 'md' | 'lg';
 
 /** Drop the DOM drag/animation handlers framer-motion also declares, so they don't clash. */
 type NativeButtonProps = Omit<
@@ -27,9 +27,15 @@ const variants: Record<Variant, string> = {
     'font-medium normal-case text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:text-red-600 hover:border-red-300',
 };
 
+// `sm` was text-xs — 12px of uppercase, tracked out, which reads as a label rather than
+// something you press. 13px is still compact and no longer whispering.
 const sizes: Record<Size, string> = {
-  sm: 'px-3 py-2 text-xs',
-  md: 'px-4 py-3 text-sm',
+  sm: 'px-3.5 py-2.5 text-[13px]',
+  md: 'px-5 py-3 text-sm',
+  // For the one action a screen is really offering. Deliberately not full width: a bar
+  // spanning the viewport reads as a banner, and the thing that makes a button look
+  // pressable is having an edge on both sides.
+  lg: 'px-7 py-3.5 text-[15px]',
 };
 
 export function Button({ variant = 'primary', size = 'sm', className, type = 'button', disabled, ...rest }: Props) {

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Camera, X, Barcode, AlertTriangle, Zap } from 'lucide-react';
+import { Camera, X, Barcode, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { imageRejection } from '../lib/imageUpload';
 import { useAuth } from '../contexts/AuthContext';
@@ -20,8 +20,6 @@ export function AddSodaPage() {
 
   const { sodas, addSoda } = useStashSodas(stashId, user?.id);
 
-  const [quickMode, setQuickMode] = useState(true);
-  const [addedCount, setAddedCount] = useState(0);
   const [name, setName] = useState('');
   const [brand, setBrand] = useState('');
   const [score, setScore] = useState(0);
@@ -67,14 +65,6 @@ export function AddSodaPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
-  function resetForm() {
-    setName('');
-    setBrand('');
-    setScore(0);
-    clearImage();
-    setTimeout(() => nameInputRef.current?.focus(), 50);
-  }
-
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
 
   const duplicate = useMemo(() => {
@@ -91,16 +81,14 @@ export function AddSodaPage() {
     const trimmed = name.trim();
     if (!trimmed) return;
 
-    // Quick Add hides brand/photo, so never save values the user can't currently see —
-    // the state is kept so switching back to Full Details restores what they typed.
     // addSoda is optimistic and queues offline, so this does not wait on the network:
     // at a tasting you can keep logging on a dead connection and it syncs later.
     const result = addSoda(
       trimmed,
-      quickMode ? '' : brand.trim(),
+      brand.trim(),
       score > 0 ? score : null,
       displayName,
-      quickMode ? null : imageFile,
+      imageFile,
     );
 
     if (!result) {
@@ -109,45 +97,13 @@ export function AddSodaPage() {
     }
 
     toast.success(`"${trimmed}" added to collection.`);
-    if (quickMode) {
-      setAddedCount((c) => c + 1);
-      resetForm();
-    } else {
-      navigate(`/stash/${stashId}`);
-    }
+    navigate(`/stash/${stashId}`);
   }
 
   return (
     <div className="max-w-md mx-auto px-4 py-8">
 
       <PageHeader title="Add a Soda" onBack={() => navigate(`/stash/${stashId}`)} />
-
-      {/* Mode toggle */}
-      <div className="flex gap-1 p-1 mb-5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <button
-          type="button"
-          onClick={() => setQuickMode(true)}
-          className={`tap-44 flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
-            quickMode
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          }`}
-        >
-          <Zap size={12} />
-          Quick Add
-        </button>
-        <button
-          type="button"
-          onClick={() => setQuickMode(false)}
-          className={`tap-44 flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-sans text-xs font-medium uppercase tracking-wider transition-all ${
-            !quickMode
-              ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          }`}
-        >
-          Full Details
-        </button>
-      </div>
 
       {/* Scan entry point */}
       <button
@@ -206,100 +162,74 @@ export function AddSodaPage() {
           </AnimatePresence>
         </div>
 
-        {/* Manufacturer — Full Details only */}
-        <AnimatePresence initial={false}>
-          {!quickMode && (
-            <motion.div
-              key="brand"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="mb-5">
-                <FieldLabel className="mb-1.5">
-                  Manufacturer <span className="text-gray-400 font-normal">(optional)</span>
-                </FieldLabel>
-                <Input
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  placeholder="e.g. Boylan Bottling Co."
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Manufacturer — always shown; Quick Add used to hide it. */}
+          <div className="mb-5">
+            <FieldLabel className="mb-1.5">
+              Manufacturer <span className="text-gray-400 font-normal">(optional)</span>
+            </FieldLabel>
+            <Input
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder="e.g. Boylan Bottling Co."
+            />
+          </div>
 
-        {/* Photo — Full Details only */}
-        <AnimatePresence initial={false}>
-          {!quickMode && (
-            <motion.div
-              key="photo"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="mb-5">
-                <FieldLabel className="mb-1.5">
-                  Photo <span className="text-gray-400 font-normal">(optional)</span>
-                </FieldLabel>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="sr-only"
-                  onChange={handleImageSelect}
+        {/* Photo — always shown; Quick Add used to hide it. */}
+          <div className="mb-5">
+            <FieldLabel className="mb-1.5">
+              Photo <span className="text-gray-400 font-normal">(optional)</span>
+            </FieldLabel>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleImageSelect}
+            />
+            <AnimatePresence mode="wait">
+            {imagePreview ? (
+              <motion.div
+                key="preview"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="relative rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+              >
+                <img
+                  src={imagePreview}
+                  alt="Soda preview"
+                  className="w-full h-52 object-cover"
                 />
-                <AnimatePresence mode="wait">
-                {imagePreview ? (
-                  <motion.div
-                    key="preview"
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.96 }}
-                    transition={{ duration: 0.2, ease: 'easeOut' }}
-                    className="relative rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
-                  >
-                    <img
-                      src={imagePreview}
-                      alt="Soda preview"
-                      className="w-full h-52 object-cover"
-                    />
-                    <button
-                      type="button"
-                      onClick={clearImage}
-                      className="tap-44 absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
-                      aria-label="Remove photo"
-                    >
-                      <X size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="tap-44 absolute bottom-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
-                      aria-label="Change photo"
-                    >
-                      <Camera size={14} />
-                    </button>
-                  </motion.div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full h-28 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-sky-400 dark:hover:border-sky-500 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
-                  >
-                    <Camera size={20} />
-                    <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add photo</span>
-                  </button>
-                )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="tap-44 absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  aria-label="Remove photo"
+                >
+                  <X size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="tap-44 absolute bottom-2 right-2 p-1.5 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                  aria-label="Change photo"
+                >
+                  <Camera size={14} />
+                </button>
+              </motion.div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-28 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500 hover:border-sky-400 dark:hover:border-sky-500 hover:text-sky-500 dark:hover:text-sky-400 transition-colors"
+              >
+                <Camera size={20} />
+                <span className="text-[10px] font-sans uppercase tracking-[0.2em]">Add photo</span>
+              </button>
+            )}
+            </AnimatePresence>
+          </div>
 
         {/* Rating */}
         <div className="mb-5">
@@ -320,33 +250,9 @@ export function AddSodaPage() {
 
         <div className="border-t border-gray-200 dark:border-gray-700 pt-5 space-y-3">
           <Button type="submit" size="md" disabled={!name.trim()} className="w-full">
-            {quickMode ? 'Add & Next' : 'Add to Collection'}
+            Add to Collection
           </Button>
 
-          <AnimatePresence>
-            {quickMode && addedCount > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                <p className="flex items-center justify-center gap-1.5 font-sans text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                  <span aria-hidden>✓</span>
-                  Added {addedCount} {addedCount === 1 ? 'soda' : 'sodas'}
-                </p>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => navigate(`/stash/${stashId}`)}
-                  className="w-full"
-                >
-                  Done Logging
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
       </form>
     </div>
