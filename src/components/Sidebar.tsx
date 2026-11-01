@@ -44,6 +44,27 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
 
       {/* Navigation column */}
       <nav className="flex-1 px-3 py-5 overflow-y-auto">
+        {/* The desktop half of the bottom nav. `BottomNav` is `md:hidden`, so the only
+            link to /stats in the whole app disappeared above 768px — and that page is
+            where everything you *do* now lives (look a soda up, add one, rate one), so
+            without this a desktop user could reach it only by typing the URL. The same
+            trap as the admin link in the footer below. */}
+        <NavLink
+          to="/stats"
+          className={({ isActive }) =>
+            `flex items-center gap-2.5 pl-3 pr-3 py-2 mb-4 text-sm font-sans font-medium transition-colors rounded-lg border-l-2 ${
+              isActive
+                ? 'border-sky-500 dark:border-sky-400 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+            }`
+          }
+        >
+          <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white">
+            <BarChart3 size={12} />
+          </span>
+          <span className="flex-1 truncate">Ratings</span>
+        </NavLink>
+
         <p className="px-3 pb-2 text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-500 border-b border-gray-300 dark:border-gray-700 mb-2">
           Your Collections
         </p>
