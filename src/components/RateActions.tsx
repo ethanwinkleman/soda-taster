@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CupSoda, Plus, EyeOff, Barcode, Refrigerator } from 'lucide-react';
+import { Search, CupSoda, Plus, EyeOff, Barcode } from 'lucide-react';
 import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useHomeUntasted } from '../hooks/useHomeUntasted';
@@ -11,33 +11,47 @@ import { useStashSodas } from '../hooks/useStashSodas';
 import { searchSodas, hasExactMatch, tastedSummary } from '../lib/sodaSearch';
 import { buildReveal, formatScore } from '../lib/reveal';
 import { StarRating } from '../components/StarRating';
-import { Button } from '../components/ui';
-import { FloatingBubbles } from '../components/FloatingBubbles';
-import { Skeleton } from '../components/Skeleton';
+import { Button } from './ui';
+import { Skeleton } from './Skeleton';
 import { hapticTap, hapticMedium } from '../lib/haptics';
 
 interface Props {
   stashes: Stash[];
   loading: boolean;
+  /**
+   * The page's summary tiles, drawn between the action buttons and the waiting list.
+   *
+   * They belong above the list rather than under it: the list is five rows deep, so
+   * below it the numbers were off the bottom of every phone. They are passed in rather
+   * than rendered here because they are the ratings page's content, not an action —
+   * this component only owns the three things you *do*.
+   */
+  numbers?: React.ReactNode;
 }
 
+/** How many of the waiting-on-you rows to draw. */
+const SHORTLIST = 5;
+
 /**
- * The main screen, and the only one anyone uses often.
+ * The things on the ratings screen that you *do*, as opposed to read.
  *
- * Two jobs happen all the time and they are the same interaction: "have we had this
- * before?" and "rate this now". You type a name; either it comes back with a score
- * against it, which is the answer, or it does not and you add it. Everything else —
- * how you are doing, managing collections — is occasional or rare, and lives elsewhere
- * so that it is not sitting on top of this.
+ * This used to be a tab of its own — a whole screen whose only content was a search box
+ * and a shortlist, which for a household that has rated everything is a screen with
+ * nothing on it. It is a section now: the ratings page is where you look a past rating
+ * up and where you file a new one, and those belong together.
+ *
+ * Three actions, in the order they come up: look one up, add one that isn't here, and
+ * rate one that is waiting. Rating happens inline — the row expands and the reveal lands
+ * in the same row, because opening a page to set five stars puts a navigation on the most
+ * frequent action in the app.
  */
-export function SodasPage({ stashes, loading }: Props) {
+export function RateActions({ stashes, loading, numbers }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
 
   const [query, setQuery] = useState('');
-  /** The row currently expanded for rating — inline, so the search stays put. */
   const [openId, setOpenId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -53,15 +67,19 @@ export function SodasPage({ stashes, loading }: Props) {
   const results = useMemo(() => searchSodas(sodas, query), [sodas, query]);
   const exact = hasExactMatch(results, query);
 
-  /** With no query, the shortlist is what you are most likely reaching for. */
+  // A soda somebody else has already scored is sealed until you rate it, and that is
+  // the whole reason to get to it. The count comes from the RPC; their scores do not.
   const sealedIds = useMemo(
     () => new Set(untasted.filter((u) => u.ratingCount > 0).map((u) => u.id)),
     [untasted],
   );
-  const shortlist = useMemo(() => {
+  const waiting = useMemo(() => {
     const byId = new Map(sodas.map((s) => [s.id, s]));
-    return untasted.map((u) => byId.get(u.id)).filter((s): s is TasteSoda => !!s).slice(0, 8);
+    return untasted.map((u) => byId.get(u.id)).filter((s): s is TasteSoda => !!s);
   }, [untasted, sodas]);
+
+  const list = query ? results : waiting.slice(0, SHORTLIST);
+  const hidden = query ? 0 : Math.max(0, waiting.length - SHORTLIST);
 
   function toggle(soda: TasteSoda) {
     hapticTap();
@@ -87,38 +105,14 @@ export function SodasPage({ stashes, loading }: Props) {
     setOpenId(null);
   }
 
-  if (!loading && stashes.length === 0) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center">
-        <div className="relative inline-flex items-center justify-center mb-4">
-          <CupSoda size={32} className="text-gray-300 dark:text-gray-700" />
-          <FloatingBubbles size={32} className="absolute inset-0" />
-        </div>
-        <h1 className="font-display text-lg font-bold text-gray-800 dark:text-gray-200 mb-1.5">
-          Start a collection first
-        </h1>
-        <p className="font-sans text-sm text-gray-400 dark:text-gray-500 mb-5">
-          Sodas live in a collection. Make one and you can start rating.
-        </p>
-        <Button onClick={() => navigate('/collections')} className="w-full py-2.5">
-          Go to collections
-        </Button>
-      </div>
-    );
-  }
-
-  const list = query ? results : shortlist;
-
   return (
-    <div className="max-w-md mx-auto px-4 py-5">
-      {/* Nothing above the search. It is the first thing on the most-used screen
-          because it answers both frequent questions at once. */}
+    <section aria-label="Actions">
       <div className="relative">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
         <input
           value={query}
           onChange={(e) => { setQuery(e.target.value); setJustRated(null); }}
-          placeholder="Have we had this? Search or add…"
+          placeholder="Have we had this? Search…"
           autoComplete="off"
           className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400"
         />
@@ -126,42 +120,44 @@ export function SodasPage({ stashes, loading }: Props) {
 
       <div className="mt-2 flex gap-2">
         <Button
-          variant="secondary"
-          onClick={() => navigate(`/stash/${stashes[0]?.id}/scan`)}
+          onClick={() => navigate(`/stash/${stashes[0]?.id}/add`)}
           disabled={!stashes.length}
-          className="tap-44 flex-1 py-2"
+          className="tap-44 flex-1 py-2.5"
         >
-          <Barcode size={13} />
-          Scan
+          <Plus size={14} />
+          Add soda
         </Button>
         <Button
           variant="secondary"
-          onClick={() => navigate(`/stash/${stashes[0]?.id}/add`)}
+          onClick={() => navigate(`/stash/${stashes[0]?.id}/scan`)}
           disabled={!stashes.length}
-          className="tap-44 flex-1 py-2"
+          className="tap-44 flex-1 py-2.5"
         >
-          <Plus size={13} />
-          Add new
+          <Barcode size={14} />
+          Scan
         </Button>
       </div>
 
-      {!query && (
+      {/* Only when not searching: between the box and its results, the tiles would be
+          pushing the answer you just asked for down the screen. */}
+      {!query && numbers}
+
+      {!query && waiting.length > 0 && (
         <p className="mt-5 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-          {shortlist.length ? 'Not rated yet' : 'Everything is rated'}
+          Waiting on you
+          <span className="ml-2 normal-case tracking-normal text-gray-400 dark:text-gray-500">
+            {waiting.length} unrated
+          </span>
         </p>
       )}
 
       {(loading || sodasLoading) ? (
         <div className="mt-3 space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-16 rounded-2xl" />
           ))}
         </div>
-      ) : list.length === 0 ? (
-        <p className="mt-6 font-sans text-sm text-gray-400 dark:text-gray-500 text-center">
-          {query ? `No soda here matches “${query}”.` : 'Nothing left to try — add one.'}
-        </p>
-      ) : (
+      ) : list.length > 0 ? (
         <motion.div
           className="mt-3 space-y-2"
           initial="hidden"
@@ -184,20 +180,32 @@ export function SodasPage({ stashes, loading }: Props) {
             />
           ))}
         </motion.div>
+      ) : query ? (
+        <p className="mt-4 font-sans text-sm text-gray-400 dark:text-gray-500 text-center">
+          No soda here matches “{query}”.
+        </p>
+      ) : null}
+
+      {hidden > 0 && (
+        <p className="mt-2 font-sans text-[11px] text-gray-400 dark:text-gray-500">
+          {hidden} more unrated — open a collection to work through them.
+        </p>
       )}
 
-      {/* Only when nothing in the collection is already exactly this. */}
+      {/* Only when nothing already here is exactly this: offering to add a second
+          Henry Weinhard's is how a collection ends up with three of them. */}
       {query && !exact && (
         <Button
           variant="secondary"
           onClick={() => navigate(`/stash/${stashes[0]?.id}/add`, { state: { name: query } })}
+          disabled={!stashes.length}
           className="tap-44 w-full mt-3 py-2.5"
         >
           <Plus size={13} />
           Add “{query}” as new
         </Button>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -242,7 +250,6 @@ function SodaRow({ soda, sealed, open, justRated, score, saving, onToggle, onSco
           <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-snug">
             {soda.name}
           </p>
-          {/* The answer to "have we had this", on the line under the name. */}
           <p className="mt-0.5 font-sans text-[11px] text-gray-500 dark:text-gray-400 truncate">
             {summary ?? (sealed ? 'Rate it to see what they said' : soda.brand || 'Not rated yet')}
           </p>
@@ -257,7 +264,7 @@ function SodaRow({ soda, sealed, open, justRated, score, saving, onToggle, onSco
             {formatScore(soda.myScore)}
           </span>
         ) : (
-          <Refrigerator size={14} className="shrink-0 text-gray-300 dark:text-gray-600" />
+          <span className="shrink-0 font-sans text-[11px] text-gray-300 dark:text-gray-600">—</span>
         )}
       </motion.button>
 

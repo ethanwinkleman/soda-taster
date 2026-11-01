@@ -355,7 +355,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
     return (
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <p className="font-sans text-gray-400 dark:text-gray-500">Collection not found.</p>
-        <NavLink to="/collections" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
+        <NavLink to="/" className="mt-4 inline-block font-sans text-sm underline text-gray-600 dark:text-gray-400">← Back to collections</NavLink>
       </div>
     );
   }
@@ -383,13 +383,20 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       {/* Section masthead */}
       <div className="mb-6">
         <div className="flex items-start gap-2">
-          <BackButton onClick={() => navigate('/collections')} className="md:hidden" />
+          <BackButton onClick={() => navigate('/')} className="md:hidden" />
           <div className="flex-1 min-w-0">
             {/* Name row — ⋯ floats top-right, name fills remaining width */}
             <div className="relative pr-9">
-              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              {/* `break-words`, not just wrapping: a collection named as one unbroken token
+                      (a brand run together, a pasted URL) is wider than the column, and its
+                      text paints outside its own box — past the right edge of a phone, where
+                      the shell’s `overflow-x-hidden` means it cannot even be scrolled to. */}
+              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words min-w-0">
                 {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
-                {stash.name}
+                {/* The name is its own flex item: a bare text node is an anonymous one at
+                    `min-width: auto`, which for an unbroken token is the whole word, so
+                    `break-words` on the h1 alone never gets a chance to break it. */}
+                <span className="min-w-0 break-words">{stash.name}</span>
               </h1>
               <div className="absolute right-0 top-0">
                 <div className="relative">
@@ -489,60 +496,62 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       </div>
 
-      {/* Sized rather than stretched. Spanning the full width made it read as a banner
-          instead of a button, and 12px type did not help. Outside the title row so it
-          centres on the page rather than on the column beside the back arrow. */}
-      <Button
-        size="lg"
-        onClick={() => navigate(`/stash/${stashId}/add`)}
-        className="tap-44 mt-4 mb-5 mx-auto flex"
-      >
-        <Plus size={16} />
-        Add Soda
-      </Button>
-
-
-      {/* Group / Mine score toggle — only when multiple people have rated */}
-      {!loading && showScoreToggle && (
-        <div className="flex mb-3 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => { hapticTap(); setScoreView('group'); }}
-            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
-              scoreView === 'group'
-                ? 'text-white dark:text-gray-950'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-            }`}
-          >
-            {scoreView === 'group' && (
-              <motion.span
-                layoutId="scoreview-pill"
-                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
-                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              />
-            )}
-            <span className="relative">Group</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => { hapticTap(); setScoreView('mine'); }}
-            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-200 dark:border-gray-700 ${
-              scoreView === 'mine'
-                ? 'text-white dark:text-gray-950'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-            }`}
-          >
-            {scoreView === 'mine' && (
-              <motion.span
-                layoutId="scoreview-pill"
-                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
-                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              />
-            )}
-            <span className="relative">Mine</span>
-          </button>
-        </div>
-      )}
+      {/* The actions row: the score lens on the left, the one thing anyone came here to
+          do on the right. The add button sat above this on its own, centred, which read
+          as a section rather than a control; beside the toggle it is where the eye
+          already is. The row renders whether or not the toggle does — the toggle only
+          appears once more than one person has rated, and the primary action cannot
+          come and go with it. */}
+      <div className="flex items-center gap-2 mt-4 mb-3">
+        {!loading && showScoreToggle && (
+          <div className="flex flex-1 min-w-0 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => { hapticTap(); setScoreView('group'); }}
+              className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                scoreView === 'group'
+                  ? 'text-white dark:text-gray-950'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              {scoreView === 'group' && (
+                <motion.span
+                  layoutId="scoreview-pill"
+                  className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                />
+              )}
+              <span className="relative">Group</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { hapticTap(); setScoreView('mine'); }}
+              className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-200 dark:border-gray-700 ${
+                scoreView === 'mine'
+                  ? 'text-white dark:text-gray-950'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              {scoreView === 'mine' && (
+                <motion.span
+                  layoutId="scoreview-pill"
+                  className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                />
+              )}
+              <span className="relative">Mine</span>
+            </button>
+          </div>
+        )}
+        <Button
+          size="lg"
+          onClick={() => navigate(`/stash/${stashId}/add`)}
+          className="tap-44 ml-auto shrink-0"
+        >
+          <Plus size={16} />
+          Add Soda
+        </Button>
+      </div>
 
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
       {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">

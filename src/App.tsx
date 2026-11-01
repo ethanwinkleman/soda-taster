@@ -1,6 +1,6 @@
 import { Suspense, useEffect } from 'react';
 import { lazyWithRetry } from './lib/chunkRecovery';
-import { BrowserRouter, Routes, Route, useLocation, useNavigationType } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Toaster } from 'sonner';
 import { QueryClient } from '@tanstack/react-query';
@@ -35,7 +35,6 @@ const persister = createSyncStoragePersister({
 });
 
 const StashesPage       = lazyWithRetry(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
-const SodasPage         = lazyWithRetry(() => import('./pages/SodasPage').then(m => ({ default: m.SodasPage })));
 const StatsPage         = lazyWithRetry(() => import('./pages/StatsPage').then(m => ({ default: m.StatsPage })));
 const StashPage         = lazyWithRetry(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
 const AddSodaPage       = lazyWithRetry(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
@@ -116,16 +115,18 @@ function AppRoutes() {
             <ScrollToTop />
             <Suspense fallback={<RouteFallback />}>
             <Routes location={location}>
-              {/* Ordered by how often each is actually used. Searching for a soda —
-                  which answers "have we had this?" and "rate this now" with one box —
-                  happens constantly; checking your ratings happens sometimes; managing
-                  collections almost never. */}
-              <Route path="/" element={<SodasPage stashes={stashes} loading={stashesLoading} />} />
-              <Route path="/stats" element={<StatsPage stashes={stashes} loading={stashesLoading} />} />
+              {/* Two screens, in the order the bottom nav shows them: the collections,
+                  then the ratings — which is also where the three things you *do* live
+                  (look a soda up, add one, rate one that is waiting). Those had a tab of
+                  their own and it was mostly empty. */}
               <Route
-                path="/collections"
+                path="/"
                 element={<StashesPage stashes={stashes} loading={stashesLoading} error={stashesError} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}
               />
+              <Route path="/stats" element={<StatsPage stashes={stashes} loading={stashesLoading} />} />
+              {/* The collections list used to live here, and the URL is in people's
+                  history and in anything they shared. One canonical path. */}
+              <Route path="/collections" element={<Navigate to="/" replace />} />
               <Route
                 path="/stash/:id"
                 element={
