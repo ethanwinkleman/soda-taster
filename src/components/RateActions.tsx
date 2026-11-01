@@ -18,9 +18,18 @@ import { hapticTap, hapticMedium } from '../lib/haptics';
 interface Props {
   stashes: Stash[];
   loading: boolean;
+  /**
+   * The page's summary tiles, drawn between the action buttons and the waiting list.
+   *
+   * They belong above the list rather than under it: the list is five rows deep, so
+   * below it the numbers were off the bottom of every phone. They are passed in rather
+   * than rendered here because they are the ratings page's content, not an action —
+   * this component only owns the three things you *do*.
+   */
+  numbers?: React.ReactNode;
 }
 
-/** How many of the waiting-on-you rows to draw before the page's numbers start. */
+/** How many of the waiting-on-you rows to draw. */
 const SHORTLIST = 5;
 
 /**
@@ -36,7 +45,7 @@ const SHORTLIST = 5;
  * in the same row, because opening a page to set five stars puts a navigation on the most
  * frequent action in the app.
  */
-export function RateActions({ stashes, loading }: Props) {
+export function RateActions({ stashes, loading, numbers }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -128,6 +137,10 @@ export function RateActions({ stashes, loading }: Props) {
           Scan
         </Button>
       </div>
+
+      {/* Only when not searching: between the box and its results, the tiles would be
+          pushing the answer you just asked for down the screen. */}
+      {!query && numbers}
 
       {!query && waiting.length > 0 && (
         <p className="mt-5 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">

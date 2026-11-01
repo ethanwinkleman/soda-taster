@@ -81,6 +81,33 @@ export function StatsPage({ stashes, loading }: Props) {
     );
   }
 
+  const summaryTiles = (loading || sodasLoading) ? (
+    <div className="mt-5 grid grid-cols-2 gap-2">
+      <Skeleton className="h-20 rounded-2xl" />
+      <Skeleton className="h-20 rounded-2xl" />
+    </div>
+  ) : rated.length === 0 ? null : (
+    <>
+      <p className="mt-5 mb-2 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+        Your numbers
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        <Tile label="Rated" value={String(rated.length)} caption="sodas" />
+        <Tile label="Your average" value={myAvg === null ? '—' : myAvg.toFixed(1)} caption={`of ${rated.length}`} icon={<Star size={11} className="text-amber-500" />} />
+      </div>
+      {top && (
+        <div className="mt-2">
+          <Tile
+            label="Your top rated"
+            value={(top.myScore ?? 0).toFixed(1)}
+            caption={top.name}
+            icon={<Trophy size={11} className="text-amber-500" />}
+          />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="max-w-md mx-auto px-4 py-6">
       <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -90,11 +117,14 @@ export function StatsPage({ stashes, loading }: Props) {
         Across every collection you are in.
       </p>
 
-      <RateActions stashes={stashes} loading={loading} />
+      {/* The tiles ride inside the actions block, above the waiting list: five rows is
+          deeper than a phone, so underneath it they were off the bottom of the screen.
+          The chart and the palate stay below — those are what you came to look at once
+          the summary has told you whether it is worth it. */}
+      <RateActions stashes={stashes} loading={loading} numbers={summaryTiles} />
 
       {(loading || sodasLoading) ? (
         <div className="mt-6 space-y-4">
-          <Skeleton className="h-20 rounded-2xl" />
           <Skeleton className="h-60 rounded-2xl" />
         </div>
       ) : rated.length === 0 ? (
@@ -107,25 +137,7 @@ export function StatsPage({ stashes, loading }: Props) {
         </div>
       ) : (
         <>
-          <p className="mt-8 mb-2 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
-            Your numbers
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <Tile label="Rated" value={String(rated.length)} caption="sodas" />
-            <Tile label="Your average" value={myAvg === null ? '—' : myAvg.toFixed(1)} caption={`of ${rated.length}`} icon={<Star size={11} className="text-amber-500" />} />
-          </div>
-          {top && (
-            <div className="mt-2">
-              <Tile
-                label="Your top rated"
-                value={(top.myScore ?? 0).toFixed(1)}
-                caption={top.name}
-                icon={<Trophy size={11} className="text-amber-500" />}
-              />
-            </div>
-          )}
-
-          <div className="mt-4">
+          <div className="mt-8">
             <RatingDistribution
               buckets={distribution}
               comparison={comparison}
