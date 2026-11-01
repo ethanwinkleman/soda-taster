@@ -157,17 +157,16 @@ It sits **in the actions row, to the right of the Group/Mine toggle**, rather th
 
 **The bottom nav is two tabs — Collections, then Ratings — and three is the ceiling.** It was three until the Sodas screen folded into `/stats`. A fourth was tried once, inside a collection, and it overflowed the bar by **83px at 320 and 13px at 390**. Anything added here needs the overflow sweep run again; the bar is `fixed`, so a tab past the edge is invisible rather than scrollable.
 
-### The collections page answers "what now", not "what do I own"
+### The collections page is the shelf
 
-`StashesPage` (now at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
+`StashesPage` (at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) is **Your Collections → Your Palate → Recently Tasted**: what you own, then who you are, then what the group did.
 
-The order is now **Waiting on you → In your fridge → Recently Tasted → Your Collections → Your Palate**: what to do, then what the group did, then what you own, then who you are.
+It briefly carried two "what now" panels above the list — *Waiting on you* (sodas the group has scored and you have not, which rating unseals) and *In your fridge* — split out of one `home_untasted` read by `lib/homeFeed.ts`. They are gone, along with that module and `UntastedSection`. The ratings tab's waiting list is the **same read, unsplit**, so it is a strict superset of both, and two screens asking for the same thing is worse than one — the same reason onboarding never appears beside an empty state making the same request. Collections is the repo; the actions live under Ratings.
 
-**Waiting on you is the point.** Under blind rating, a soda somebody else has scored stays sealed until you rate it — so those sodas carry a verdict you cannot see, and rating one is what reveals it. Nothing in the app said so. `home_untasted` (`20260101002400`) returns every unrated soda across all of the viewer's collections in one call, rather than a round trip per collection.
+`home_untasted` (`20260101002400`) itself still earns its place: it returns every unrated soda across all of the viewer's collections in one call, rather than a round trip per collection.
 
 - **It returns no score column at all.** Every soda in it is unrated by the viewer and therefore sealed by definition; sending a number would reopen what `20260101002000` closed. Pass 5 of the verifier asserts the signature has no score column, that a member sees their own collections' unrated sodas with the other raters' *count*, that a soda drops off once they rate it, and that a non-member sees nothing.
 - **The count comes from `soda_rating_count`**, not `count(*)`: under the blind-rating policy a plain count sees only rows the caller may read, which here is none of them.
-- The split between the two lists is pure and lives in `lib/homeFeed.ts`, so a soda appears in exactly one — a sealed soda belongs to "waiting on you" even when it is sitting in the fridge.
 
 **The verifier's `authenticated` role needs usage on the `auth` schema.** Every policy of the form `user_id = auth.uid()` is evaluated as the *calling* role, so without that grant a signed-in caller cannot read its own rows. Supabase grants it; the stub did not, which did not make the tests stricter — it limited passes 4 and 5 to whatever happened to run SECURITY DEFINER, and `home_untasted` failed outright on a database that does not exist.
 
@@ -195,6 +194,11 @@ Three things make that sweep worth trusting:
 - **Skip the parked share card.** `ShareCardButton` keeps a `TastingCard` at `left:-9999px` so html2canvas can rasterise it; that is parked, not clipped.
 - **Ask *what* is clipping it.** Everything is clipped, because the shell is `overflow-x-hidden` — so the test is whether the nearest clipping ancestor ends inside the page or at the viewport edge. A `truncate` parent ending inside the page is a designed ellipsis; the shell clipping at the edge is the bug, because there is nothing to scroll to. Without that distinction every `·` inside a truncated line is a finding.
 - **A box inside the viewport can still paint its text outside it.** `getBoundingClientRect` returns the box, not the glyphs, so an unbroken token in a non-truncating element reports clean while running off the screen — which is exactly what the unbroken-token fixture exists to produce. `scrollWidth > clientWidth` is what sees it, and the collection title was failing this at every width.
+
+Two things the stub has to be honest about, both of which hid a section rather than breaking one:
+
+- **A component that hides itself needs fixtures past its threshold.** `TasteProfile` returns `null` below five of *your own* ratings, so a fixture with three makes "Your Palate" simply absent — which looks exactly like having deleted it.
+- **supabase-js resolves embedded relations in the select string.** `useMyRatings` asks for `score, stash_sodas(name, brand)`; a stub that ignores the select argument hands back rows with no names, and the generated profile comes out empty.
 
 Modals and sheets need opening — none of them is a route, and `/stash/:id` alone leaves Settings, Inventory, Top Rated and the shopping list unmeasured.
 
