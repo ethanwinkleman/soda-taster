@@ -129,13 +129,15 @@ Four jobs, at wildly different frequencies:
 
 | Job | How often | Where it lives |
 | --- | --- | --- |
-| Rate a soda now · "have we had this?" | constantly | `/` — `SodasPage` |
-| Check your ratings, look one up | sometimes | `/stats` — `StatsPage` |
-| Create, join, manage a collection | rarely | `/collections`, `/stash/:id` |
+| Rate a soda now · "have we had this?" | constantly | `/stats` — `RateActions`, at the top |
+| Check your ratings | sometimes | `/stats` — `StatsPage`, below the actions |
+| Create, join, manage a collection | rarely | `/` — `StashesPage`, `/stash/:id` |
 
-**The two frequent jobs are the same interaction.** You type a name; either it comes back with a score against it — *"You 5 · Dana 3.5"*, which is the answer to "have we had this?" — or it does not, and the next line offers to add it. One box, no collection to pick first. That is why `SodasPage` searches **across every collection**: scoping it would put a step in front of the only two things anyone does often.
+**The two frequent jobs are the same interaction.** You type a name; either it comes back with a score against it — *"You 5 · Dana 3.5"*, which is the answer to "have we had this?" — or it does not, and the next line offers to add it. One box, no collection to pick first. That search runs **across every collection**: scoping it would put a step in front of the only two things anyone does often.
 
 Rating happens **inline in the search result**: the row expands, you set the stars, and the reveal (`lib/reveal.ts`) appears in the same row. Opening a page to rate puts a navigation on the most frequent action in the app.
+
+**Those actions are a section, not a screen.** They had a tab of their own (`SodasPage` at `/`), and the third pass at this failed the same way as the first two — a screen whose only content is a search box and a shortlist of unrated sodas is, for a household that has rated everything, a screen with nothing on it. `RateActions` is now the top of `/stats`, which is where looking a past rating up already belonged: what you do, then how you are doing. Collections took `/` and the first tab, because owning the shelf is the thing that exists before any of this.
 
 **`useTasteSodas` does not re-implement blind rating.** A plain read of `stash_soda_ratings` returns your own rows always and everyone else's only for sodas you have already rated (`20260101002000`) — exactly the set where showing them is right. No RPC, and no client copy of the rule. It deliberately selects only `soda_id, user_id, display_name, score`: this runs on every search.
 
@@ -143,15 +145,17 @@ Two earlier passes at this did not land, and both failed the same way: they **ad
 
 **Adding a soda has one mode.** `AddSodaPage` used to open in Quick Add, which hid the manufacturer and the photo and turned the submit button into "Add & Next" so you stayed on the form. Full Details is now the only path: the form always shows name, manufacturer, photo and rating, and saving returns to the collection. The branches it removed — `quickMode ? '' : brand`, `quickMode ? null : imageFile` — existed to avoid saving fields the user could not currently see, and with nothing hidden there is nothing to guard.
 
-**A full-width bar does not read as a button.** The collection page's primary action was `w-full` at `text-xs`, which is 12px of tracked-out uppercase across the whole viewport — a banner. It is `size="lg"` now (165×51 at 15px), sized rather than stretched, and rendered *outside* the title row so it centres on the page rather than on the column beside the back arrow. `Button`'s default `sm` also went from `text-xs` to 13px: the same 12px was on every button in the app.
+**A full-width bar does not read as a button.** The collection page's primary action was `w-full` at `text-xs`, which is 12px of tracked-out uppercase across the whole viewport — a banner. It is `size="lg"` now (165×51 at 15px), sized rather than stretched. `Button`'s default `sm` also went from `text-xs` to 13px: the same 12px was on every button in the app.
+
+It sits **in the actions row, to the right of the Group/Mine toggle**, rather than centred on its own line where it read as a section rather than a control. Two things that row has to get right: it renders whether or not the toggle does — the toggle only appears once more than one person has rated, and the primary action cannot come and go with it — and the toggle is `flex-1 min-w-0` so the fixed-width button keeps its size. Measured at 320: toggle 115px, button 165×51, right edge at 304 of 320.
 
 **The back control is one component, `ui/BackButton`.** It was in five places at four different sizes: 44px with no visible edge (`PageHeader`), 32px with an invisible 44 around it (the collection and soda pages), 32px with nothing (`BarcodeResultPage`) and 38px (`BarcodeScanPage`). It is now 44px **visible** and 56px hittable everywhere, with the standard surface — white, hairline border, soft shadow — because a target whose edges you cannot see does not read as a target, which is the same reason the add button stopped being a full-width bar. The extra hit area reaches into the page margin and the title beside it, neither of which is interactive, so it costs nothing; `-ml-2` keeps the chevron optically where the smaller button put it so no page title shifts.
 
-**The bottom nav is three tabs, and three is the limit.** A fourth appeared inside a collection — an Add tab — and it overflowed the bar by **83px at 320 and 13px at 390**. Adding is already on the Sodas screen and on the collection page's own button, so it went rather than the labels being shrunk. Anything added here needs the overflow sweep run again; the bar is `fixed`, so a tab past the edge is invisible rather than scrollable.
+**The bottom nav is two tabs — Collections, then Ratings — and three is the ceiling.** It was three until the Sodas screen folded into `/stats`. A fourth was tried once, inside a collection, and it overflowed the bar by **83px at 320 and 13px at 390**. Anything added here needs the overflow sweep run again; the bar is `fixed`, so a tab past the edge is invisible rather than scrollable.
 
 ### The collections page answers "what now", not "what do I own"
 
-`StashesPage` (now at `/collections`) was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
+`StashesPage` (now at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) was a filing cabinet: a list of collections, with everything active buried below it. The parts that give someone a reason to open the app already existed — they were just in the wrong order, and the best of them was not surfaced at all.
 
 The order is now **Waiting on you → In your fridge → Recently Tasted → Your Collections → Your Palate**: what to do, then what the group did, then what you own, then who you are.
 
@@ -185,12 +189,16 @@ Three things make that sweep worth trusting:
 - **Fixtures need an unbroken token**, not just a long phrase. A long phrase wraps; `Henryweinhardscraftbeveragecompanyincorporated` and a bare URL are what actually break a layout, and a fixture full of spaces never exercises it.
 - **Skip anything inside a horizontally scrollable ancestor.** `/admin`'s table is `min-w-[26rem]` inside `overflow-x-auto` on purpose, and reporting it is a false positive.
 - **Skip the parked share card.** `ShareCardButton` keeps a `TastingCard` at `left:-9999px` so html2canvas can rasterise it; that is parked, not clipped.
+- **Ask *what* is clipping it.** Everything is clipped, because the shell is `overflow-x-hidden` — so the test is whether the nearest clipping ancestor ends inside the page or at the viewport edge. A `truncate` parent ending inside the page is a designed ellipsis; the shell clipping at the edge is the bug, because there is nothing to scroll to. Without that distinction every `·` inside a truncated line is a finding.
+- **A box inside the viewport can still paint its text outside it.** `getBoundingClientRect` returns the box, not the glyphs, so an unbroken token in a non-truncating element reports clean while running off the screen — which is exactly what the unbroken-token fixture exists to produce. `scrollWidth > clientWidth` is what sees it, and the collection title was failing this at every width.
 
 Modals and sheets need opening — none of them is a route, and `/stash/:id` alone leaves Settings, Inventory, Top Rated and the shopping list unmeasured.
 
 **Tap targets use `.tap-44`, not padding.** Measured on a phone, the icon buttons were 20x20 (change photo), 26x26 (edit soda, refresh, delete comment) and 30x30 (the collection menu) — the smallest genuinely hard to land on. The utility in `index.css` centres an invisible pseudo-element of at least 44px over the control, so it grows only the dimension that is short and moves nothing. Padding plus a negative margin does the same thing, but the amount differs per icon and a large negative margin starts stealing taps from the control next to it.
 
 Two deliberate exceptions, both because widening would make things worse: the ten `RatingDistribution` bars are adjacent segments 26px wide, and expanding them to 44 would overlap their neighbours so a tap lands on the wrong bucket; and a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker.
+
+**A bare text node inside a `flex` element is an anonymous flex item at `min-width: auto`**, whose minimum is the widest unbroken word — so `break-words` on the flex container never gets the chance to break anything. The collection title needed the name wrapped in its own `<span className="min-w-0 break-words">`; the class on the `h1` alone did nothing, and the sweep said so.
 
 **A pseudo-element hit area is invisible to `getBoundingClientRect`.** Measuring tap targets by their box says nothing about `.tap-44`; ask `document.elementFromPoint` how far from the centre a tap still lands on the control. Scroll each one to the middle of the viewport first — `elementFromPoint` returns null outside the viewport, which reads as a 0x0 target and is not a finding.
 
@@ -306,8 +314,10 @@ Two things it has to get right, both covered by tests:
 
 ```
 /                          → StashesPage       (list + create + join)
+/collections               → redirect to /     (the old URL; one canonical path)
+/stats                     → StatsPage         (RateActions, then the numbers)
 /stash/:id                 → StashPage         (soda list, settings/inventory/top-rated/shopping-list sheets)
-/stash/:id/add             → AddSodaPage       (Quick Add / Full Details modes)
+/stash/:id/add             → AddSodaPage       (name, manufacturer, photo, rating)
 /stash/:id/scan            → BarcodeScanPage
 /stash/:id/scan/result     → BarcodeResultPage
 /stash/:id/activity        → StashActivityPage
