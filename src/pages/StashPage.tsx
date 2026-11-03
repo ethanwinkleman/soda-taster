@@ -738,7 +738,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       ) : (
         <motion.div
-          className="space-y-2"
+          // A shelf, not a spreadsheet. Two up on a phone (138px cards at 320),
+          // three once the column is wide enough to hold them.
+          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
           initial="hidden"
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
@@ -766,7 +768,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               onClick={() => { hapticTap(); loadMore(); }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-              className="w-full py-4 flex flex-col items-center gap-1 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              className="col-span-full w-full py-4 flex flex-col items-center gap-1 rounded-2xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white dark:hover:bg-gray-800 transition-colors"
             >
               <span className="font-display text-sm font-bold">
                 Show {Math.min(10, sorted.length - visibleCount)} more
