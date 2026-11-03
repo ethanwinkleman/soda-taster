@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CupSoda, Plus, EyeOff, Barcode } from 'lucide-react';
+import { Search, CupSoda, Plus, EyeOff, Barcode, Refrigerator } from 'lucide-react';
 import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useHomeUntasted } from '../hooks/useHomeUntasted';
@@ -250,9 +250,21 @@ function SodaRow({ soda, sealed, open, justRated, score, saving, onToggle, onSco
           <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-snug">
             {soda.name}
           </p>
-          <p className="mt-0.5 font-sans text-[11px] text-gray-500 dark:text-gray-400 truncate">
-            {summary ?? (sealed ? 'Rate it to see what they said' : soda.brand || 'Not rated yet')}
-          </p>
+          <div className="mt-0.5 flex items-center gap-2">
+            <p className="font-sans text-[11px] text-gray-500 dark:text-gray-400 truncate">
+              {summary ?? (sealed ? 'Rate it to see what they said' : soda.brand || 'Not rated yet')}
+            </p>
+            {/* The same stock chip the collection cards carry. On a photo it needs a
+                dark pill to stay legible; on a white row it is the row's own muted
+                type, so it reads as part of the line rather than a sticker on it.
+                `shrink-0` so it survives a long name — the text truncates, not this. */}
+            {soda.inFridge && (
+              <span className="shrink-0 flex items-center gap-1 font-sans text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <Refrigerator size={10} />
+                {soda.quantity > 0 ? `×${soda.quantity}` : 'stocked'}
+              </span>
+            )}
+          </div>
         </div>
 
         {sealed && soda.myScore === null ? (

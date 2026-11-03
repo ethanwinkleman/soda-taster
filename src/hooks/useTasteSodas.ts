@@ -14,6 +14,9 @@ export interface TasteSoda {
   name: string;
   brand: string;
   imageUrl: string | null;
+  /** Stock, so a row can say whether there is one to open right now. */
+  inFridge: boolean;
+  quantity: number;
   /** Your own score, or null if you have not rated it. Always yours to see. */
   myScore: number | null;
   /** Everyone else's, which the database only hands over once you have rated. */
@@ -38,7 +41,7 @@ export interface TasteSoda {
 async function loadTasteSodas(stashIds: string[], userId: string): Promise<TasteSoda[]> {
   const { data: sodaRows, error: sodaError } = await supabase
     .from('stash_sodas')
-    .select('id, stash_id, name, brand, image_url')
+    .select('id, stash_id, name, brand, image_url, in_fridge, quantity')
     .in('stash_id', stashIds);
 
   // supabase-js resolves with { error } rather than throwing, and a failed read here
@@ -78,6 +81,10 @@ async function loadTasteSodas(stashIds: string[], userId: string): Promise<Taste
     name: row.name,
     brand: row.brand ?? '',
     imageUrl: row.image_url ?? null,
+    // Defaulted, not assumed: a row rehydrated from a cache written before these two
+    // columns existed has neither, and "no stock chip" is the right answer for it.
+    inFridge: row.in_fridge ?? false,
+    quantity: Number(row.quantity ?? 0),
     myScore: mine.get(row.id) ?? null,
     others: theirs.get(row.id) ?? [],
   }));
