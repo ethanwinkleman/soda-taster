@@ -133,6 +133,8 @@ Four jobs, at wildly different frequencies:
 | Check your ratings | sometimes | `/stats` — `StatsPage`, below the actions |
 | Create, join, manage a collection | rarely | `/` — `StashesPage`, `/stash/:id` |
 
+**What keeps `/stats` a page of its own** is the part that is *not* scoped to a collection: the search answers "have we had this?" without making you pick one first, the row rates inline and reveals in place, and the spread compares you against everyone. The collection page's search and Try Next are the same ideas scoped to the collection you are already inside — useful there, not a replacement. The tiles differ too: `/stats` counts *your* ratings across everything, `/stash/:id` describes *that collection*.
+
 **The two frequent jobs are the same interaction.** You type a name; either it comes back with a score against it — *"You 5 · Dana 3.5"*, which is the answer to "have we had this?" — or it does not, and the next line offers to add it. One box, no collection to pick first. That search runs **across every collection**: scoping it would put a step in front of the only two things anyone does often.
 
 Rating happens **inline in the search result**: the row expands, you set the stars, and the reveal (`lib/reveal.ts`) appears in the same row. Opening a page to rate puts a navigation on the most frequent action in the app.
@@ -160,6 +162,8 @@ It sits **in the actions row, to the right of the Group/Mine toggle**, rather th
 ### The collections page is the shelf
 
 `StashesPage` (at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) is **Your Collections → Your Palate → Recently Tasted**: what you own, then who you are, then what the group did.
+
+**`TasteProfile` renders here and nowhere else.** It was on this page *and* on `/stats` at once — the same component against the same `useMyRatings` read — so the app said the same thing twice and neither screen was the answer. Who you are as a taster belongs with the shelf; `/stats` keeps the numbers and the spread, which have no other home. The same rule as the two "what now" panels below, and as onboarding beside an empty state: when a panel appears on two screens, delete one rather than letting both half-own it.
 
 It briefly carried two "what now" panels above the list — *Waiting on you* (sodas the group has scored and you have not, which rating unseals) and *In your fridge* — split out of one `home_untasted` read by `lib/homeFeed.ts`. They are gone, along with that module and `UntastedSection`. The ratings tab's waiting list is the **same read, unsplit**, so it is a strict superset of both, and two screens asking for the same thing is worse than one — the same reason onboarding never appears beside an empty state making the same request. Collections is the repo; the actions live under Ratings.
 
