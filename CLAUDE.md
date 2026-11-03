@@ -220,7 +220,17 @@ A soda on the collection page was a text row with a 64px thumbnail, which made a
 
 The gradients are pairs of cherry, fizz teal and the citrus pop — the only three hues the design system has — and each one's light end sits bottom-right, under the scrim, so it never costs contrast where the name is. That is also why a placeholder needs no separate treatment from a real photo: both are dark enough at the bottom for the same white type.
 
-**The scrim is load-bearing, and the pale photo is the case that proves it.** A soda photo is someone's camera roll, so the type cannot assume a dark background; `from-black/85 via-black/45 to-transparent` over the bottom three-fifths is what keeps the name legible over a near-white bottle shot. Verify with a *pale* fixture, not a dark one — a dark photo makes any treatment look fine.
+**The caption sits on a flat `bg-black/65 backdrop-blur-sm` band, not a gradient.** A soda photo is someone's camera roll, so the type cannot assume a dark background, and a fade's lower stop still shifts with whatever is behind it — a flat wash reads the same over a near-white bottle shot as over a dark one. The blur kills the detail underneath so a busy label does not fight the name, and the band covers only the caption, so the bottle still owns the card.
+
+**65% and not 55%, because of the second line.** Measured from rendered pixels against a deliberately pale fixture, a 55% band put the `white/75` meta line at **3.67:1** — under AA for 10px type — while the name was comfortable either way. At 65% the palest band is `rgb(87,85,82)`, giving 7.43:1 for the name and 5.06:1 for the meta. That is effectively the floor: a *pure white* photo composites to `rgb(89,89,89)`, two points darker than what was measured.
+
+Three things that measurement has to get right, each of which produced a wrong answer first:
+
+- **Inset past the rounded corners.** The pixels just outside a `rounded-2xl` card are the cream page background, and they win "lightest pixel" on every card — every band reported 1.03:1.
+- **Hide *every* child of the band, not a list of tags.** A CSS selector naming `p` and `span` left the controversial `<svg>` flame visible, which then reported 2.83:1 — an icon's colour masquerading as a contrast failure.
+- **Check the dimmer line, not just the heading.** White passes almost anything; `white/75` composites toward the band and is what sets the floor.
+
+Verify with a *pale* fixture, not a dark one — a dark photo makes any treatment look fine.
 
 **A "Not rated" badge marks the sodas waiting on you**, cherry-filled at top-left, stacked above the stock chip so the two never collide on a 138px card. It keys off `soda.myRating === null`, not `ratingCount` — untasted means *you* have not rated it, and a soda the group has already scored is the one you most want to get to. On those it sits alongside the sealed-eye badge, which together read as "you have not rated this, and there is a verdict waiting".
 
