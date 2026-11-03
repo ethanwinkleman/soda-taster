@@ -5,6 +5,7 @@ import { searchSodas, hasExactMatch, tastedSummary } from './sodaSearch';
 function soda(over: Partial<TasteSoda> & { name: string }): TasteSoda {
   return {
     id: over.name, stashId: 'st', brand: '', imageUrl: null,
+    inFridge: false, quantity: 0,
     myScore: null, others: [],
     ...over,
   };

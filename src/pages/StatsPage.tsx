@@ -5,10 +5,8 @@ import type { Soda } from '../types/stash';
 import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useTasteSodas } from '../hooks/useTasteSodas';
-import { useMyRatings } from '../hooks/useMyRatings';
 import { ratingDistribution, ratingComparison } from '../lib/ratingVisibility';
 import { RatingDistribution } from '../components/RatingDistribution';
-import { TasteProfile } from '../components/TasteProfile';
 import { RateActions } from '../components/RateActions';
 import { FloatingBubbles } from '../components/FloatingBubbles';
 import { Button } from '../components/ui';
@@ -22,6 +20,12 @@ interface Props {
 /**
  * Ratings — what you do, then how you are doing.
  *
+ * "Your Palate" is deliberately *not* here. It rendered on this page and on the
+ * collections page at once — the same component against the same `useMyRatings` read —
+ * which is the "two screens asking for the same thing" problem this codebase keeps
+ * running into. It belongs with the shelf, where it was asked for; this page keeps the
+ * numbers and the spread, which have no other home.
+ *
  * The page opens with `RateActions`: look a soda up, add one, rate one that is waiting.
  * Those were a tab of their own, which for a two-person household that has rated
  * everything was a screen with nothing on it. Below them are the numbers, which are
@@ -33,7 +37,6 @@ export function StatsPage({ stashes, loading }: Props) {
   const { user } = useAuth();
   const stashIds = useMemo(() => stashes.map((s) => s.id), [stashes]);
   const { sodas, loading: sodasLoading } = useTasteSodas(stashIds, user?.id);
-  const { data: myRatings = [] } = useMyRatings(user?.id);
   const [scoreFilter, setScoreFilter] = useState<number | null>(null);
 
   // The chart and the comparison are already written against the collection page's
@@ -167,9 +170,6 @@ export function StatsPage({ stashes, loading }: Props) {
                 />
               </div>
 
-              <div className="mt-4">
-                <TasteProfile ratings={myRatings} />
-              </div>
             </>
           )}
         </div>

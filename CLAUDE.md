@@ -133,6 +133,8 @@ Four jobs, at wildly different frequencies:
 | Check your ratings | sometimes | `/stats` — `StatsPage`, below the actions |
 | Create, join, manage a collection | rarely | `/` — `StashesPage`, `/stash/:id` |
 
+**What keeps `/stats` a page of its own** is the part that is *not* scoped to a collection: the search answers "have we had this?" without making you pick one first, the row rates inline and reveals in place, and the spread compares you against everyone. The collection page's search and Try Next are the same ideas scoped to the collection you are already inside — useful there, not a replacement. The tiles differ too: `/stats` counts *your* ratings across everything, `/stash/:id` describes *that collection*.
+
 **The two frequent jobs are the same interaction.** You type a name; either it comes back with a score against it — *"You 5 · Dana 3.5"*, which is the answer to "have we had this?" — or it does not, and the next line offers to add it. One box, no collection to pick first. That search runs **across every collection**: scoping it would put a step in front of the only two things anyone does often.
 
 Rating happens **inline in the search result**: the row expands, you set the stars, and the reveal (`lib/reveal.ts`) appears in the same row. Opening a page to rate puts a navigation on the most frequent action in the app.
@@ -141,7 +143,7 @@ Rating happens **inline in the search result**: the row expands, you set the sta
 
 **Those actions are a section, not a screen.** They had a tab of their own (`SodasPage` at `/`), and the third pass at this failed the same way as the first two — a screen whose only content is a search box and a shortlist of unrated sodas is, for a household that has rated everything, a screen with nothing on it. `RateActions` is now the top of `/stats`, which is where looking a past rating up already belonged: what you do, then how you are doing. Collections took `/` and the first tab, because owning the shelf is the thing that exists before any of this.
 
-**`useTasteSodas` does not re-implement blind rating.** A plain read of `stash_soda_ratings` returns your own rows always and everyone else's only for sodas you have already rated (`20260101002000`) — exactly the set where showing them is right. No RPC, and no client copy of the rule. It deliberately selects only `soda_id, user_id, display_name, score`: this runs on every search.
+**`useTasteSodas` does not re-implement blind rating.** A plain read of `stash_soda_ratings` returns your own rows always and everyone else's only for sodas you have already rated (`20260101002000`) — exactly the set where showing them is right. No RPC, and no client copy of the rule. Its *ratings* read deliberately selects only `soda_id, user_id, display_name, score`: that one runs on every search, and names, notes and timestamps would ride along for nothing. The *sodas* read carries `in_fridge, quantity` as well, so a ratings row can say whether there is one to open right now — the same stock chip the collection cards show, in the row's own muted type rather than the dark pill a photo needs.
 
 Two earlier passes at this did not land, and both failed the same way: they **added** a surface instead of reorganising. A dashboard of lists is still lists, and a new front door on top of an unchanged collection page just made the app bigger. What fixed it was moving things *off* the busy screen — the rating spread and the score tiles were sitting between the filters and the first soda on `/stash/:id`, so the rare job owned the top of the most-used page. The chart moved to `/stats`; the tiles moved below the list, because they are also the way into the inventory and top-rated sheets and deleting them would have cost real functionality.
 
@@ -160,6 +162,8 @@ It sits **in the actions row, to the right of the Group/Mine toggle**, rather th
 ### The collections page is the shelf
 
 `StashesPage` (at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) is **Your Collections → Your Palate → Recently Tasted**: what you own, then who you are, then what the group did.
+
+**`TasteProfile` renders here and nowhere else.** It was on this page *and* on `/stats` at once — the same component against the same `useMyRatings` read — so the app said the same thing twice and neither screen was the answer. Who you are as a taster belongs with the shelf; `/stats` keeps the numbers and the spread, which have no other home. The same rule as the two "what now" panels below, and as onboarding beside an empty state: when a panel appears on two screens, delete one rather than letting both half-own it.
 
 It briefly carried two "what now" panels above the list — *Waiting on you* (sodas the group has scored and you have not, which rating unseals) and *In your fridge* — split out of one `home_untasted` read by `lib/homeFeed.ts`. They are gone, along with that module and `UntastedSection`. The ratings tab's waiting list is the **same read, unsplit**, so it is a strict superset of both, and two screens asking for the same thing is worse than one — the same reason onboarding never appears beside an empty state making the same request. Collections is the repo; the actions live under Ratings.
 
@@ -337,6 +341,8 @@ Conventions used by `useStashes` and `useStashSodas`, worth matching in new hook
 Because the cache is keyed and shared, calling `useStashSodas` in several components (`StashPage`, `AddSodaPage`, `SodaDetailPage`, `BarcodeScanPage`, `BarcodeResultPage`, `useSodaComments`) does **not** cause duplicate round-trips.
 
 Bump `buster` in `App.tsx` when a change makes previously persisted cache shapes invalid.
+
+**A `buster` bump is not free, so it is for shapes that break, not shapes that grow.** A mismatch calls `persister.removeClient()` on the whole persisted blob, and that blob holds the **paused mutations** as well as the queries — so bumping throws away any rating queued offline and not yet replayed. Adding a scalar field to a persisted type (`TasteSoda` gained `inFridge`/`quantity`) cannot crash a rehydrated row the way a missing array can: default it in the `fromDb` mapper, read it with `&&`, and an old cache simply renders without it until the next refetch, which `staleTime` makes almost immediate. Bump when a field *changes shape or disappears*; default-and-degrade when one is added.
 
 **This has already been forgotten once, and it takes the app down rather than degrading it.** `stash_soda_list` changed `Soda` from `ratings[]` to `otherScores[]` + `ratingCount` without a bump, so the first load after the deploy rehydrated a soda written by the previous build and the charts spread an array that was not there: *Spread syntax requires ...iterable not be null or undefined*, and a blank collection page. The cache outlives the deploy — it is the one piece of state a release cannot migrate — so treat any change to a persisted shape as a `buster` change, and read the arrays defensively anyway, because a bump only takes effect once a client loads the new build.
 
