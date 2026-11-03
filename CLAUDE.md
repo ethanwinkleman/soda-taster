@@ -222,6 +222,10 @@ The gradients are pairs of cherry, fizz teal and the citrus pop — the only thr
 
 **The scrim is load-bearing, and the pale photo is the case that proves it.** A soda photo is someone's camera roll, so the type cannot assume a dark background; `from-black/85 via-black/45 to-transparent` over the bottom three-fifths is what keeps the name legible over a near-white bottle shot. Verify with a *pale* fixture, not a dark one — a dark photo makes any treatment look fine.
 
+**A "Not rated" badge marks the sodas waiting on you**, cherry-filled at top-left, stacked above the stock chip so the two never collide on a 138px card. It keys off `soda.myRating === null`, not `ratingCount` — untasted means *you* have not rated it, and a soda the group has already scored is the one you most want to get to. On those it sits alongside the sealed-eye badge, which together read as "you have not rated this, and there is a verdict waiting".
+
+Two details it needs: a `ring-1 ring-white/60`, because a cherry pill on a cherry tile is legible but does not pop; and **the meta line must not repeat it**. In the Mine view that line used to read "Not rated" for exactly the sodas the badge is now on, so the card said it twice — where the badge covers it, the line carries the group's count instead.
+
 Two things the grid changed that are easy to miss:
 
 - **The infinite-scroll sentinel is a child of the grid**, so it needs `col-span-full` or it sits in a cell as a third of a row. It still loads on press as well as on intersection.
