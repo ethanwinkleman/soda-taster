@@ -214,7 +214,7 @@ Two deliberate exceptions, both because widening would make things worse: the te
 
 ### The soda card is the photo
 
-A soda on the collection page was a text row with a 64px thumbnail, which made a shelf read as a spreadsheet — the bottle is the thing you recognise and it was the smallest element on the card. The card is the photo now: name on a scrim across the bottom, score badge overlaid top-right, stock chip top-left. The list is a grid, two up on a phone (138×173 at 320, 173×216 at 390) and three up once the column is wide enough (234×292 at 1440).
+A soda on the collection page was a text row with a 64px thumbnail, which made a shelf read as a spreadsheet — the bottle is the thing you recognise and it was the smallest element on the card. The card is the photo now: name on a scrim across the bottom, score badge overlaid top-right, stock chip top-left. The list is a grid that widens with the page: two up on a phone (138×173 at 320, 173×216 at 390), three from `sm:`, four at `xl:` (271×339 at 1440) and five at `2xl:` (214×268 at 1920).
 
 **Most sodas have no photo, so the placeholder has to be a design rather than a gap.** It is a cup watermark over one of six on-brand gradients chosen by hashing the soda's id (`lib/sodaTile.ts`). One fixed gradient would make a shelf of unphotographed sodas *less* scannable than the text list it replaced — you could not tell two of them apart without reading. Hashing gives each soda a stable colour, so the Moxie is the teal one and it is the teal one every time the app opens. Derived rather than stored or random: a value picked at render changes on every re-render, and a stored one is a column to migrate.
 
@@ -256,7 +256,9 @@ The ratings page needed 1700px of scroll on a 900px screen while 736px of viewpo
 
 **The split is at `xl:`, not `lg:`.** The sidebar is `md:` and takes 256px, so a 1024px viewport leaves a 768px canvas — two columns of ~350px, narrower than the phone layout they replaced. `lg:` widens the single column instead; `xl:` (1280, a 1024px canvas, ~480px per column) is where two columns start paying.
 
-**Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: `/stats` splits before the numbers, soda detail between the rating control and the flavour notes, `/stash/:id` between the list and the summary tiles, `/` between the collections list and the palate.
+**Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: `/stats` splits before the numbers, soda detail between the rating control and the flavour notes, and `/` between the collections list and the palate.
+
+`/stash/:id` was two columns too — list left, summary tiles right — and is **one column again**. The tiles read as the page's answer to "what is in here", so they lead: *metrics → Group/Mine and Add Soda → filters → the shelf*. Beside the list they were a 380px strip; across the top they are the three tiles they were designed as. The width is not wasted by going back to one column, because the list is a grid: it widens to four cards at `xl:` and five at `2xl:` instead of three in a 2fr column.
 
 The one exception is the `/stats` summary tiles, which sit *above* the waiting list on a phone and *beside* it on a desktop. **That markup is rendered twice and hidden per breakpoint**, deliberately: `order` can move a flex child within one container but cannot move it between two independent columns, and explicit `grid-row` placement ties the short column's rows to the tall one's heights. `display:none` keeps the hidden copy out of the accessibility tree, so nothing is announced twice.
 
@@ -264,7 +266,7 @@ Three things that only show up once the columns exist:
 
 - **Columns have to start at the same y.** The palate heading sat 32px above the collections heading, because the left column kept a stacked-layout `mt-8` the right one had dropped. Give the stacked margin an `xl:mt-0`.
 - **A control sized with `flex-1` stretches to whatever row it is in.** The Group/Mine toggle is 115px on a phone and went to **944px** across a desktop row — a banner, the same failure the add button had. It is `xl:flex-none xl:w-64`.
-- **A row of tiles that was a strip under a list becomes a 380px strip with 700px of nothing under it.** The collection page's metrics stack in the column (`xl:grid-cols-1 xl:divide-x-0 xl:divide-y`) so they read as a summary panel.
+- **A row of tiles put in a narrow column becomes a 380px strip with 700px of nothing under it.** That is what sent the collection page's metrics to the top of a single column instead; a three-across strip wants the full width, not a sidebar.
 
 `AddSodaPage` stays a single column at `lg:max-w-xl`. Two columns break tab order and scanning, and a field set is one of the few things a narrow measure genuinely suits.
 

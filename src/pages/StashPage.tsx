@@ -496,6 +496,87 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       </div>
 
+      {/* The metrics lead. They answer "what is in here" in one glance, which is the
+          question someone opens a collection with — and unlike the list they are a
+          fixed three tiles, so they cost one strip rather than a screen. They are
+          also the way into the inventory and top-rated sheets. */}
+      {/* Below the list on purpose. These are a summary and the way into the
+          inventory and top-rated sheets — worth having, but not worth putting
+          between someone and the soda they came to find. */}
+      {/* Metrics row — skeleton while loading, real data once ready */}
+      {loading ? (
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
+              <Skeleton className="h-2 w-14" />
+              <Skeleton className="h-6 w-10 mt-0.5" />
+              <Skeleton className="h-2 w-12" />
+            </div>
+          ))}
+        </div>
+      ) : sodas.length > 0 && (
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
+          <button
+            type="button"
+            onClick={() => setInventoryOpen(true)}
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
+            </div>
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+              {fridgeSodas.length}
+            </span>
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTopOpen(true)}
+            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
+            </div>
+            {activeTopThree.length > 0 ? (
+              <>
+                <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+                  {scoreView === 'mine'
+                    ? activeTopThree[0].myRating?.score.toFixed(1)
+                    : activeTopThree[0].avgScore?.toFixed(1)}
+                </span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
+                  {activeTopThree[0].name}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-display text-2xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
+                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
+              </>
+            )}
+          </button>
+
+          <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Star size={12} className="text-amber-500 shrink-0" />
+              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
+            </div>
+            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+              {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
+            </span>
+            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              {(scoreView === 'mine' ? myRatedSodas : ratedSodas).length} rated
+            </span>
+          </div>
+        </div>
+      )}
+
+
       {/* The actions row: the score lens on the left, the one thing anyone came here to
           do on the right. The add button sat above this on its own, centred, which read
           as a section rather than a control; beside the toggle it is where the eye
@@ -553,12 +634,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </Button>
       </div>
 
-      {/* Two columns once there is room. The list is what someone came for, so it
-          takes the left; the summary tiles and the way into the inventory and
-          top-rated sheets move beside it rather than below, which is what made this
-          page 1455px tall with 512px empty at 1440. */}
-      <div className="xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
-      <div className="xl:min-w-0">
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
       {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
         <div className="basis-full sm:basis-0 sm:flex-1 relative">
@@ -738,9 +813,10 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       ) : (
         <motion.div
-          // A shelf, not a spreadsheet. Two up on a phone (138px cards at 320),
-          // three once the column is wide enough to hold them.
-          className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+          // A shelf, not a spreadsheet. Two up on a phone (138px cards at 320) and
+          // more as the page widens — the list spans the whole page now rather than
+          // sitting in a column, so three would leave the cards oversized.
+          className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3"
           initial="hidden"
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.03 } } }}
@@ -781,87 +857,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </motion.div>
       )}
 
-      </div>
-
-      <div className="xl:min-w-0">
-      {/* Below the list on purpose. These are a summary and the way into the
-          inventory and top-rated sheets — worth having, but not worth putting
-          between someone and the soda they came to find. */}
-      {/* Metrics row — skeleton while loading, real data once ready */}
-      {loading ? (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
-              <Skeleton className="h-2 w-14" />
-              <Skeleton className="h-6 w-10 mt-0.5" />
-              <Skeleton className="h-2 w-12" />
-            </div>
-          ))}
-        </div>
-      ) : sodas.length > 0 && (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden xl:grid-cols-1 xl:divide-x-0 xl:divide-y shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
-          <button
-            type="button"
-            onClick={() => setInventoryOpen(true)}
-            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-          >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Refrigerator size={12} className="text-gray-600 dark:text-gray-400 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">In Stock</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-              {fridgeSodas.length}
-            </span>
-            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-              {fridgeSodas.length === 1 ? 'soda' : 'sodas'}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTopOpen(true)}
-            className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
-          >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Trophy size={12} className="text-amber-600 dark:text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Top' : 'Top Rated'}</span>
-            </div>
-            {activeTopThree.length > 0 ? (
-              <>
-                <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-                  {scoreView === 'mine'
-                    ? activeTopThree[0].myRating?.score.toFixed(1)
-                    : activeTopThree[0].avgScore?.toFixed(1)}
-                </span>
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 truncate">
-                  {activeTopThree[0].name}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="font-display text-2xl font-bold text-gray-300 dark:text-gray-600 leading-none">—</span>
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">no ratings</span>
-              </>
-            )}
-          </button>
-
-          <div className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-0.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Star size={12} className="text-amber-500 shrink-0" />
-              <span className="font-sans text-[9px] font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400 truncate">{scoreView === 'mine' ? 'My Avg' : 'Avg Score'}</span>
-            </div>
-            <span className="font-display text-2xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
-              {activeAvg !== null ? activeAvg.toFixed(1) : '—'}
-            </span>
-            <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
-              {(scoreView === 'mine' ? myRatedSodas : ratedSodas).length} rated
-            </span>
-          </div>
-        </div>
-      )}
-
-      </div>
-      </div>
 
       {/* Settings modal */}
       <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Collection Settings" variant="dialog">
