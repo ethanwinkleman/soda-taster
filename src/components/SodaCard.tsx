@@ -48,8 +48,18 @@ export function SodaCard({
     ? (soda.myRating?.score ?? null)
     : (revealed ? soda.avgScore : null);
 
-  const ratingsText = scoreView === 'mine'
-    ? (soda.myRating ? 'My rating' : 'Not rated')
+  // "Not rated" means *you* have not rated it, whatever anyone else has done — a soda
+  // the group has already scored is the one you most want to get to, and rating it is
+  // also what unseals their verdict. Keying this off `ratingCount` would hide exactly
+  // those, which is the same trap Try Next documents.
+  const unrated = soda.myRating === null;
+
+  // The meta line never repeats the badge. In the Mine view it used to read "Not
+  // rated" for exactly the sodas the badge is now on, so the card said it twice; where
+  // the badge covers it, this carries the group's count instead, which is the thing the
+  // card would otherwise not tell you.
+  const ratingsText = scoreView === 'mine' && soda.myRating
+    ? 'My rating'
     : blindCount > 0
       ? `${blindCount} hidden`
       : `${soda.ratingCount} rating${soda.ratingCount !== 1 ? 's' : ''}`;
@@ -93,12 +103,21 @@ export function SodaCard({
           className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent pointer-events-none"
         />
 
-        {soda.inFridge && (
-          <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
-            <Refrigerator size={10} />
-            {soda.quantity > 0 ? `×${soda.quantity}` : 'stocked'}
-          </span>
-        )}
+        {/* Top-left stack, so the two chips never collide on a 138px card. Cherry for
+            the one that is a call to action, smoked glass for the one that is a fact. */}
+        <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
+          {unrated && (
+            <span className="rounded-full bg-sky-500 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-white ring-1 ring-white/60 shadow-[0_2px_8px_-2px_rgba(26,21,35,0.5)]">
+              Not rated
+            </span>
+          )}
+          {soda.inFridge && (
+            <span className="flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+              <Refrigerator size={10} />
+              {soda.quantity > 0 ? `×${soda.quantity}` : 'stocked'}
+            </span>
+          )}
+        </div>
 
         <div className="absolute right-2 top-2">
           {score !== null ? (
