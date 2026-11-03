@@ -212,6 +212,42 @@ Two deliberate exceptions, both because widening would make things worse: the te
 
 **Driving an element is not the same as seeing it.** Playwright's `click()` scrolls an off-screen element into view first, so the chip passed every functional check while being invisible to a person. A control's verification needs its box measured against the viewport, not just a successful click.
 
+### Desktop layout
+
+The signed-in app was a phone layout centred on a desktop canvas. Outside `md:hidden` on the nav, its pages contained **no responsive rules at all** — the only `lg:` classes in the codebase belonged to the signed-out landing page. Measured at 1440 with the 256px sidebar subtracted:
+
+| page | content | of canvas | page height |
+| --- | --- | --- | --- |
+| `/stats` | 448px | 38% | 1700px |
+| soda detail | 448px | 38% | 1512px |
+| `/stash/:id` | 672px | 57% | 1455px |
+| `/` | 672px | 57% | 900px |
+
+The ratings page needed 1700px of scroll on a 900px screen while 736px of viewport sat empty beside it. Those four pages are two columns now (1052 / 917 / 1315 / 900px tall, 86–97% of the canvas).
+
+**The split is at `xl:`, not `lg:`.** The sidebar is `md:` and takes 256px, so a 1024px viewport leaves a 768px canvas — two columns of ~350px, narrower than the phone layout they replaced. `lg:` widens the single column instead; `xl:` (1280, a 1024px canvas, ~480px per column) is where two columns start paying.
+
+**Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: `/stats` splits before the numbers, soda detail between the rating control and the flavour notes, `/stash/:id` between the list and the summary tiles, `/` between the collections list and the palate.
+
+The one exception is the `/stats` summary tiles, which sit *above* the waiting list on a phone and *beside* it on a desktop. **That markup is rendered twice and hidden per breakpoint**, deliberately: `order` can move a flex child within one container but cannot move it between two independent columns, and explicit `grid-row` placement ties the short column's rows to the tall one's heights. `display:none` keeps the hidden copy out of the accessibility tree, so nothing is announced twice.
+
+Three things that only show up once the columns exist:
+
+- **Columns have to start at the same y.** The palate heading sat 32px above the collections heading, because the left column kept a stacked-layout `mt-8` the right one had dropped. Give the stacked margin an `xl:mt-0`.
+- **A control sized with `flex-1` stretches to whatever row it is in.** The Group/Mine toggle is 115px on a phone and went to **944px** across a desktop row — a banner, the same failure the add button had. It is `xl:flex-none xl:w-64`.
+- **A row of tiles that was a strip under a list becomes a 380px strip with 700px of nothing under it.** The collection page's metrics stack in the column (`xl:grid-cols-1 xl:divide-x-0 xl:divide-y`) so they read as a summary panel.
+
+`AddSodaPage` stays a single column at `lg:max-w-xl`. Two columns break tab order and scanning, and a field set is one of the few things a narrow measure genuinely suits.
+
+**Verify by measuring the canvas, not the viewport.** The number that matters is content width against *viewport minus sidebar*, plus the page height against the viewport height — a page can be 100% wide and still be three screens tall. Run the overflow probe at 768/1024/1280/1440/1920 as well as the phone widths; nothing here is caught by the mobile sweep.
+
+Two ways the checks themselves lie once there are two columns:
+
+- **Sorting headings by `top` is not reading order.** In two columns the right column's first heading is above the left column's second. Sort by column first (`left`, then `top`), or a correct page reports as mis-ordered.
+- **`textContent` reads straight through `display:none`.** With the tiles rendered at both breakpoints, "is it on screen?" has to ask `getClientRects().length`, not whether the text is in the DOM.
+
+Finally: **the lint baseline counts the whole project**, so a scratch harness left in the repo inflates it. Delete it before reading the number.
+
 ### Photos
 
 A soda photo is downscaled before it is sent: 1200px on the longest edge, JPEG at 0.82. The app draws these at 36–48px in a list and ~150px on the detail page, and the biggest use is the share card; a 12MP phone photo uploaded whole is several megabytes to render a thumbnail. Quick Add is built for tasting events, which is where the connection is worst, so this is the upload that least wants them.

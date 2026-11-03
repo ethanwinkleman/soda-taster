@@ -101,7 +101,10 @@ export function AddSodaPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-8">
+    <div className="mx-auto px-4 py-8 max-w-md lg:max-w-xl">
+      {/* A single column on purpose — two columns break tab order and scanning, and
+          a field set is one of the few things a narrow measure genuinely suits. It
+          widens a little so it does not look stranded on a desktop. */}
 
       <PageHeader title="Add a Soda" onBack={() => navigate(`/stash/${stashId}`)} />
 

@@ -144,7 +144,7 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
   const stashNameMap = new Map(stashes.map((s) => [s.id, s.name]));
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="mx-auto px-4 py-8 max-w-2xl xl:max-w-6xl">
       <PullToRefreshIndicator pullDistance={pullDistance} refreshing={refreshing} />
 
       {/* Page masthead */}
@@ -272,13 +272,18 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
         />
       )}
 
+      {/* Two columns once there is room: the shelf on the left, who you are and what
+          the group did on the right. At 1440 this page used 57% of the canvas with
+          512px empty beside it. `items-start` keeps the short column from stretching. */}
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
+      <div className="xl:min-w-0">
       {/* Collections, then who you are, then what the group did.
           The two "what now" panels that used to sit above this — Waiting on you and
           In your fridge — are gone: the ratings tab's waiting list is the same
           `home_untasted` read *unsplit*, so it is a strict superset of both, and two
           screens asking for the same thing is worse than one. This page is the shelf. */}
       {!loading && stashes.length > 0 && (
-        <div className="flex items-baseline gap-3 mb-3 mt-8">
+        <div className="flex items-baseline gap-3 mb-3 mt-8 xl:mt-0">
           <h2 className="font-display text-sm font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">
             Your Collections
           </h2>
@@ -412,8 +417,11 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
         </motion.div>
       )}
 
+      </div>
+
+      <div className="xl:min-w-0 xl:mt-0">
       {/* Taste profile */}
-      {!loading && <TasteProfile ratings={myRatings} />}
+      <div className="xl:[&>div]:mt-0">{!loading && <TasteProfile ratings={myRatings} />}</div>
 
       {/* Recently Tasted supplemental section */}
       {!loading && recentActivity.length > 0 && (
@@ -459,6 +467,8 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
         </div>
       )}
 
+      </div>
+      </div>
     </div>
   );
 }
