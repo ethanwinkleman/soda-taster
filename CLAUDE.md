@@ -212,6 +212,21 @@ Two deliberate exceptions, both because widening would make things worse: the te
 
 **Driving an element is not the same as seeing it.** Playwright's `click()` scrolls an off-screen element into view first, so the chip passed every functional check while being invisible to a person. A control's verification needs its box measured against the viewport, not just a successful click.
 
+### The soda card is the photo
+
+A soda on the collection page was a text row with a 64px thumbnail, which made a shelf read as a spreadsheet — the bottle is the thing you recognise and it was the smallest element on the card. The card is the photo now: name on a scrim across the bottom, score badge overlaid top-right, stock chip top-left. The list is a grid, two up on a phone (138×173 at 320, 173×216 at 390) and three up once the column is wide enough (234×292 at 1440).
+
+**Most sodas have no photo, so the placeholder has to be a design rather than a gap.** It is a cup watermark over one of six on-brand gradients chosen by hashing the soda's id (`lib/sodaTile.ts`). One fixed gradient would make a shelf of unphotographed sodas *less* scannable than the text list it replaced — you could not tell two of them apart without reading. Hashing gives each soda a stable colour, so the Moxie is the teal one and it is the teal one every time the app opens. Derived rather than stored or random: a value picked at render changes on every re-render, and a stored one is a column to migrate.
+
+The gradients are pairs of cherry, fizz teal and the citrus pop — the only three hues the design system has — and each one's light end sits bottom-right, under the scrim, so it never costs contrast where the name is. That is also why a placeholder needs no separate treatment from a real photo: both are dark enough at the bottom for the same white type.
+
+**The scrim is load-bearing, and the pale photo is the case that proves it.** A soda photo is someone's camera roll, so the type cannot assume a dark background; `from-black/85 via-black/45 to-transparent` over the bottom three-fifths is what keeps the name legible over a near-white bottle shot. Verify with a *pale* fixture, not a dark one — a dark photo makes any treatment look fine.
+
+Two things the grid changed that are easy to miss:
+
+- **The infinite-scroll sentinel is a child of the grid**, so it needs `col-span-full` or it sits in a cell as a third of a row. It still loads on press as well as on intersection.
+- **`layoutId={...-score}` is set only in the group view.** The detail page draws that id on the group average, so handing it "mine" would fly your own score into the average's place.
+
 ### Desktop layout
 
 The signed-in app was a phone layout centred on a desktop canvas. Outside `md:hidden` on the nav, its pages contained **no responsive rules at all** — the only `lg:` classes in the codebase belonged to the signed-out landing page. Measured at 1440 with the 256px sidebar subtracted:
