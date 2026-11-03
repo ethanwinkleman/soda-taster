@@ -96,13 +96,6 @@ export function SodaCard({
           </motion.div>
         )}
 
-        {/* The photo is someone's camera roll, so the type cannot rely on it being
-            dark. The scrim is what makes white legible over any of them. */}
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent pointer-events-none"
-        />
-
         {/* Top-left stack, so the two chips never collide on a 138px card. Cherry for
             the one that is a call to action, smoked glass for the one that is a fact. */}
         <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
@@ -143,14 +136,20 @@ export function SodaCard({
           )}
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-2.5">
+        {/* A defined band rather than a soft fade. The photo is someone's camera roll,
+            so the type cannot rely on it being dark — a flat wash reads the same over a
+            near-white bottle shot as over a dark one, where the lower stop of a gradient
+            still shifts with whatever is behind it. `backdrop-blur-sm` kills the detail
+            underneath so a busy label does not fight the name, and the band only covers
+            the caption, so the bottle still owns the card. */}
+        <div className="absolute inset-x-0 bottom-0 p-2.5 bg-black/65 backdrop-blur-sm">
           <motion.p
             layoutId={`soda-${soda.id}-name`}
-            className="font-display font-bold text-[13px] leading-tight text-white line-clamp-2 [text-shadow:0_1px_3px_rgba(0,0,0,0.5)]"
+            className="font-display font-bold text-[13px] leading-tight text-white line-clamp-2"
           >
             {soda.name}
           </motion.p>
-          <div className="mt-1 flex items-center gap-1 font-sans text-[10px] uppercase tracking-wide text-white/75 [text-shadow:0_1px_2px_rgba(0,0,0,0.5)]">
+          <div className="mt-1 flex items-center gap-1 font-sans text-[10px] uppercase tracking-wide text-white/75">
             {soda.brand && (
               <>
                 <span className="truncate">{soda.brand}</span>
