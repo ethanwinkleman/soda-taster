@@ -378,7 +378,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="mx-auto px-4 py-8 max-w-2xl xl:max-w-6xl">
       <PullToRefreshIndicator pullDistance={pullDistance} refreshing={refreshing} />
       {/* Section masthead */}
       <div className="mb-6">
@@ -504,7 +504,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           come and go with it. */}
       <div className="flex items-center gap-2 mt-4 mb-3">
         {!loading && showScoreToggle && (
-          <div className="flex flex-1 min-w-0 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex flex-1 min-w-0 xl:flex-none xl:w-64 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <button
               type="button"
               onClick={() => { hapticTap(); setScoreView('group'); }}
@@ -553,6 +553,12 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </Button>
       </div>
 
+      {/* Two columns once there is room. The list is what someone came for, so it
+          takes the left; the summary tiles and the way into the inventory and
+          top-rated sheets move beside it rather than below, which is what made this
+          page 1455px tall with 512px empty at 1440. */}
+      <div className="xl:grid xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
+      <div className="xl:min-w-0">
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
       {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
         <div className="basis-full sm:basis-0 sm:flex-1 relative">
@@ -773,12 +779,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </motion.div>
       )}
 
+      </div>
+
+      <div className="xl:min-w-0">
       {/* Below the list on purpose. These are a summary and the way into the
           inventory and top-rated sheets — worth having, but not worth putting
           between someone and the soda they came to find. */}
       {/* Metrics row — skeleton while loading, real data once ready */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden">
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden xl:grid-cols-1 xl:divide-x-0 xl:divide-y">
           {[0, 1, 2].map((i) => (
             <div key={i} className="bg-white dark:bg-gray-800 p-3 flex flex-col gap-2">
               <Skeleton className="h-2 w-14" />
@@ -788,7 +797,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           ))}
         </div>
       ) : sodas.length > 0 && (
-        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
+        <div className="grid grid-cols-3 gap-0 mb-5 rounded-2xl border border-gray-200 dark:border-gray-700 divide-x divide-gray-200 dark:divide-gray-700 overflow-hidden xl:grid-cols-1 xl:divide-x-0 xl:divide-y shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)]">
           <button
             type="button"
             onClick={() => setInventoryOpen(true)}
@@ -848,6 +857,9 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           </div>
         </div>
       )}
+
+      </div>
+      </div>
 
       {/* Settings modal */}
       <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Collection Settings" variant="dialog">

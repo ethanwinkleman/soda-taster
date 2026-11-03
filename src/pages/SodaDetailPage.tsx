@@ -289,7 +289,7 @@ export function SodaDetailPage() {
   return (
     <div className="overflow-x-hidden">
     <motion.div
-      className="max-w-md mx-auto px-4 py-8"
+      className="mx-auto px-4 py-8 max-w-md lg:max-w-2xl xl:max-w-5xl"
       drag="x"
       dragDirectionLock
       dragConstraints={{ left: 0, right: 0 }}
@@ -370,6 +370,12 @@ export function SodaDetailPage() {
         )}
       </div>
 
+      {/* Two columns once there is room: this bottle and your verdict on the left,
+          what everyone else said on the right. Stacked, this page is 1512px tall on
+          a 900px screen with 736px empty beside it. The cut falls between the rating
+          control and the flavour notes, so the phone order is unchanged. */}
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
+      <div className="xl:min-w-0">
       {/* Hero — image (left ⅓) + avg score (right ⅔) */}
       <motion.div
         layoutId={`soda-${soda.id}-card`}
@@ -551,6 +557,9 @@ export function SodaDetailPage() {
         )}
       </div>
 
+      </div>
+
+      <div className="xl:min-w-0">
       <FlavorNotes profile={flavorProfile} sealedCount={sealedCount} />
 
       {/* Rating breakdown */}
@@ -681,6 +690,8 @@ export function SodaDetailPage() {
         <Trash2 size={13} />
         Remove from Collection
       </button>
+      </div>
+      </div>
     </motion.div>
     </div>
   );

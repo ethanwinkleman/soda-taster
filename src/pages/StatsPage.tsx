@@ -81,14 +81,25 @@ export function StatsPage({ stashes, loading }: Props) {
     );
   }
 
-  const summaryTiles = (loading || sodasLoading) ? (
-    <div className="mt-5 grid grid-cols-2 gap-2">
-      <Skeleton className="h-20 rounded-2xl" />
-      <Skeleton className="h-20 rounded-2xl" />
+  /**
+   * The same tiles, placed differently by width.
+   *
+   * On a phone they ride inside the actions block, above the waiting list. In the
+   * two-column desktop layout they head the reading column instead. Rendering the
+   * markup twice and hiding one is deliberate: a flex/grid reorder cannot move a child
+   * between two independent columns, and `display:none` keeps the hidden copy out of
+   * the accessibility tree, so nothing is announced twice.
+   */
+  const renderNumbers = (className: string) => (loading || sodasLoading) ? (
+    <div className={className}>
+      <div className="mt-5 grid grid-cols-2 gap-2">
+        <Skeleton className="h-20 rounded-2xl" />
+        <Skeleton className="h-20 rounded-2xl" />
+      </div>
     </div>
   ) : rated.length === 0 ? null : (
-    <>
-      <p className="mt-5 mb-2 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+    <div className={className}>
+      <p className="mt-5 xl:mt-0 mb-2 font-sans text-[10px] uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
         Your numbers
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -105,11 +116,11 @@ export function StatsPage({ stashes, loading }: Props) {
           />
         </div>
       )}
-    </>
+    </div>
   );
 
   return (
-    <div className="max-w-md mx-auto px-4 py-6">
+    <div className="mx-auto px-4 py-6 max-w-md lg:max-w-2xl xl:max-w-6xl">
       <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
         Ratings
       </h1>
@@ -117,40 +128,52 @@ export function StatsPage({ stashes, loading }: Props) {
         Across every collection you are in.
       </p>
 
-      {/* The tiles ride inside the actions block, above the waiting list: five rows is
-          deeper than a phone, so underneath it they were off the bottom of the screen.
-          The chart and the palate stay below — those are what you came to look at once
-          the summary has told you whether it is worth it. */}
-      <RateActions stashes={stashes} loading={loading} numbers={summaryTiles} />
-
-      {(loading || sodasLoading) ? (
-        <div className="mt-6 space-y-4">
-          <Skeleton className="h-60 rounded-2xl" />
+      {/* One column on a phone, two once there is room for them.
+          Stacked, this page is 1700px tall on a 900px screen while 736px of the
+          viewport sits empty beside it — the whole complaint about the desktop build in
+          one measurement. What you *do* goes left, what you *read* goes right.
+          `items-start` so the short column does not stretch to the tall one. */}
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
+        <div>
+          {/* On a phone the tiles ride above the waiting list: five rows is deeper than
+              a phone, so underneath it they were off the bottom of the screen. Wide,
+              they head the reading column instead. */}
+          <RateActions stashes={stashes} loading={loading} numbers={renderNumbers('xl:hidden')} />
         </div>
-      ) : rated.length === 0 ? (
-        <div className="mt-8 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-10 text-center">
-          <Star size={26} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
-          <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Nothing rated yet.</p>
-          <p className="font-sans text-xs text-gray-400 dark:text-gray-500">
-            Rate a soda and your numbers fill in here.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="mt-8">
-            <RatingDistribution
-              buckets={distribution}
-              comparison={comparison}
-              selected={scoreFilter}
-              onSelect={setScoreFilter}
-            />
-          </div>
 
-          <div className="mt-4">
-            <TasteProfile ratings={myRatings} />
-          </div>
-        </>
-      )}
+        <div className="xl:min-w-0">
+          {renderNumbers('hidden xl:block')}
+
+          {(loading || sodasLoading) ? (
+            <div className="mt-6 space-y-4">
+              <Skeleton className="h-60 rounded-2xl" />
+            </div>
+          ) : rated.length === 0 ? (
+            <div className="mt-8 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 py-10 text-center">
+              <Star size={26} className="mx-auto mb-3 text-gray-300 dark:text-gray-700" />
+              <p className="font-display text-gray-500 dark:text-gray-400 mb-1">Nothing rated yet.</p>
+              <p className="font-sans text-xs text-gray-400 dark:text-gray-500">
+                Rate a soda and your numbers fill in here.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="mt-8 xl:mt-4">
+                <RatingDistribution
+                  buckets={distribution}
+                  comparison={comparison}
+                  selected={scoreFilter}
+                  onSelect={setScoreFilter}
+                />
+              </div>
+
+              <div className="mt-4">
+                <TasteProfile ratings={myRatings} />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
