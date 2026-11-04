@@ -125,27 +125,32 @@ The count is deliberately still visible while blind — "2 ratings hidden" says 
 
 ### Organised by how often each thing is actually done
 
-Four jobs, at wildly different frequencies:
+Three jobs, at wildly different frequencies, and **two screens**:
 
 | Job | How often | Where it lives |
 | --- | --- | --- |
-| Rate a soda now · "have we had this?" | constantly | `/stats` — `RateActions`, at the top |
-| Check your ratings | sometimes | `/stats` — `StatsPage`, below the actions |
-| Create, join, manage a collection | rarely | `/` — `StashesPage`, `/stash/:id` |
+| Rate a soda now | constantly | `/stash/:id` — `RateWaiting`, above the shelf |
+| "Have we had this?" | constantly | `/stash/:id` — the search over the shelf |
+| Check how you are doing | sometimes | `/` — Your Palate and Your Ratings |
+| Create, join, manage a collection | rarely | `/`, `/stash/:id` |
 
-**What keeps `/stats` a page of its own** is the part that is *not* scoped to a collection: the search answers "have we had this?" without making you pick one first, the row rates inline and reveals in place, and the spread compares you against everyone. The collection page's search and Try Next are the same ideas scoped to the collection you are already inside — useful there, not a replacement. The tiles differ too: `/stats` counts *your* ratings across everything, `/stash/:id` describes *that collection*.
+**There is no ratings tab.** There was, at `/stats`, and before that a `SodasPage` at `/`. Both were the same mistake in different clothes: a screen whose job was an *action*, kept away from the thing the action is performed on. Rating lives beside the sodas now — `RateWaiting` sits between the collection's metrics and its shelf — and `/stats` redirects to `/` because the URL is in people's history.
 
-**The two frequent jobs are the same interaction.** You type a name; either it comes back with a score against it — *"You 5 · Dana 3.5"*, which is the answer to "have we had this?" — or it does not, and the next line offers to add it. One box, no collection to pick first. That search runs **across every collection**: scoping it would put a step in front of the only two things anyone does often.
+What the tab was carrying, and where each piece went:
 
-Rating happens **inline in the search result**: the row expands, you set the stars, and the reveal (`lib/reveal.ts`) appears in the same row. Opening a page to rate puts a navigation on the most frequent action in the app.
+- **Rate inline, with the reveal.** The only part with no other home, and the reason the block exists at all. It is `RateWaiting` on the collection page.
+- **The cross-collection search.** Dropped. The collection page already has a search over its own shelf, and two search boxes on one screen is the duplication this app keeps having to undo. `lib/sodaSearch.ts` and `useHomeUntasted` went with it.
+- **Your numbers and the rating spread.** Moved to `/` as `YourRatings`, beside Your Palate. They are *your* figures across every collection, which is that page's question; a collection page describes one collection.
 
-**The summary tiles sit inside the actions block, above the waiting list.** The list is five rows deep, so underneath it "Your numbers" was off the bottom of every phone — measured at 390×844 the heading is at 255px now, where it was below the fold. The chart and the palate stay below the list: those are what you look at once the summary has told you whether it is worth it. The tiles are passed into `RateActions` as a `numbers` prop and drawn only when the search box is empty, because between the box and its results they would be pushing the answer you just asked for down the screen.
+**`RateWaiting` is scoped to the collection you are in**, not to every one you belong to — you are standing inside a collection, and a soda on a different shelf is not one you can open. It draws three rows and says how many more are waiting, pointing at Try Next, which is the same filter over the whole shelf.
 
-**Those actions are a section, not a screen.** They had a tab of their own (`SodasPage` at `/`), and the third pass at this failed the same way as the first two — a screen whose only content is a search box and a shortlist of unrated sodas is, for a household that has rated everything, a screen with nothing on it. `RateActions` is now the top of `/stats`, which is where looking a past rating up already belonged: what you do, then how you are doing. Collections took `/` and the first tab, because owning the shelf is the thing that exists before any of this.
+**It renders nothing when the collection is fully rated.** A heading with no rows under it is exactly what made the old tab feel empty.
 
-**`useTasteSodas` does not re-implement blind rating.** A plain read of `stash_soda_ratings` returns your own rows always and everyone else's only for sodas you have already rated (`20260101002000`) — exactly the set where showing them is right. No RPC, and no client copy of the rule. Its *ratings* read deliberately selects only `soda_id, user_id, display_name, score`: that one runs on every search, and names, notes and timestamps would ride along for nothing. The *sodas* read carries `in_fridge, quantity` as well, so a ratings row can say whether there is one to open right now — the same stock chip the collection cards show, in the row's own muted type rather than the dark pill a photo needs.
+**The reveal is driven by the collection's own query, not by awaiting the write.** `saveRating` is fired rather than awaited on purpose — offline it pauses instead of throwing — so `await`ing it proves nothing about whether the server has the row. What proves it is the page's `['stash-sodas', …]` query refetching, which the mutation invalidates on success: a soda whose `otherScores` have appeared is a soda the server accepted a rating for. Building the reveal straight after the call reported *"you rated it first"* about a soda the partner had already scored, because under blind rating the policy hands back nobody else's rows until yours is in.
 
-Two earlier passes at this did not land, and both failed the same way: they **added** a surface instead of reorganising. A dashboard of lists is still lists, and a new front door on top of an unchanged collection page just made the app bigger. What fixed it was moving things *off* the busy screen — the rating spread and the score tiles were sitting between the filters and the first soda on `/stash/:id`, so the rare job owned the top of the most-used page. The chart moved to `/stats`; the tiles moved below the list, because they are also the way into the inventory and top-rated sheets and deleting them would have cost real functionality.
+Names are the one thing the list cannot carry, so they come from `useSodaRatings` for the open row, invalidated once the scores appear. Until they arrive the reveal holds rather than claiming you were first.
+
+**The bottom nav is gone.** It was two tabs, then one destination, and a one-item bar is not a nav. Mobile navigates by the header logo (home) and the collection page's back button. If a second top-level destination ever returns, the bar comes back with it — and the overflow sweep gets run on it again, because a tab past the edge of a `fixed` bar is invisible rather than scrollable.
 
 **Adding a soda has one mode.** `AddSodaPage` used to open in Quick Add, which hid the manufacturer and the photo and turned the submit button into "Add & Next" so you stayed on the form. Full Details is now the only path: the form always shows name, manufacturer, photo and rating, and saving returns to the collection. The branches it removed — `quickMode ? '' : brand`, `quickMode ? null : imageFile` — existed to avoid saving fields the user could not currently see, and with nothing hidden there is nothing to guard.
 
@@ -155,15 +160,13 @@ It sits **in the actions row, to the right of the Group/Mine toggle**, rather th
 
 **The back control is one component, `ui/BackButton`.** It was in five places at four different sizes: 44px with no visible edge (`PageHeader`), 32px with an invisible 44 around it (the collection and soda pages), 32px with nothing (`BarcodeResultPage`) and 38px (`BarcodeScanPage`). It is now 44px **visible** and 56px hittable everywhere, with the standard surface — white, hairline border, soft shadow — because a target whose edges you cannot see does not read as a target, which is the same reason the add button stopped being a full-width bar. The extra hit area reaches into the page margin and the title beside it, neither of which is interactive, so it costs nothing; `-ml-2` keeps the chevron optically where the smaller button put it so no page title shifts.
 
-**Every tab needs a desktop twin in the `Sidebar`, in the same order as the tabs.** `BottomNav` is `md:hidden`, so a destination that lives only there is unreachable above 768px — and `/stats` was exactly that, which stopped being cosmetic the moment it became the page holding every action in the app. The sidebar's `Ratings` link is the twin, below the collections behind a rule — matching the bottom nav's Collections-then-Ratings order, and separated so it does not read as one more collection in the list. It keeps the collection rows' own active treatment rather than a weaker one, so the rule lives on a wrapper: a left border and a top border on the same box look like a mistake. The admin link in the sidebar footer exists for the identical reason (`UserMenu` is `md:hidden` too). The check is not "does the route render at 1440" but "can a desktop user *reach* it without typing the URL": enumerate the visible `a[href]` on a desktop viewport and look for the route.
-
-**The bottom nav is two tabs — Collections, then Ratings — and three is the ceiling.** It was three until the Sodas screen folded into `/stats`. A fourth was tried once, inside a collection, and it overflowed the bar by **83px at 320 and 13px at 390**. Anything added here needs the overflow sweep run again; the bar is `fixed`, so a tab past the edge is invisible rather than scrollable.
+**Any mobile-only destination needs a desktop twin in the `Sidebar`.** Chrome that is `md:hidden` takes its links with it above 768px: the sidebar's admin button exists because `UserMenu` is `md:hidden`, and `/stats` once became unreachable on a desktop for exactly this reason. The check is not "does the route render at 1440" but "can a desktop user *reach* it without typing the URL": enumerate the visible `a[href]` on a desktop viewport and look for the route. With the ratings tab retired there are two destinations left — `/` and a collection — and both are in the sidebar already.
 
 ### The collections page is the shelf
 
-`StashesPage` (at `/`, with `/collections` redirecting to it so the old URL in anyone's history still lands) is **Your Collections → Your Palate → Recently Tasted**: what you own, then who you are, then what the group did.
+`StashesPage` (at `/`, with `/collections` and `/stats` both redirecting to it so old URLs still land) is **Your Collections → Your Palate → Your Ratings → Recently Tasted**: what you own, then who you are, then how you are doing, then what the group did.
 
-**`TasteProfile` renders here and nowhere else.** It was on this page *and* on `/stats` at once — the same component against the same `useMyRatings` read — so the app said the same thing twice and neither screen was the answer. Who you are as a taster belongs with the shelf; `/stats` keeps the numbers and the spread, which have no other home. The same rule as the two "what now" panels below, and as onboarding beside an empty state: when a panel appears on two screens, delete one rather than letting both half-own it.
+**`TasteProfile` and `YourRatings` render here and nowhere else.** It was on this page *and* on `/stats` at once — the same component against the same `useMyRatings` read — so the app said the same thing twice and neither screen was the answer. Who you are as a taster belongs with the shelf; `/stats` keeps the numbers and the spread, which have no other home. The same rule as the two "what now" panels below, and as onboarding beside an empty state: when a panel appears on two screens, delete one rather than letting both half-own it.
 
 It briefly carried two "what now" panels above the list — *Waiting on you* (sodas the group has scored and you have not, which rating unseals) and *In your fridge* — split out of one `home_untasted` read by `lib/homeFeed.ts`. They are gone, along with that module and `UntastedSection`. The ratings tab's waiting list is the **same read, unsplit**, so it is a strict superset of both, and two screens asking for the same thing is worse than one — the same reason onboarding never appears beside an empty state making the same request. Collections is the repo; the actions live under Ratings.
 
@@ -251,7 +254,7 @@ The signed-in app was a phone layout centred on a desktop canvas. Outside `md:hi
 
 | page | content | of canvas | page height |
 | --- | --- | --- | --- |
-| `/stats` | 448px | 38% | 1700px |
+| `/stats` (retired) | 448px | 38% | 1700px |
 | soda detail | 448px | 38% | 1512px |
 | `/stash/:id` | 672px | 57% | 1455px |
 | `/` | 672px | 57% | 900px |
@@ -260,11 +263,11 @@ The ratings page needed 1700px of scroll on a 900px screen while 736px of viewpo
 
 **The split is at `xl:`, not `lg:`.** The sidebar is `md:` and takes 256px, so a 1024px viewport leaves a 768px canvas — two columns of ~350px, narrower than the phone layout they replaced. `lg:` widens the single column instead; `xl:` (1280, a 1024px canvas, ~480px per column) is where two columns start paying.
 
-**Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: `/stats` splits before the numbers, soda detail between the rating control and the flavour notes, and `/` between the collections list and the palate.
+**Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: soda detail splits between the rating control and the flavour notes, and `/` between the collections list and everything about you.
 
 `/stash/:id` was two columns too — list left, summary tiles right — and is **one column again**. The tiles read as the page's answer to "what is in here", so they lead: *metrics → Group/Mine and Add Soda → filters → the shelf*. Beside the list they were a 380px strip; across the top they are the three tiles they were designed as. The width is not wasted by going back to one column, because the list is a grid: it widens to four cards at `xl:` and five at `2xl:` instead of three in a 2fr column.
 
-The one exception is the `/stats` summary tiles, which sit *above* the waiting list on a phone and *beside* it on a desktop. **That markup is rendered twice and hidden per breakpoint**, deliberately: `order` can move a flex child within one container but cannot move it between two independent columns, and explicit `grid-row` placement ties the short column's rows to the tall one's heights. `display:none` keeps the hidden copy out of the accessibility tree, so nothing is announced twice.
+`/stats` is gone, and the render-twice-hide-one trick its summary tiles needed went with it. Worth keeping in mind if a panel ever has to sit in a different column at different widths: `order` can move a flex child within one container but cannot move it between two independent columns, and explicit `grid-row` placement ties the short column's rows to the tall one's heights — so two copies gated by breakpoint, with `display:none` keeping the hidden one out of the accessibility tree, is the way.
 
 Three things that only show up once the columns exist:
 
@@ -279,7 +282,7 @@ Three things that only show up once the columns exist:
 Two ways the checks themselves lie once there are two columns:
 
 - **Sorting headings by `top` is not reading order.** In two columns the right column's first heading is above the left column's second. Sort by column first (`left`, then `top`), or a correct page reports as mis-ordered.
-- **`textContent` reads straight through `display:none`.** With the tiles rendered at both breakpoints, "is it on screen?" has to ask `getClientRects().length`, not whether the text is in the DOM.
+- **`textContent` reads straight through `display:none`.** "Is it on screen?" has to ask `getClientRects().length`, not whether the text is in the DOM.
 
 Finally: **the lint baseline counts the whole project**, so a scratch harness left in the repo inflates it. Delete it before reading the number.
 
@@ -394,10 +397,10 @@ Two things it has to get right, both covered by tests:
 ### Routing
 
 ```
-/                          → StashesPage       (list + create + join)
+/                          → StashesPage       (collections, palate, your ratings, recent)
 /collections               → redirect to /     (the old URL; one canonical path)
-/stats                     → StatsPage         (RateActions, then the numbers)
-/stash/:id                 → StashPage         (soda list, settings/inventory/top-rated/shopping-list sheets)
+/stats                     → redirect to /     (the retired ratings tab)
+/stash/:id                 → StashPage         (metrics, RateWaiting, shelf, + sheets)
 /stash/:id/add             → AddSodaPage       (name, manufacturer, photo, rating)
 /stash/:id/scan            → BarcodeScanPage
 /stash/:id/scan/result     → BarcodeResultPage
@@ -480,7 +483,7 @@ Use the `z-(--z-*)` scale from `index.css` (`sticky`/`header`/`modal`/`confirm`)
 
 The app is meant to feel carbonated, so motion is part of the design rather than decoration. Conventions:
 
-- **Everything tappable gives way.** `Button` and `BottomNav` use `whileTap={{ scale: 0.97 }}` on a stiff spring; `SodaCard` and the collection cards match. A new interactive element without press feedback will feel dead next to them.
+- **Everything tappable gives way.** `Button` uses `whileTap={{ scale: 0.97 }}` on a stiff spring; `SodaCard`, the collection cards and the `RateWaiting` rows match. A new interactive element without press feedback will feel dead next to them.
 - **Lists stagger in** at `staggerChildren: 0.03–0.04` with a 6–8px rise. Used by the soda list, collections, activity feed and public profile.
 - **`FloatingBubbles`** is the signature motif — an ambient rise behind a `CupSoda` icon. It belongs in empty states and placeholders, *not* in list rows: four looping animations per row gets expensive and noisy fast.
 - **Two blank windows used to sit either side of the motion.** `index.html` now paints a CSS-only cup that fills and fizzes before any JavaScript has parsed — measured on Slow 3G, `#root` was empty with nothing on screen for the first ~600 ms. `window.__bootAt` records when that pour started so `AuthGate`'s `FillingCup` resumes from the same level rather than restarting; the two cups are drawn at identical size and position (verified: both centre at the same pixel, and the 30 px spacer under the splash matches the `Logo`'s line box), so it reads as one pour.

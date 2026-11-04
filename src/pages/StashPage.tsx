@@ -13,6 +13,7 @@ import { useStashSodas, fetchVisibleRatings } from '../hooks/useStashSodas';
 import { markVisited } from '../hooks/useStashes';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
+import { RateWaiting } from '../components/RateWaiting';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
 import { revealedSodas, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
 import { isUntasted, untastedCount } from '../lib/untasted';
@@ -63,7 +64,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const confirm = useConfirm();
 
   const displayName = (user?.user_metadata?.full_name ?? user?.email ?? 'Unknown') as string;
-  const { sodas, loading, error, setFridgeStatus, refresh } = useStashSodas(stashId, user?.id, displayName);
+  const { sodas, loading, error, setFridgeStatus, saveRating, refresh } = useStashSodas(stashId, user?.id, displayName);
   const { pullDistance, refreshing } = usePullToRefresh(refresh, !!stashId);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -576,6 +577,18 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
+
+      {/* The rating experience, which used to be a tab of its own. Near the top because
+          it is the thing you came to do; above the shelf because the shelf is what you
+          scroll. It renders nothing at all once this collection is fully rated, so a
+          caught-up shelf is not carrying an empty heading. */}
+      {!loading && (
+        <RateWaiting
+          sodas={sodas}
+          stashId={stashId!}
+          onRate={(sodaId, score) => saveRating(sodaId, score, displayName, undefined)}
+        />
+      )}
 
       {/* The actions row: the score lens on the left, the one thing anyone came here to
           do on the right. The add button sat above this on its own, centred, which read

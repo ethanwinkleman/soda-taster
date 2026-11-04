@@ -62,7 +62,7 @@
    sticky   in-page sticky bars (below the app header)
    dropdown menus anchored to a button — must clear the sticky bars, which
             are opaque and would otherwise cut the menu off mid-item
-   header   app chrome (MobileHeader, BottomNav)
+   header   app chrome (MobileHeader)
    modal    dialogs and bottom sheets
    confirm  confirmation dialog — must sit above any open modal      */
 :root {
