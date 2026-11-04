@@ -131,7 +131,7 @@ Three jobs, at wildly different frequencies, and **two screens**:
 | --- | --- | --- |
 | Rate a soda now | constantly | `/stash/:id` — `RateWaiting`, above the shelf |
 | "Have we had this?" | constantly | `/stash/:id` — the search over the shelf |
-| Check how you are doing | sometimes | `/` — Your Palate and Your Ratings |
+| Check how you are doing | sometimes | `/` — Your Palate and Your Ratings; `/stash/:id` — the rating spread |
 | Create, join, manage a collection | rarely | `/`, `/stash/:id` |
 
 **There is no ratings tab.** There was, at `/stats`, and before that a `SodasPage` at `/`. Both were the same mistake in different clothes: a screen whose job was an *action*, kept away from the thing the action is performed on. Rating lives beside the sodas now — `RateWaiting` sits between the collection's metrics and its shelf — and `/stats` redirects to `/` because the URL is in people's history.
@@ -140,11 +140,18 @@ What the tab was carrying, and where each piece went:
 
 - **Rate inline, with the reveal.** The only part with no other home, and the reason the block exists at all. It is `RateWaiting` on the collection page.
 - **The cross-collection search.** Dropped. The collection page already has a search over its own shelf, and two search boxes on one screen is the duplication this app keeps having to undo. `lib/sodaSearch.ts` and `useHomeUntasted` went with it.
-- **Your numbers and the rating spread.** Moved to `/` as `YourRatings`, beside Your Palate. They are *your* figures across every collection, which is that page's question; a collection page describes one collection.
+- **Your numbers.** `YourRatings` on `/`, beside Your Palate — rated count, your average, your top rated. Totals survive being pooled across every collection you belong to, because "25 rated, averaging 3.7" is true of *you*.
+- **The rating spread.** `RatingDistribution`, on the **collection page**. It went to `/` first, with the totals, and that was wrong: a distribution is a question about a shelf — *did this group like what we drank* — and pooling every collection answered it about no shelf in particular.
 
-**`RatingDistribution`'s columns are not controls, and moving the chart is why.** Each was a `<button>` that filtered the soda list under it on the old tab. Under Your Ratings there is no such list, so the press dimmed the other nine columns and announced *"Filtering by this score"* while filtering nothing, and `YourRatings` held a `scoreFilter` that was written and read straight back into the chart. They are plain elements now, with no hover, focus ring or cursor change — each of those promises a press. The visible counts are `aria-hidden` with one sr-only line per column instead, because unlabelled the two numbers read as "3 2" and only the colour said which was whose.
+**The spread's columns filter the shelf, and that is why it belongs beside one.** Each column is a `<button>` that filters the grid below it to the sodas carrying a visible rating at that score.
 
-The general shape of that mistake is worth keeping: **a control moved away from the thing it acted on keeps working and stops meaning anything.** Nothing fails — no error, no crash, a passing build — so when a panel moves, check what its interactive parts still reach.
+That filter was already written on `StashPage` and reachable by nothing. The predicate (`hasVisibleRatingAt`), the infinite-scroll `resetKey`, the *"Nothing you can see is rated 3.5"* empty state and its Clear button were all sitting there, dead, because the only control that set `scoreFilter` was the chart — and the chart was on another page. Both halves had been broken by the same split, and neither failed loudly: the chart dimmed nine columns and announced *"Filtering by this score"* while filtering nothing, and the page kept a filter nobody could turn on.
+
+**`onSelect` is optional, and that is the guard.** Given a handler, a column is a button with hover, a focus ring and the other nine dimmed; without one it is a plain element with none of that, because every one of those promises a press. A chart dropped on a page with no list cannot offer a selection it has nowhere to send.
+
+The general shape is worth keeping: **a control moved away from the thing it acted on keeps working and stops meaning anything.** Nothing fails — no error, no crash, a passing build — so when a panel moves, check what its interactive parts still reach, and what is left pointing at nothing behind it.
+
+**A button's `aria-label` replaces its contents**, so the sr-only line that labels each column is rendered only on the non-interactive path; the button carries the same counts in its label. Either way an empty bucket is not announced — "you 0, everyone else 0" is three lines of nothing to listen to — and the 1.0 bucket says "1 star".
 
 **`RateWaiting` is scoped to the collection you are in**, not to every one you belong to — you are standing inside a collection, and a soda on a different shelf is not one you can open. It draws three rows and says how many more are waiting, pointing at Try Next, which is the same filter over the whole shelf.
 
@@ -215,7 +222,7 @@ Modals and sheets need opening — none of them is a route, and `/stash/:id` alo
 
 **Tap targets use `.tap-44`, not padding.** Measured on a phone, the icon buttons were 20x20 (change photo), 26x26 (edit soda, refresh, delete comment) and 30x30 (the collection menu) — the smallest genuinely hard to land on. The utility in `index.css` centres an invisible pseudo-element of at least 44px over the control, so it grows only the dimension that is short and moves nothing. Padding plus a negative margin does the same thing, but the amount differs per icon and a large negative margin starts stealing taps from the control next to it.
 
-One deliberate exception: a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker. (The ten `RatingDistribution` bars used to be a second — adjacent 26px segments, where widening to 44 would overlap their neighbours so a tap landed on the wrong bucket — but they are not controls any more; see below.)
+Two deliberate exceptions, both because widening would make things worse: the ten `RatingDistribution` bars are adjacent segments 26px wide, and expanding them to 44 would overlap their neighbours so a tap lands on the wrong bucket; and a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker.
 
 **A bare text node inside a `flex` element is an anonymous flex item at `min-width: auto`**, whose minimum is the widest unbroken word — so `break-words` on the flex container never gets the chance to break anything. The collection title needed the name wrapped in its own `<span className="min-w-0 break-words">`; the class on the `h1` alone did nothing, and the sweep said so.
 
@@ -269,7 +276,7 @@ The ratings page needed 1700px of scroll on a 900px screen while 736px of viewpo
 
 **Each cut falls where the DOM already separates doing from reading**, so no page needed reordering and the phone layout is untouched: soda detail splits between the rating control and the flavour notes, and `/` between the collections list and everything about you.
 
-`/stash/:id` was two columns too — list left, summary tiles right — and is **one column again**. The tiles read as the page's answer to "what is in here", so they lead: *metrics → Group/Mine and Add Soda → filters → the shelf*. Beside the list they were a 380px strip; across the top they are the three tiles they were designed as. The width is not wasted by going back to one column, because the list is a grid: it widens to four cards at `xl:` and five at `2xl:` instead of three in a 2fr column.
+`/stash/:id` was two columns too — list left, summary tiles right — and is **one column again**. The tiles read as the page's answer to "what is in here", so they lead: *metrics → rating spread → RateWaiting → Group/Mine and Add Soda → filters → the shelf*. Beside the list they were a 380px strip; across the top they are the three tiles they were designed as. The width is not wasted by going back to one column, because the list is a grid: it widens to four cards at `xl:` and five at `2xl:` instead of three in a 2fr column.
 
 `/stats` is gone, and the render-twice-hide-one trick its summary tiles needed went with it. Worth keeping in mind if a panel ever has to sit in a different column at different widths: `order` can move a flex child within one container but cannot move it between two independent columns, and explicit `grid-row` placement ties the short column's rows to the tall one's heights — so two copies gated by breakpoint, with `display:none` keeping the hidden one out of the accessibility tree, is the way.
 
@@ -278,6 +285,8 @@ Three things that only show up once the columns exist:
 - **Columns have to start at the same y.** The palate heading sat 32px above the collections heading, because the left column kept a stacked-layout `mt-8` the right one had dropped. Give the stacked margin an `xl:mt-0`.
 - **A control sized with `flex-1` stretches to whatever row it is in.** The Group/Mine toggle is 115px on a phone and went to **944px** across a desktop row — a banner, the same failure the add button had. It is `xl:flex-none xl:w-64`.
 - **A row of tiles put in a narrow column becomes a 380px strip with 700px of nothing under it.** That is what sent the collection page's metrics to the top of a single column instead; a three-across strip wants the full width, not a sidebar.
+
+**The spread is 400px of reading in front of two things people do constantly.** Putting it between the metrics and `RateWaiting` pushed the collection page's primary action from y=615 to y=1028 and the first soda card from y=787 to y=1199, measured at 390×844 — so a phone scrolls a screen and a half before a bottle appears, and at 1440×900 the first card sits at y=1000, below the fold on a desktop too. The page's two constant jobs are *rate this now* and *have we had this*; the spread is a sometimes job sitting above both. If that proves to be the wrong trade, the cheap fixes are moving it below the shelf or collapsing it to its headline — the two averages and the verdict are the part worth a glance, and the bars are the detail.
 
 `AddSodaPage` stays a single column at `lg:max-w-xl`. Two columns break tab order and scanning, and a field set is one of the few things a narrow measure genuinely suits.
 
@@ -404,7 +413,7 @@ Two things it has to get right, both covered by tests:
 /                          → StashesPage       (collections, palate, your ratings, recent)
 /collections               → redirect to /     (the old URL; one canonical path)
 /stats                     → redirect to /     (the retired ratings tab)
-/stash/:id                 → StashPage         (metrics, RateWaiting, shelf, + sheets)
+/stash/:id                 → StashPage         (metrics, spread, RateWaiting, shelf, + sheets)
 /stash/:id/add             → AddSodaPage       (name, manufacturer, photo, rating)
 /stash/:id/scan            → BarcodeScanPage
 /stash/:id/scan/result     → BarcodeResultPage
