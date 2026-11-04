@@ -35,7 +35,6 @@ const persister = createSyncStoragePersister({
 });
 
 const StashesPage       = lazyWithRetry(() => import('./pages/StashesPage').then(m => ({ default: m.StashesPage })));
-const StatsPage         = lazyWithRetry(() => import('./pages/StatsPage').then(m => ({ default: m.StatsPage })));
 const StashPage         = lazyWithRetry(() => import('./pages/StashPage').then(m => ({ default: m.StashPage })));
 const AddSodaPage       = lazyWithRetry(() => import('./pages/AddSodaPage').then(m => ({ default: m.AddSodaPage })));
 const SodaDetailPage    = lazyWithRetry(() => import('./pages/SodaDetailPage').then(m => ({ default: m.SodaDetailPage })));
@@ -52,7 +51,6 @@ import { ConfirmProvider } from './contexts/ConfirmContext';
 import { useStashes } from './hooks/useStashes';
 import { Sidebar } from './components/Sidebar';
 import { MobileHeader } from './components/MobileHeader';
-import { BottomNav } from './components/BottomNav';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
 
 function ScrollToTop() {
@@ -94,7 +92,7 @@ function AppRoutes() {
       <Sidebar stashes={stashes} loading={stashesLoading} onToggleFavorite={toggleFavorite} />
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen overflow-x-hidden">
         <MobileHeader stashes={stashes} />
-        <main className="flex-1 pb-20 md:pb-0 overscroll-y-contain relative">
+        <main className="flex-1 pb-6 overscroll-y-contain relative">
           {/* Outside the animated container on purpose: a transformed ancestor would
               make its `fixed` positioning resolve against that element instead of the
               viewport. Keyed by path so each navigation spawns a fresh rise. */}
@@ -123,7 +121,9 @@ function AppRoutes() {
                 path="/"
                 element={<StashesPage stashes={stashes} loading={stashesLoading} error={stashesError} recentActivity={recentActivity} onCreate={createStash} onJoin={joinStash} />}
               />
-              <Route path="/stats" element={<StatsPage stashes={stashes} loading={stashesLoading} />} />
+              {/* The ratings tab is gone — rating happens inside the collection, beside
+                  the sodas. The URL is in people's history, so it lands rather than 404s. */}
+              <Route path="/stats" element={<Navigate to="/" replace />} />
               {/* The collections list used to live here, and the URL is in people's
                   history and in anything they shared. One canonical path. */}
               <Route path="/collections" element={<Navigate to="/" replace />} />
@@ -156,7 +156,6 @@ function AppRoutes() {
           </AnimatePresence>
         </main>
       </div>
-      <BottomNav />
       <OfflineBanner />
     </div>
   );

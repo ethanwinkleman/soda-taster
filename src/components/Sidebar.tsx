@@ -122,31 +122,6 @@ export function Sidebar({ stashes, loading, onToggleFavorite }: Props) {
             <span>New collection…</span>
           </button>
         </div>
-
-        {/* The desktop half of the bottom nav. `BottomNav` is `md:hidden`, so this is
-            the only link to /stats above 768px — without it a desktop user could reach
-            that page only by typing the URL. The same trap as the admin link in the
-            footer below.
-
-            It sits under the collections, matching the tab order on a phone, with a
-            rule above it so it does not read as one more collection in the list. */}
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <NavLink
-            to="/stats"
-            className={({ isActive }) =>
-              `flex items-center gap-2.5 pl-3 pr-3 py-2 text-sm font-sans font-medium transition-colors rounded-lg border-l-2 ${
-                isActive
-                  ? 'border-sky-500 dark:border-sky-400 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                  : 'border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-              }`
-            }
-          >
-            <span className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 bg-gradient-to-br from-sky-500 to-cyan-500 text-white">
-              <BarChart3 size={12} />
-            </span>
-            <span className="flex-1 truncate">Ratings</span>
-          </NavLink>
-        </div>
       </nav>
 
       {/* User footer */}

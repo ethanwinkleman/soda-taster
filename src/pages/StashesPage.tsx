@@ -7,6 +7,7 @@ import { StashIcon } from '../components/StashIcon';
 import { Skeleton } from '../components/Skeleton';
 import { ScoreBadge } from '../components/ScoreBadge';
 import { TasteProfile } from '../components/TasteProfile';
+import { YourRatings } from '../components/YourRatings';
 import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { FloatingBubbles } from '../components/FloatingBubbles';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -422,6 +423,10 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
       <div className="xl:min-w-0 xl:mt-0">
       {/* Taste profile */}
       <div className="xl:[&>div]:mt-0">{!loading && <TasteProfile ratings={myRatings} />}</div>
+      {/* Your numbers and the spread, from the retired /stats tab. They are *your*
+          figures across every collection, which is this page's question, not a
+          collection page's. */}
+      {!loading && <YourRatings stashes={stashes} />}
 
       {/* Recently Tasted supplemental section */}
       {!loading && recentActivity.length > 0 && (
