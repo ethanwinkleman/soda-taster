@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Star, Trophy } from 'lucide-react';
 import type { Soda, Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
@@ -24,7 +24,6 @@ export function YourRatings({ stashes }: Props) {
   const { user } = useAuth();
   const stashIds = useMemo(() => stashes.map((s) => s.id), [stashes]);
   const { sodas, loading } = useTasteSodas(stashIds, user?.id);
-  const [scoreFilter, setScoreFilter] = useState<number | null>(null);
 
   // The chart and the comparison are written against the collection page's shape and
   // carry the blind-rating rule with them. Adapting is one map; rewriting them here
@@ -97,12 +96,7 @@ export function YourRatings({ stashes }: Props) {
       )}
 
       <div className="mt-4">
-        <RatingDistribution
-          buckets={distribution}
-          comparison={comparison}
-          selected={scoreFilter}
-          onSelect={setScoreFilter}
-        />
+        <RatingDistribution buckets={distribution} comparison={comparison} />
       </div>
     </div>
   );

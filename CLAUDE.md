@@ -142,6 +142,10 @@ What the tab was carrying, and where each piece went:
 - **The cross-collection search.** Dropped. The collection page already has a search over its own shelf, and two search boxes on one screen is the duplication this app keeps having to undo. `lib/sodaSearch.ts` and `useHomeUntasted` went with it.
 - **Your numbers and the rating spread.** Moved to `/` as `YourRatings`, beside Your Palate. They are *your* figures across every collection, which is that page's question; a collection page describes one collection.
 
+**`RatingDistribution`'s columns are not controls, and moving the chart is why.** Each was a `<button>` that filtered the soda list under it on the old tab. Under Your Ratings there is no such list, so the press dimmed the other nine columns and announced *"Filtering by this score"* while filtering nothing, and `YourRatings` held a `scoreFilter` that was written and read straight back into the chart. They are plain elements now, with no hover, focus ring or cursor change — each of those promises a press. The visible counts are `aria-hidden` with one sr-only line per column instead, because unlabelled the two numbers read as "3 2" and only the colour said which was whose.
+
+The general shape of that mistake is worth keeping: **a control moved away from the thing it acted on keeps working and stops meaning anything.** Nothing fails — no error, no crash, a passing build — so when a panel moves, check what its interactive parts still reach.
+
 **`RateWaiting` is scoped to the collection you are in**, not to every one you belong to — you are standing inside a collection, and a soda on a different shelf is not one you can open. It draws three rows and says how many more are waiting, pointing at Try Next, which is the same filter over the whole shelf.
 
 **It renders nothing when the collection is fully rated.** A heading with no rows under it is exactly what made the old tab feel empty.
@@ -211,7 +215,7 @@ Modals and sheets need opening — none of them is a route, and `/stash/:id` alo
 
 **Tap targets use `.tap-44`, not padding.** Measured on a phone, the icon buttons were 20x20 (change photo), 26x26 (edit soda, refresh, delete comment) and 30x30 (the collection menu) — the smallest genuinely hard to land on. The utility in `index.css` centres an invisible pseudo-element of at least 44px over the control, so it grows only the dimension that is short and moves nothing. Padding plus a negative margin does the same thing, but the amount differs per icon and a large negative margin starts stealing taps from the control next to it.
 
-Two deliberate exceptions, both because widening would make things worse: the ten `RatingDistribution` bars are adjacent segments 26px wide, and expanding them to 44 would overlap their neighbours so a tap lands on the wrong bucket; and a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker.
+One deliberate exception: a native `<select>` ignores `::after`, which is moot because tapping one opens the platform picker. (The ten `RatingDistribution` bars used to be a second — adjacent 26px segments, where widening to 44 would overlap their neighbours so a tap landed on the wrong bucket — but they are not controls any more; see below.)
 
 **A bare text node inside a `flex` element is an anonymous flex item at `min-width: auto`**, whose minimum is the widest unbroken word — so `break-words` on the flex container never gets the chance to break anything. The collection title needed the name wrapped in its own `<span className="min-w-0 break-words">`; the class on the `h1` alone did nothing, and the sweep said so.
 

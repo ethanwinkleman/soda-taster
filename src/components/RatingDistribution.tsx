@@ -4,9 +4,6 @@ import type { DistributionBucket, RatingComparison } from '../lib/ratingVisibili
 interface Props {
   buckets: DistributionBucket[];
   comparison: RatingComparison;
-  /** Currently filtered score, or null for "no filter". */
-  selected: number | null;
-  onSelect: (score: number | null) => void;
 }
 
 /**
@@ -21,11 +18,22 @@ interface Props {
  * of two distributions is not something anyone should have to do; the bars are here
  * to show *where* the difference sits, not to be measured by eye.
  *
- * Drawn with plain elements rather than SVG or a chart library — same reasoning as
- * MetricChart, plus each column has to be a real focusable control, since clicking
- * one filters the list below.
+ * Drawn with plain elements rather than SVG or a chart library, same reasoning as
+ * MetricChart.
+ *
+ * **The columns are not controls.** Each was a `<button>` that filtered the soda list
+ * below the chart on the retired `/stats` tab. The chart now lives under Your Ratings
+ * on the collections page, where there is no such list — so the press dimmed the other
+ * nine columns and announced "Filtering by this score" while filtering nothing. A
+ * control that lies is worse than no control, and the list it filtered is not coming
+ * back here: "every 3.5 across all your collections" has nowhere on this page to go.
+ *
+ * They are plain elements now, with no hover, focus ring or cursor change, since each
+ * of those promises a press. The counts above each bar are `aria-hidden`, with one
+ * sr-only line per column carrying the same thing in words — unlabelled, the two
+ * numbers read as "3 2" and only the colour said which was whose.
  */
-export function RatingDistribution({ buckets, comparison, selected, onSelect }: Props) {
+export function RatingDistribution({ buckets, comparison }: Props) {
   const total = buckets.reduce((sum, b) => sum + b.mine + b.others, 0);
   if (total === 0) return null;
 
@@ -120,27 +128,24 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
       */}
       <div className="flex items-end gap-1.5 h-40" role="group" aria-label="Rating distribution">
         {buckets.map((b) => {
-          const isSelected = selected === b.score;
-          const isDimmed = selected !== null && !isSelected;
           const columnTotal = b.mine + b.others;
-          const empty = columnTotal === 0;
 
           return (
-            <button
+            <div
               key={b.score}
-              type="button"
-              disabled={empty}
-              onClick={() => onSelect(isSelected ? null : b.score)}
-              aria-pressed={isSelected}
-              aria-label={`${b.label} stars — you ${b.mine}, everyone else ${b.others}${
-                empty ? '' : isSelected ? '. Filtering by this score' : '. Filter by this score'
-              }`}
-              className={`group flex-1 min-w-0 h-full flex flex-col justify-end items-center rounded-sm transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
-                empty ? 'cursor-default' : 'cursor-pointer'
-              } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
+              className="flex-1 min-w-0 h-full flex flex-col justify-end items-center rounded-sm"
             >
+              {/* Only the columns that hold something. An empty bucket announcing
+                  "you 0, everyone else 0" is three lines of nothing to listen to. */}
+              {columnTotal > 0 && (
+                <span className="sr-only">
+                  {b.label} star{b.label === '1' ? '' : 's'} — you {b.mine}, everyone else{' '}
+                  {b.others}
+                </span>
+              )}
+
               {/* Both counts, coloured to match their segment. */}
-              <span className="flex items-baseline justify-center gap-1 mb-1 leading-none h-3">
+              <span aria-hidden="true" className="flex items-baseline justify-center gap-1 mb-1 leading-none h-3">
                 {b.mine > 0 && (
                   <span className="font-sans text-[10px] tabular-nums text-sky-600 dark:text-sky-400">
                     {b.mine}
@@ -163,34 +168,25 @@ export function RatingDistribution({ buckets, comparison, selected, onSelect }: 
                 {b.others > 0 && (
                   <span
                     style={{ height: `${(b.others / columnTotal) * 100}%` }}
-                    className={`w-full shrink-0 ${
-                      isSelected
-                        ? 'bg-gray-500 dark:bg-gray-400'
-                        : 'bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500'
-                    }`}
+                    className="w-full shrink-0 bg-gray-300 dark:bg-gray-600"
                   />
                 )}
                 {/* Yours, on the baseline so its height is comparable across columns. */}
                 {b.mine > 0 && (
                   <span
                     style={{ height: `${(b.mine / columnTotal) * 100}%` }}
-                    className={`w-full shrink-0 ${
-                      isSelected ? 'bg-sky-600' : 'bg-sky-500 group-hover:bg-sky-600'
-                    }`}
+                    className="w-full shrink-0 bg-sky-500"
                   />
                 )}
               </motion.span>
 
               <span
-                className={`w-full border-t pt-1 font-sans text-[10px] tabular-nums leading-none text-center ${
-                  isSelected
-                    ? 'border-sky-500 text-sky-600 dark:text-sky-400 font-bold'
-                    : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500'
-                }`}
+                aria-hidden="true"
+                className="w-full border-t pt-1 font-sans text-[10px] tabular-nums leading-none text-center border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500"
               >
                 {b.label}
               </span>
-            </button>
+            </div>
           );
         })}
       </div>
