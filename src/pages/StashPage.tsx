@@ -14,8 +14,9 @@ import { markVisited } from '../hooks/useStashes';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { SodaCard } from '../components/SodaCard';
 import { RateWaiting } from '../components/RateWaiting';
+import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
-import { revealedSodas, hasVisibleRatingAt, isRevealed, visibleScores } from '../lib/ratingVisibility';
+import { revealedSodas, hasVisibleRatingAt, isRevealed, visibleScores, ratingDistribution, ratingComparison } from '../lib/ratingVisibility';
 import { isUntasted, untastedCount } from '../lib/untasted';
 import { stockState } from '../lib/shoppingList';
 import { ScoreBadge } from '../components/ScoreBadge';
@@ -281,6 +282,13 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const myTopThree = [...myRatedSodas]
     .sort((a, b) => (b.myRating?.score ?? 0) - (a.myRating?.score ?? 0))
     .slice(0, 3);
+
+  // The spread, for this collection. Both helpers drop blind ratings themselves
+  // (visibleOtherScores), so they take the whole list rather than revealedSodas —
+  // passing the filtered list would double-apply the rule and lose your own scores
+  // on sodas nobody else has rated.
+  const distribution = ratingDistribution(sodas);
+  const comparison = ratingComparison(sodas);
 
   // Show toggle only when the stash has any soda with more than one rating (group view is meaningful)
   const showScoreToggle = sodas.some((s) => s.ratingCount > 1);
@@ -577,6 +585,25 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
+
+      {/* The spread, for this collection — you against everyone else on the sodas you
+          have both rated. It was on the collections page, which asked the question
+          across every collection at once; the answer anyone actually wants is about
+          the shelf they are standing in front of.
+
+          Moving it also reconnected it to a list. Every column is a filter over the
+          shelf below, and that filter already existed here — the predicate, the
+          infinite-scroll reset key, the "Nothing you can see is rated 3.5" empty state
+          and its Clear button were all written and reachable by nothing, because the
+          control that set them had been left on another page. */}
+      {!loading && sodas.length > 0 && (
+        <RatingDistribution
+          buckets={distribution}
+          comparison={comparison}
+          selected={scoreFilter}
+          onSelect={setScoreFilter}
+        />
+      )}
 
       {/* The rating experience, which used to be a tab of its own. Near the top because
           it is the thing you came to do; above the shelf because the shelf is what you

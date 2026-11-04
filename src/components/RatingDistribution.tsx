@@ -4,6 +4,12 @@ import type { DistributionBucket, RatingComparison } from '../lib/ratingVisibili
 interface Props {
   buckets: DistributionBucket[];
   comparison: RatingComparison;
+  /**
+   * The score currently filtered, and the handler that sets it. Both optional, and
+   * together they are what makes a column a control — see below.
+   */
+  selected?: number | null;
+  onSelect?: (score: number | null) => void;
 }
 
 /**
@@ -21,19 +27,23 @@ interface Props {
  * Drawn with plain elements rather than SVG or a chart library, same reasoning as
  * MetricChart.
  *
- * **The columns are not controls.** Each was a `<button>` that filtered the soda list
- * below the chart on the retired `/stats` tab. The chart now lives under Your Ratings
- * on the collections page, where there is no such list — so the press dimmed the other
- * nine columns and announced "Filtering by this score" while filtering nothing. A
- * control that lies is worse than no control, and the list it filtered is not coming
- * back here: "every 3.5 across all your collections" has nowhere on this page to go.
+ * **A column is a control only when it is given something to filter.** Pass `onSelect`
+ * and each column becomes a `<button>` that filters the list beside it, with hover, a
+ * focus ring and the other nine dimmed while one is picked. Leave it out and the
+ * columns are plain elements with none of that, because every one of those promises a
+ * press.
  *
- * They are plain elements now, with no hover, focus ring or cursor change, since each
- * of those promises a press. The counts above each bar are `aria-hidden`, with one
- * sr-only line per column carrying the same thing in words — unlabelled, the two
- * numbers read as "3 2" and only the colour said which was whose.
+ * That switch exists because the promise was once broken. The chart spent a release on
+ * a page with no list under it, where the press still dimmed the other nine and
+ * announced "Filtering by this score" while filtering nothing — a control that lies,
+ * and nothing failed to say so. Making the handler optional is what stops that
+ * happening quietly again: a chart with nowhere to send a selection cannot offer one.
+ *
+ * Either way the counts above each bar are `aria-hidden`, with one sr-only line per
+ * non-empty column carrying the same thing in words — unlabelled, the two numbers read
+ * as "3 2" and only the colour said which was whose.
  */
-export function RatingDistribution({ buckets, comparison }: Props) {
+export function RatingDistribution({ buckets, comparison, selected = null, onSelect }: Props) {
   const total = buckets.reduce((sum, b) => sum + b.mine + b.others, 0);
   if (total === 0) return null;
 
@@ -129,15 +139,18 @@ export function RatingDistribution({ buckets, comparison }: Props) {
       <div className="flex items-end gap-1.5 h-40" role="group" aria-label="Rating distribution">
         {buckets.map((b) => {
           const columnTotal = b.mine + b.others;
+          const empty = columnTotal === 0;
+          const interactive = Boolean(onSelect) && !empty;
+          const isSelected = interactive && selected === b.score;
+          const isDimmed = Boolean(onSelect) && selected !== null && selected !== b.score;
 
-          return (
-            <div
-              key={b.score}
-              className="flex-1 min-w-0 h-full flex flex-col justify-end items-center rounded-sm"
-            >
-              {/* Only the columns that hold something. An empty bucket announcing
+          const shared = 'flex-1 min-w-0 h-full flex flex-col justify-end items-center rounded-sm';
+          const body = (
+            <>
+              {/* Only where there is no button to carry them in its aria-label, and
+                  only for columns that hold something: an empty bucket announcing
                   "you 0, everyone else 0" is three lines of nothing to listen to. */}
-              {columnTotal > 0 && (
+              {!onSelect && columnTotal > 0 && (
                 <span className="sr-only">
                   {b.label} star{b.label === '1' ? '' : 's'} — you {b.mine}, everyone else{' '}
                   {b.others}
@@ -168,25 +181,59 @@ export function RatingDistribution({ buckets, comparison }: Props) {
                 {b.others > 0 && (
                   <span
                     style={{ height: `${(b.others / columnTotal) * 100}%` }}
-                    className="w-full shrink-0 bg-gray-300 dark:bg-gray-600"
+                    className={`w-full shrink-0 ${
+                      isSelected ? 'bg-gray-500 dark:bg-gray-400'
+                      : interactive ? 'bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
                   />
                 )}
                 {/* Yours, on the baseline so its height is comparable across columns. */}
                 {b.mine > 0 && (
                   <span
                     style={{ height: `${(b.mine / columnTotal) * 100}%` }}
-                    className="w-full shrink-0 bg-sky-500"
+                    className={`w-full shrink-0 ${
+                      isSelected ? 'bg-sky-600'
+                      : interactive ? 'bg-sky-500 group-hover:bg-sky-600'
+                      : 'bg-sky-500'
+                    }`}
                   />
                 )}
               </motion.span>
 
               <span
                 aria-hidden="true"
-                className="w-full border-t pt-1 font-sans text-[10px] tabular-nums leading-none text-center border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500"
+                className={`w-full border-t pt-1 font-sans text-[10px] tabular-nums leading-none text-center ${
+                  isSelected
+                    ? 'border-sky-500 text-sky-600 dark:text-sky-400 font-bold'
+                    : 'border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500'
+                }`}
               >
                 {b.label}
               </span>
-            </div>
+            </>
+          );
+
+          if (!onSelect) {
+            return <div key={b.score} className={shared}>{body}</div>;
+          }
+
+          return (
+            <button
+              key={b.score}
+              type="button"
+              disabled={empty}
+              onClick={() => onSelect(isSelected ? null : b.score)}
+              aria-pressed={isSelected}
+              aria-label={`${b.label} star${b.label === '1' ? '' : 's'} — you ${b.mine}, everyone else ${b.others}${
+                empty ? '' : isSelected ? '. Filtering by this score' : '. Filter by this score'
+              }`}
+              className={`group ${shared} transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ${
+                empty ? 'cursor-default' : 'cursor-pointer'
+              } ${isDimmed ? 'opacity-40' : 'opacity-100'}`}
+            >
+              {body}
+            </button>
           );
         })}
       </div>

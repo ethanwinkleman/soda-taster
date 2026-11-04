@@ -1,10 +1,8 @@
 import { useMemo } from 'react';
 import { Star, Trophy } from 'lucide-react';
-import type { Soda, Stash } from '../types/stash';
+import type { Stash } from '../types/stash';
 import { useAuth } from '../contexts/AuthContext';
 import { useTasteSodas } from '../hooks/useTasteSodas';
-import { ratingDistribution, ratingComparison } from '../lib/ratingVisibility';
-import { RatingDistribution } from './RatingDistribution';
 import { Skeleton } from './Skeleton';
 
 interface Props {
@@ -14,31 +12,20 @@ interface Props {
 /**
  * How you are doing, across every collection you are in.
  *
- * This was the lower half of a `/stats` tab. The tab is gone — the act of rating moved
- * into the collection page, where the sodas are — but these two do not belong there:
- * they are *your* numbers across everything, and a collection page describes one
- * collection. They sit here beside Your Palate, which already answers the same
- * question, so "how am I doing" has exactly one address.
+ * Three totals, and deliberately only totals. The rating spread used to sit under them
+ * and has gone to the collection page: a distribution is a question about a shelf —
+ * "did this group like what we drank" — and pooling every collection you belong to
+ * answered it about no shelf in particular. A count and an average survive that
+ * pooling, because "25 rated, averaging 3.7" is true of you rather than of any one
+ * collection.
+ *
+ * It also put the chart back beside a list to filter, which it had spent a release
+ * without. See RatingDistribution.
  */
 export function YourRatings({ stashes }: Props) {
   const { user } = useAuth();
   const stashIds = useMemo(() => stashes.map((s) => s.id), [stashes]);
   const { sodas, loading } = useTasteSodas(stashIds, user?.id);
-
-  // The chart and the comparison are written against the collection page's shape and
-  // carry the blind-rating rule with them. Adapting is one map; rewriting them here
-  // would be a second copy of that rule.
-  const asSodas = useMemo(
-    () => sodas.map((s) => ({
-      myRating: s.myScore === null ? null : { score: s.myScore },
-      otherScores: s.others.map((o) => o.score),
-      ratingCount: (s.myScore === null ? 0 : 1) + s.others.length,
-    })) as unknown as Soda[],
-    [sodas],
-  );
-
-  const distribution = useMemo(() => ratingDistribution(asSodas), [asSodas]);
-  const comparison = useMemo(() => ratingComparison(asSodas), [asSodas]);
 
   const rated = useMemo(() => sodas.filter((s) => s.myScore !== null), [sodas]);
   const myAvg = rated.length
@@ -56,7 +43,7 @@ export function YourRatings({ stashes }: Props) {
           <Skeleton className="h-20 rounded-2xl" />
           <Skeleton className="h-20 rounded-2xl" />
         </div>
-        <Skeleton className="h-60 rounded-2xl" />
+        <Skeleton className="h-20 rounded-2xl" />
       </div>
     );
   }
@@ -94,10 +81,6 @@ export function YourRatings({ stashes }: Props) {
           />
         </div>
       )}
-
-      <div className="mt-4">
-        <RatingDistribution buckets={distribution} comparison={comparison} />
-      </div>
     </div>
   );
 }
