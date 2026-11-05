@@ -391,23 +391,42 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       <PullToRefreshIndicator pullDistance={pullDistance} refreshing={refreshing} />
       {/* Section masthead */}
       <div className="mb-6">
+        {/* Name, primary action and ⋯ on one line. The add button was a row below, under
+            the metrics; up here it is on the line the eye lands on first and the page
+            saves a row. The ⋯ used to be absolutely positioned with `pr-9` holding a
+            gap for it — with three things on the line they are all flex siblings now,
+            and the name is the only one that flexes. */}
+        {/* `items-start`, not centre: a name long enough to wrap makes this block several
+            lines tall, and centring left the button and the ⋯ floating halfway down a wall
+            of text. The heading's `py` makes its box match the button's height so a
+            one-line name — the normal case — still sits level with it. */}
         <div className="flex items-start gap-2">
           <BackButton onClick={() => navigate('/')} className="md:hidden" />
-          <div className="flex-1 min-w-0">
-            {/* Name row — ⋯ floats top-right, name fills remaining width */}
-            <div className="relative pr-9">
-              {/* `break-words`, not just wrapping: a collection named as one unbroken token
-                      (a brand run together, a pasted URL) is wider than the column, and its
-                      text paints outside its own box — past the right edge of a phone, where
-                      the shell’s `overflow-x-hidden` means it cannot even be scrolled to. */}
-              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words min-w-0">
-                {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
-                {/* The name is its own flex item: a bare text node is an anonymous one at
-                    `min-width: auto`, which for an unbroken token is the whole word, so
-                    `break-words` on the h1 alone never gets a chance to break it. */}
-                <span className="min-w-0 break-words">{stash.name}</span>
-              </h1>
-              <div className="absolute right-0 top-0">
+          {/* `break-words`, not just wrapping: a collection named as one unbroken token
+              (a brand run together, a pasted URL) is wider than the column, and its
+              text paints outside its own box — past the right edge of a phone, where
+              the shell’s `overflow-x-hidden` means it cannot even be scrolled to. */}
+          <h1 className="flex-1 min-w-0 py-1 sm:py-2.5 font-display text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 break-words">
+            {stash.icon && <StashIcon name={stash.icon} size={22} className="shrink-0 text-gray-700 dark:text-gray-300" />}
+            {/* The name is its own flex item: a bare text node is an anonymous one at
+                `min-width: auto`, which for an unbroken token is the whole word, so
+                `break-words` on the h1 alone never gets a chance to break it. */}
+            <span className="min-w-0 break-words">{stash.name}</span>
+          </h1>
+          {/* Compact on a phone and full size from `sm:`. At 320 the line already spends
+              44px on the back button and 36 on the ⋯, so a 165px `lg` button would have
+              left the collection its own name in about 28px. */}
+          <Button
+            size="lg"
+            onClick={() => navigate(`/stash/${stashId}/add`)}
+            aria-label="Add soda"
+            className="tap-44 shrink-0 px-3.5 py-2.5 text-[13px] sm:px-7 sm:py-3.5 sm:text-[15px]"
+          >
+            <Plus size={16} />
+            <span className="sm:hidden">Add</span>
+            <span className="hidden sm:inline">Add Soda</span>
+          </Button>
+          <div className="shrink-0">
                 <div className="relative">
                   <button
                     type="button"
@@ -499,8 +518,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                     )}
                   </AnimatePresence>
                 </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -617,15 +634,16 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         />
       )}
 
-      {/* The actions row: the score lens on the left, the one thing anyone came here to
-          do on the right. The add button sat above this on its own, centred, which read
-          as a section rather than a control; beside the toggle it is where the eye
-          already is. The row renders whether or not the toggle does — the toggle only
-          appears once more than one person has rated, and the primary action cannot
-          come and go with it. */}
+      {/* The score lens, on its own now that Add Soda has gone up to the title row.
+          Two things follow. The row is only rendered when the toggle is — it was drawn
+          unconditionally to keep the primary action in a fixed place, and with nothing
+          else in it an empty row is just a gap. And the toggle is a fixed width rather
+          than `flex-1`: it was sharing the row with a 165px button, and left alone
+          `flex-1` would have stretched it across the viewport, which is the banner
+          failure the add button itself was fixed for. */}
+      {!loading && showScoreToggle && (
       <div className="flex items-center gap-2 mt-4 mb-3">
-        {!loading && showScoreToggle && (
-          <div className="flex flex-1 min-w-0 xl:flex-none xl:w-64 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex w-40 shrink-0 xl:w-64 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <button
               type="button"
               onClick={() => { hapticTap(); setScoreView('group'); }}
@@ -663,16 +681,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <span className="relative">Mine</span>
             </button>
           </div>
-        )}
-        <Button
-          size="lg"
-          onClick={() => navigate(`/stash/${stashId}/add`)}
-          className="tap-44 ml-auto shrink-0"
-        >
-          <Plus size={16} />
-          Add Soda
-        </Button>
       </div>
+      )}
 
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
       {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
