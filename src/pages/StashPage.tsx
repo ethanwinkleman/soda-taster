@@ -779,7 +779,34 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         </div>
       )}
 
-      {!loading && !restockFilter && !untastedFilter && <div className="mb-3" />}
+      {/* Selecting a column of the spread lands here, and the count is the point.
+          The chart's columns count *ratings* — two numbers per column, yours and
+          everyone else's — while this filter selects *sodas* carrying any visible
+          rating at that score. The two are different units, so a column reading
+          "1 8" can hand back nine sodas, and with nothing saying so that looks like
+          the filter is wrong. The column's total is always at least the number of
+          sodas, never fewer: a soda you and a partner both gave a 4 is two ratings
+          in the column and one card on the shelf. */}
+      {!loading && scoreFilter !== null && (
+        <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+            Rated {scoreFilter} by you or the group
+            <span className="ml-2 text-gray-500 dark:text-gray-400">
+              ({sorted.length} soda{sorted.length !== 1 ? 's' : ''})
+            </span>
+          </p>
+          <button
+            type="button"
+            onClick={() => setScoreFilter(null)}
+            className="tap-44 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            aria-label="Clear filter"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {!loading && !restockFilter && !untastedFilter && scoreFilter === null && <div className="mb-3" />}
 
       {/* The rating spread and the score tiles moved to /stats: they answer "how am
           I doing", which is occasional, and they were sitting between the filters
