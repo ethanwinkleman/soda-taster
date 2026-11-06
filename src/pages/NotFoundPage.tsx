@@ -56,7 +56,7 @@ export function NotFoundPage() {
       >
         <NavLink
           to="/"
-          className="inline-block px-6 py-2.5 rounded-xl font-sans text-sm font-bold uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]"
+          className="inline-block px-6 py-2.5 rounded-xl font-sans text-sm font-bold uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors shadow-[0_4px_14px_-4px_rgb(var(--cherry-glow)/0.35)]"
         >
           Back to Collections
         </NavLink>

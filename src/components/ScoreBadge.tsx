@@ -21,7 +21,7 @@ export function ScoreBadge({ score, size = 'md', layoutId, burst = false }: Prop
       initial={layoutId ? false : { scale: 0.6, opacity: 0 }}
       animate={layoutId ? undefined : { scale: 1, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 380, damping: 18 }}
-      className={`${sizeClass} relative bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-sky-500 dark:border-sky-400 rounded-full flex items-center justify-center font-display font-bold shrink-0 shadow-[0_6px_18px_-6px_rgba(255,61,120,0.4)] tabular-nums`}
+      className={`${sizeClass} relative bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-sky-500 dark:border-sky-400 rounded-full flex items-center justify-center font-display font-bold shrink-0 shadow-[0_6px_18px_-6px_rgb(var(--cherry-glow)/0.4)] tabular-nums`}
       title={`Overall score: ${score.toFixed(1)}`}
     >
       <AnimatedNumber value={score} decimals={1} />

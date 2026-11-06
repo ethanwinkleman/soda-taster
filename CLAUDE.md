@@ -502,6 +502,24 @@ Conventions:
 - Avatars/icon badges are `rounded-full`/`rounded-xl` with `bg-gradient-to-br from-sky-500 to-cyan-500 text-white`.
 - Copy voice is plain and friendly ("Members", "Top Rated", "Delete Collection") — not the retired editorial voice ("Correspondents", "Distinguished Sodas", "Dissolve Collection").
 
+**Dark mode is a palette swap, not a second set of classes.** Every utility reads a `--color-*` variable, so the dark theme is one `@media (prefers-color-scheme: dark)` block in `index.css` that redefines the dark half of the ramp on `:root` — no component has a dark-specific colour. The ground is `#000`, with 900 and 800 lifted just off it so a card has an edge without needing a border.
+
+It changes the dark steps in **two separate ways, and the distinction is what keeps it safe**:
+
+- **Surfaces (700–950) get darker.** They are only ever dark backgrounds and borders, so darkening them cannot strand text.
+- **Text steps (300–600) change hue only, holding luminance.** They lose the purple cast and keep their contrast by construction, so nothing that passed before can fail. `gray-500` is the one deliberate exception: it was **3.82:1 at 10px** on every muted caption in the app — under AA — and the black ground plus a lighter grey takes it to 5.9:1.
+
+Accents are damped rather than re-hued: the same cherry, amber and fizz at the saturation a black ground can carry. The cherry glow travels with them, because it is `--cherry-glow` (an `r g b` triple, so each shadow keeps its own alpha: `shadow-[0_4px_14px_-4px_rgb(var(--cherry-glow)/0.35)]`) rather than `rgba(255,61,120,…)` hardcoded in nine files.
+
+Two things to verify, both of which the sweep got wrong first:
+
+- **Measure the composite, not the declared colour.** Walking ancestors for a background misses an absolutely-positioned sibling painted underneath — the Group/Mine pill is `absolute inset-0`, so a walk found the transparent container and reported black-on-black at **1:1** on a label that is actually 6.4:1. `document.elementsFromPoint` returns the real paint stack; it needs the point on screen, so scroll each candidate to the middle first.
+- **Prove light mode did not move.** Scoping to the media query is supposed to leave it untouched, and a screenshot of each route in `colorScheme: 'light'` before and after is what shows it: they compare byte-identical.
+
+Dark-mode contrast went from **24 failures to 0** across `/`, a collection, Add Soda, a soda and the activity feed. One real finding came out of the damping: the "Not rated" badge is white on cherry at 10px, which was 3.39:1 before and 4.07:1 after — still short, so it is `dark:bg-sky-600` and 5.49:1.
+
+**`LandingPage` is always dark and shares these tokens**, so it follows the OS rather than the app: black for a visitor whose system is dark, unchanged for one whose system is light. Worth knowing before adding a third always-dark surface.
+
 `TastingCard.tsx` is the one exception to Tailwind: it is rasterised by `html2canvas` for share images, so it inlines the palette as hex constants. Keep those in sync with the tokens.
 
 Use the `z-(--z-*)` scale from `index.css` (`sticky`/`header`/`modal`/`confirm`) rather than raw z-index numbers.

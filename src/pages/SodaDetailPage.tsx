@@ -379,7 +379,7 @@ export function SodaDetailPage() {
       {/* Hero — image (left ⅓) + avg score (right ⅔) */}
       <motion.div
         layoutId={`soda-${soda.id}-card`}
-        className="mb-5 flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 shadow-[0_4px_20px_-6px_rgba(255,61,120,0.12)]"
+        className="mb-5 flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 shadow-[0_4px_20px_-6px_rgb(var(--cherry-glow)/0.12)]"
       >
         {/* Image column */}
         <div className="w-1/3 shrink-0 relative min-h-[11rem] self-stretch">

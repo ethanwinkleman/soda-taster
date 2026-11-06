@@ -48,6 +48,7 @@
   --color-rating-5: #ff3d78;
 
   /* ── Generous, soft border-radius scale ─────────────────────────── */
+  /* (see --cherry-glow below for the shadow colour) */
   --radius-xs:  4px;
   --radius-sm:  6px;
   --radius:     8px;
@@ -66,6 +67,11 @@
    modal    dialogs and bottom sheets
    confirm  confirmation dialog — must sit above any open modal      */
 :root {
+  /* The cherry glow, as an rgb triple so each shadow keeps its own alpha:
+     shadow-[0_4px_14px_-4px_rgb(var(--cherry-glow)/0.35)]. One variable, so the
+     dark palette can damp every glow in the app without editing nine files. */
+  --cherry-glow: 255 61 120;
+
   --z-sticky: 30;
   --z-dropdown: 40;
   --z-header: 50;
@@ -89,9 +95,62 @@ body {
   background-color: #fffbf7;
 }
 
+/* ── Dark mode: black ground, quieter colour ────────────────────────
+   The palette was a plum-black ramp with the full-strength cherry on top of it,
+   which on a dark screen reads as purple-and-pink rather than as the cream-and-
+   cherry the light theme is. Only the dark half moves, and it moves in two
+   separate ways, which is what keeps it safe:
+
+   - **Surfaces get darker.** 950 is the page and is now actually black, with 900
+     and 800 lifted just off it so a card still has an edge without needing one.
+   - **Text steps change hue, not lightness.** 300–600 only lose their purple
+     cast; their luminance is held, so nothing that passed contrast before can
+     fail now. 500 is the one exception: it was 3.82:1 at 10px — under AA — on
+     every muted caption in the app, and the darker ground plus a lighter grey
+     takes it to 5.9:1.
+
+   Accents are damped rather than re-hued: the same cherry, amber and fizz, at
+   the saturation a black ground can carry. Light mode is untouched.          */
 @media (prefers-color-scheme: dark) {
+  :root {
+    /* Surfaces — darkened. */
+    --color-gray-950: #000000;  /* the page */
+    --color-gray-900: #0a0a0b;  /* sidebar, deep wells */
+    --color-gray-800: #141417;  /* cards */
+    --color-gray-700: #2a2a2f;  /* borders and dividers */
+
+    /* Text — neutralised, luminance held (500 lifted; see above). */
+    --color-gray-600: #6b6b73;
+    --color-gray-500: #92929c;
+    --color-gray-400: #a1a1aa;
+    --color-gray-300: #d4d4d8;
+
+    /* Cherry — damped. Still the brand colour, without the neon. */
+    --color-sky-300: #e3a0ae;
+    --color-sky-400: #d96c86;
+    --color-sky-500: #c75a77;
+    --color-sky-600: #a84a63;
+
+    /* The score ramp follows the cherry down. */
+    --color-rating-1: #6b4a52;
+    --color-rating-2: #8d5567;
+    --color-rating-3: #a85d72;
+    --color-rating-4: #bd6279;
+    --color-rating-5: #c75a77;
+
+    /* Citrus and fizz — same hues, off the top of their saturation. */
+    --color-amber-400: #d9b86b;
+    --color-amber-500: #cfa94f;
+    --color-cyan-400: #5fb3a9;
+    --color-cyan-500: #2e8b94;
+    --color-cyan-600: #24737b;
+
+    /* And the glow with them. */
+    --cherry-glow: 199 90 119;
+  }
+
   body {
-    background-color: #15101c;
+    background-color: #000000;
   }
 }
 

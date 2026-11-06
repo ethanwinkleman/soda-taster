@@ -24,7 +24,7 @@ function StarIcon({ fill, className }: { fill: 'full' | 'half' | 'empty'; classN
       <span className="text-gray-200 dark:text-gray-700">★</span>
       {fill !== 'empty' && (
         <span
-          className="absolute inset-0 bg-gradient-to-br from-sky-500 to-sky-300 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgba(255,61,120,0.35)]"
+          className="absolute inset-0 bg-gradient-to-br from-sky-500 to-sky-300 bg-clip-text text-transparent drop-shadow-[0_0_6px_rgb(var(--cherry-glow)/0.35)]"
           style={fill === 'half' ? { clipPath: 'polygon(0 0, 50% 0, 50% 100%, 0 100%)' } : undefined}
         >
           ★
