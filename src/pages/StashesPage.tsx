@@ -169,7 +169,7 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
             <button
               type="button"
               onClick={() => { setCreating(true); setJoining(false); setError(null); }}
-              className="tap-44 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-sans font-medium uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]"
+              className="tap-44 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-sans font-medium uppercase tracking-wider text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 transition-colors shadow-[0_4px_14px_-4px_rgb(var(--cherry-glow)/0.35)]"
             >
               <Plus size={13} />
               New

@@ -76,7 +76,7 @@ export function SodaCard({
         whileHover={{ y: -3 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleClick}
-        className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 cursor-pointer shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] hover:shadow-[0_8px_24px_-6px_rgba(255,61,120,0.25)] transition-shadow"
+        className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 cursor-pointer shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] hover:shadow-[0_8px_24px_-6px_rgb(var(--cherry-glow)/0.25)] transition-shadow"
       >
         {soda.imageUrl ? (
           <motion.img
@@ -100,7 +100,7 @@ export function SodaCard({
             the one that is a call to action, smoked glass for the one that is a fact. */}
         <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
           {unrated && (
-            <span className="rounded-full bg-sky-500 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-white ring-1 ring-white/60 shadow-[0_2px_8px_-2px_rgba(26,21,35,0.5)]">
+            <span className="rounded-full bg-sky-500 dark:bg-sky-600 px-2 py-1 font-sans text-[10px] font-bold uppercase tracking-wide text-white ring-1 ring-white/60 shadow-[0_2px_8px_-2px_rgba(26,21,35,0.5)]">
               Not rated
             </span>
           )}

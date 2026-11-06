@@ -62,7 +62,7 @@ function SignInButton({ onSignIn, className = '' }: { onSignIn: () => void; clas
       type="button"
       onClick={onSignIn}
       whileTap={{ scale: 0.98 }}
-      className={`flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-white text-gray-900 font-sans text-sm font-semibold hover:bg-gray-100 transition-colors shadow-[0_4px_24px_-6px_rgba(255,61,120,0.55)] ${className}`}
+      className={`flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-white text-gray-900 font-sans text-sm font-semibold hover:bg-gray-100 transition-colors shadow-[0_4px_24px_-6px_rgb(var(--cherry-glow)/0.55)] ${className}`}
     >
       <GoogleIcon />
       Continue with Google
@@ -86,11 +86,11 @@ function Shot({ src, alt, w, h, framed, eager }: {
     />
   );
   return framed ? (
-    <div className="rounded-[2rem] bg-gray-900 p-2 ring-1 ring-gray-800 shadow-[0_24px_70px_-20px_rgba(255,61,120,0.35)]">
+    <div className="rounded-[2rem] bg-gray-900 p-2 ring-1 ring-gray-800 shadow-[0_24px_70px_-20px_rgb(var(--cherry-glow)/0.35)]">
       {img}
     </div>
   ) : (
-    <div className="rounded-2xl ring-1 ring-gray-800 overflow-hidden shadow-[0_24px_70px_-20px_rgba(255,61,120,0.35)]">
+    <div className="rounded-2xl ring-1 ring-gray-800 overflow-hidden shadow-[0_24px_70px_-20px_rgb(var(--cherry-glow)/0.35)]">
       {img}
     </div>
   );
