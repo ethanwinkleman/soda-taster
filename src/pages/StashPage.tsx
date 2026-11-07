@@ -634,56 +634,6 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
         />
       )}
 
-      {/* The score lens, on its own now that Add Soda has gone up to the title row.
-          Two things follow. The row is only rendered when the toggle is — it was drawn
-          unconditionally to keep the primary action in a fixed place, and with nothing
-          else in it an empty row is just a gap. And the toggle is a fixed width rather
-          than `flex-1`: it was sharing the row with a 165px button, and left alone
-          `flex-1` would have stretched it across the viewport, which is the banner
-          failure the add button itself was fixed for. */}
-      {!loading && showScoreToggle && (
-      <div className="flex items-center gap-2 mt-4 mb-3">
-          <div className="flex w-40 shrink-0 xl:w-64 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => { hapticTap(); setScoreView('group'); }}
-              className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                scoreView === 'group'
-                  ? 'text-white dark:text-gray-950'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-              }`}
-            >
-              {scoreView === 'group' && (
-                <motion.span
-                  layoutId="scoreview-pill"
-                  className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                />
-              )}
-              <span className="relative">Group</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { hapticTap(); setScoreView('mine'); }}
-              className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-200 dark:border-gray-700 ${
-                scoreView === 'mine'
-                  ? 'text-white dark:text-gray-950'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-              }`}
-            >
-              {scoreView === 'mine' && (
-                <motion.span
-                  layoutId="scoreview-pill"
-                  className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
-                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                />
-              )}
-              <span className="relative">Mine</span>
-            </button>
-          </div>
-      </div>
-      )}
-
       {/* Search + sort + filter — sticky below the mobile header so it's always reachable */}
       {!loading && <div className="flex flex-wrap gap-2 mb-2 sticky top-[calc(3rem+5px+env(safe-area-inset-top))] md:top-0 z-(--z-sticky) bg-gray-50 dark:bg-gray-950 py-2 -my-2">
         <div className="basis-full sm:basis-0 sm:flex-1 relative">
@@ -695,11 +645,57 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
             className="pl-9 pr-4"
           />
         </div>
+        {/* The score lens sits with the filters, not on a row of its own: it is the
+            same kind of control — it changes which scores the shelf is showing — and
+            a row holding one 160px control was mostly empty space. Fixed width and
+            `shrink-0` so the search keeps the slack; the row wraps, which it has to,
+            because it lives inside the shell's `overflow-x-hidden` and anything past
+            the right edge is invisible rather than scrolled to. */}
+        {showScoreToggle && (
+          <div className="flex w-36 sm:w-40 shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => { hapticTap(); setScoreView('group'); }}
+            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              scoreView === 'group'
+                ? 'text-white dark:text-gray-950'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            {scoreView === 'group' && (
+              <motion.span
+                layoutId="scoreview-pill"
+                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span className="relative">Group</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { hapticTap(); setScoreView('mine'); }}
+            className={`relative flex-1 py-1.5 font-sans text-[10px] font-bold uppercase tracking-wider transition-colors border-l border-gray-200 dark:border-gray-700 ${
+              scoreView === 'mine'
+                ? 'text-white dark:text-gray-950'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+            }`}
+          >
+            {scoreView === 'mine' && (
+              <motion.span
+                layoutId="scoreview-pill"
+                className="absolute inset-0 bg-sky-600 dark:bg-sky-400"
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              />
+            )}
+            <span className="relative">Mine</span>
+          </button>
+        </div>
+        )}
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortOption)}
           disabled={restockFilter || untastedFilter}
-          className="flex-1 min-w-0 sm:flex-none px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
+          className="flex-1 min-w-[7rem] sm:flex-none px-3 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 font-sans text-xs text-gray-700 dark:text-gray-300 focus:outline-none focus:border-sky-500 dark:focus:border-sky-400 uppercase tracking-wide disabled:opacity-40"
         >
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
