@@ -119,7 +119,7 @@ export function AddSodaPage() {
       </button>
       <div className="flex items-center gap-3 mb-6">
         <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
-        <span className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wider shrink-0">or enter manually</span>
+        <span className="text-xs font-sans text-gray-400 dark:text-gray-500 shrink-0">or enter manually</span>
         <div className="flex-1 border-b border-gray-200 dark:border-gray-700" />
       </div>
 

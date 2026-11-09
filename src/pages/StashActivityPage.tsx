@@ -122,7 +122,7 @@ export function StashActivityPage() {
                     {' '}
                     <span className="text-gray-600 dark:text-gray-400">{describeAction(entry)}</span>
                   </p>
-                  <p className="font-sans text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 uppercase tracking-wide">
+                  <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                     {relativeTime(entry.createdAt)}
                   </p>
                 </div>

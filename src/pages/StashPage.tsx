@@ -739,7 +739,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
       {/* Active filter banner */}
       {!loading && restockFilter && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+          <p className="font-sans text-xs text-gray-700 dark:text-gray-300">
             Worth buying again — top-rated sodas you're out of
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
@@ -758,7 +758,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
       {!loading && untastedFilter && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+          <p className="font-sans text-xs text-gray-700 dark:text-gray-300">
             Try next — what you haven't rated, in stock first
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               ({sorted.length} result{sorted.length !== 1 ? 's' : ''})
@@ -785,7 +785,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
           in the column and one card on the shelf. */}
       {!loading && scoreFilter !== null && (
         <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
-          <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-gray-700 dark:text-gray-300">
+          <p className="font-sans text-xs text-gray-700 dark:text-gray-300">
             Rated {scoreFilter} by you or the group
             <span className="ml-2 text-gray-500 dark:text-gray-400">
               ({sorted.length} soda{sorted.length !== 1 ? 's' : ''})
@@ -922,7 +922,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
               <span className="font-display text-sm font-bold">
                 Show {Math.min(10, sorted.length - visibleCount)} more
               </span>
-              <span className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 tabular-nums">
+              <span className="font-sans text-xs text-gray-400 dark:text-gray-500 tabular-nums">
                 {visibleCount} of {sorted.length}
               </span>
             </motion.button>
@@ -1060,7 +1060,7 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
                         <span className="flex-1 font-sans text-sm text-gray-900 dark:text-gray-100 truncate">
                           {m.displayName ?? 'Unknown'}
                           {m.userId === stash.ownerId && (
-                            <span className="ml-1.5 font-sans text-[10px] uppercase tracking-wide text-gray-400">owner</span>
+                            <span className="ml-1.5 font-sans text-xs text-gray-400">owner</span>
                           )}
                         </span>
                         {isOwner && m.userId !== user?.id && (
@@ -1087,23 +1087,15 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
 
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
                   {isOwner ? (
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
-                    >
+                    <Button variant="danger" size="md" onClick={handleDelete} className="w-full">
                       <Trash2 size={13} />
                       Delete Collection
-                    </button>
+                    </Button>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={handleLeave}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 transition-colors"
-                    >
+                    <Button variant="secondary" size="md" onClick={handleLeave} className="w-full">
                       <LogOut size={13} />
                       Leave Collection
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

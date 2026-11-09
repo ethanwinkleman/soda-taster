@@ -33,7 +33,7 @@ export function FlavorNotes({ profile, sealedCount }: Props) {
 
       {styleNotes.length > 0 && (
         <div className="mb-3">
-          <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
+          <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mb-1.5">
             Typical of {style}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -51,7 +51,7 @@ export function FlavorNotes({ profile, sealedCount }: Props) {
 
       {observed.length > 0 && (
         <div>
-          <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
+          <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mb-1.5">
             Your stash says
           </p>
           <div className="flex flex-wrap gap-1.5">

@@ -392,7 +392,7 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
 
               <div className="flex-1 min-w-0">
                 <p className="font-display font-bold text-gray-900 dark:text-white truncate">{stash.name}</p>
-                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide flex-wrap">
+                <div className="flex items-center gap-1.5 mt-0.5 text-xs font-sans text-gray-400 dark:text-gray-500 flex-wrap">
                   <Users size={9} />
                   <span>{stash.ownerId === user?.id ? 'Owner' : 'Member'}</span>
                   <span className="text-gray-300 dark:text-gray-600">·</span>
@@ -456,13 +456,13 @@ export function StashesPage({ stashes, loading, error: loadError, recentActivity
                     <p className="font-display font-bold text-sm text-gray-900 dark:text-gray-100 truncate leading-tight">
                       {entry.sodaName}
                     </p>
-                    <p className="text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide mt-0.5 truncate">
+                    <p className="text-xs font-sans text-gray-400 dark:text-gray-500 mt-0.5 truncate">
                       {stashName}
                       <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
                       {entry.displayName}
                     </p>
                   </div>
-                  <span className="shrink-0 text-[10px] font-sans text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                  <span className="shrink-0 text-xs font-sans text-gray-400 dark:text-gray-500">
                     {relativeTime(entry.createdAt)}
                   </span>
                 </div>

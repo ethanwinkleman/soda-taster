@@ -507,6 +507,9 @@ Conventions:
 - Primary buttons carry a cherry glow: `shadow-[0_4px_14px_-4px_rgba(255,61,120,0.35)]`.
 - Avatars/icon badges are `rounded-full`/`rounded-xl` with `bg-gradient-to-br from-sky-500 to-cyan-500 text-white`.
 - Copy voice is plain and friendly ("Members", "Top Rated", "Delete Collection") — not the retired editorial voice ("Correspondents", "Distinguished Sodas", "Dissolve Collection").
+- **One radius for controls: `rounded-xl`.** `Input`/`Textarea`, `Button`, the sort select and the filter chips all share it. Fields had no radius at all, so a square search box sat beside a pill toggle and a square notes box sat inside a rounded card.
+- **Capitals are for things that *title* something** — section headers, tile and field labels, badges, buttons. **Metadata is sentence case at `text-xs`**: a brand and a rating count, a timestamp, a filter banner's sentence, a collection's "Owner · 11 sodas · 2w ago". When both were 9–10px tracked capitals nothing on a screen outranked anything else. Copy that relied on the CSS transform now shows its real casing, so write it the way it should read.
+- **Three button variants, two shapes.** `primary` is the filled one; `secondary` is the quiet outline; `danger` is `secondary` in red and nothing else. Use `Button` rather than a hand-rolled `<button>`: the soda page had "Remove" (grey, sentence case), "SHARE TASTING CARD" (square) and "REMOVE FROM COLLECTION" (red outline) as three different controls, and the collection settings had a fourth and fifth.
 
 **Dark mode is a palette swap, not a second set of classes.** Every utility reads a `--color-*` variable, so the dark theme is one `@media (prefers-color-scheme: dark)` block in `index.css` that redefines the dark half of the ramp on `:root` — no component has a dark-specific colour. The ground is `#000`, with 900 and 800 lifted just off it so a card has an edge without needing a border.
 

@@ -149,7 +149,7 @@ export function SodaCard({
           >
             {soda.name}
           </motion.p>
-          <div className="mt-1 flex items-center gap-1 font-sans text-[10px] uppercase tracking-wide text-white/75">
+          <div className="mt-1 flex items-center gap-1 font-sans text-xs text-white/75">
             {soda.brand && (
               <>
                 <span className="truncate">{soda.brand}</span>

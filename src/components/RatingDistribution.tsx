@@ -115,7 +115,7 @@ export function RatingDistribution({ buckets, comparison, selected = null, onSel
           )}
         </div>
       ) : (
-        <p className="font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4 tabular-nums">
+        <p className="font-sans text-xs text-gray-400 dark:text-gray-500 mb-4 tabular-nums">
           {total} rating{total !== 1 ? 's' : ''}
           {mine.avg !== null && ` · ${mine.avg.toFixed(1)} avg`}
         </p>

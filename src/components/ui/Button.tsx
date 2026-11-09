@@ -23,8 +23,13 @@ const variants: Record<Variant, string> = {
     'font-bold text-white bg-sky-600 dark:bg-sky-400 dark:text-gray-950 hover:bg-sky-700 dark:hover:bg-sky-300 shadow-[0_4px_14px_-4px_rgb(var(--cherry-glow)/0.35)]',
   secondary:
     'font-medium text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700',
+  // The quiet button in red, and nothing else: same weight, case and border as
+  // `secondary`. It used to be `normal-case` grey that only turned red on hover, while
+  // the two destructive actions that mattered most were hand-rolled red outlines — so
+  // one page showed "Remove", "SHARE TASTING CARD" (square) and "REMOVE FROM
+  // COLLECTION" as three different controls.
   danger:
-    'font-medium normal-case text-gray-500 dark:text-gray-400 border border-gray-300 dark:border-gray-600 hover:text-red-600 hover:border-red-300',
+    'font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40 hover:bg-red-50 dark:hover:bg-red-900/20',
 };
 
 // `sm` was text-xs — 12px of uppercase, tracked out, which reads as a label rather than
