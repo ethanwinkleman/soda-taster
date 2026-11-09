@@ -400,7 +400,7 @@ export function BarcodeResultPage() {
 
         {/* Source credit */}
         {selected && (
-          <p className="font-sans text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-wide">
+          <p className="font-sans text-xs text-gray-400 dark:text-gray-600">
             Data provided by {selected.source === 'open_food_facts' ? 'Open Food Facts' : 'Barcode Lookup'}
           </p>
         )}

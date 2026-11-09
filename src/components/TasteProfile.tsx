@@ -32,7 +32,7 @@ export function TasteProfile({ ratings }: Props) {
         <p className="font-display text-gray-900 dark:text-gray-100 leading-relaxed text-[15px]">
           {profile}
         </p>
-        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-sans uppercase tracking-wider text-gray-400 dark:text-gray-500">
+        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex flex-wrap gap-x-3 gap-y-1 text-xs font-sans text-gray-400 dark:text-gray-500">
           <span>{total} {total === 1 ? 'soda' : 'sodas'} rated</span>
           <span className="text-gray-300 dark:text-gray-600">·</span>
           <span>{uniqueBrands} {uniqueBrands === 1 ? 'brand' : 'brands'}</span>

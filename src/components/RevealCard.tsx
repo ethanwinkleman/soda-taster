@@ -57,7 +57,7 @@ export function RevealCard({ reveal, sodaName }: { reveal: Reveal; sodaName: str
               >
                 {formatScore(r.score)}
               </span>
-              <span className="font-sans text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 max-w-16 truncate">
+              <span className="font-sans text-xs text-gray-400 dark:text-gray-500 max-w-16 truncate">
                 {r.name}
               </span>
             </motion.div>
@@ -65,7 +65,7 @@ export function RevealCard({ reveal, sodaName }: { reveal: Reveal; sodaName: str
         </motion.div>
       )}
 
-      <p className="mt-4 font-sans text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 truncate">
+      <p className="mt-4 font-sans text-xs text-gray-400 dark:text-gray-500 truncate">
         {sodaName}
       </p>
     </motion.div>

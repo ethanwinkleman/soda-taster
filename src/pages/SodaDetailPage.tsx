@@ -443,7 +443,7 @@ export function SodaDetailPage() {
                   Average
                 </span>
                 <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} burst />
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
                   {soda.ratingCount} rating{soda.ratingCount !== 1 ? 's' : ''}
                 </span>
               </motion.div>
@@ -461,7 +461,7 @@ export function SodaDetailPage() {
                 {sealedCount > 0 ? (
                   <>
                     <EyeOff size={30} className="text-sky-400 dark:text-sky-600" aria-hidden />
-                    <span className="font-sans text-[10px] text-sky-600 dark:text-sky-400 uppercase tracking-wide">
+                    <span className="font-sans text-xs text-sky-600 dark:text-sky-400">
                       Sealed
                     </span>
                     <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 italic px-1 leading-snug">
@@ -494,7 +494,7 @@ export function SodaDetailPage() {
                   Mine
                 </span>
                 <ScoreBadge score={soda.myRating.score} size="lg" />
-                <span className="font-sans text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">
+                <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
                   Saved
                 </span>
               </motion.div>
@@ -682,14 +682,10 @@ export function SodaDetailPage() {
       </div>
 
       {/* Remove */}
-      <button
-        type="button"
-        onClick={handleDelete}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-sans text-xs font-medium uppercase tracking-wider text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border border-red-200 dark:border-red-900/40 transition-colors"
-      >
+      <Button variant="danger" size="md" onClick={handleDelete} className="w-full">
         <Trash2 size={13} />
         Remove from Collection
-      </button>
+      </Button>
       </div>
       </div>
     </motion.div>

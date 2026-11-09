@@ -3,8 +3,11 @@ import { twMerge } from 'tailwind-merge';
 
 type Tone = 'default' | 'inset';
 
+// `rounded-xl`, the same radius as Button and the sort select. Fields had no radius at
+// all, so a square search box sat beside a pill toggle and a rounded select, and a
+// square notes box sat inside a rounded card — the one sharp corner on every screen.
 const base =
-  'w-full px-3 py-2.5 font-sans text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300';
+  'w-full px-3 py-2.5 rounded-xl font-sans text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 border border-gray-300 dark:border-gray-600 focus:outline-none focus:border-gray-700 dark:focus:border-gray-300';
 
 // default sits on the page background; inset sits inside a white/gray-800 panel
 const tones: Record<Tone, string> = {

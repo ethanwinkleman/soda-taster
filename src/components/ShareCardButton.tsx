@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Share2, Download } from 'lucide-react';
 import type { Soda } from '../types/stash';
 import { TastingCard } from './TastingCard';
+import { Button } from './ui/Button';
 import { useSodaRatings } from '../hooks/useSodaRatings';
 import { hapticSuccess, hapticError } from '../lib/haptics';
 import { useAuth } from '../contexts/AuthContext';
@@ -83,15 +84,16 @@ export function ShareCardButton({ soda }: Props) {
         document.body,
       )}
 
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="md"
         onClick={handleShare}
         disabled={generating}
-        className="w-full flex items-center justify-center gap-2 py-3 font-sans text-xs font-medium uppercase tracking-wider text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-500 dark:hover:border-gray-400 transition-colors disabled:opacity-40"
+        className="w-full"
       >
         {canNativeShare ? <Share2 size={13} /> : <Download size={13} />}
         {generating ? 'Generating…' : 'Share Tasting Card'}
-      </button>
+      </Button>
     </>
   );
 }
