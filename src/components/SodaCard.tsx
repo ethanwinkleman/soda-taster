@@ -72,15 +72,13 @@ export function SodaCard({
   return (
     <motion.div variants={cardVariants}>
       <motion.div
-        layoutId={`soda-${soda.id}-card`}
         whileHover={{ y: -3 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleClick}
         className="relative aspect-[4/5] overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-700 cursor-pointer shadow-[0_2px_12px_-4px_rgba(26,21,35,0.06)] hover:shadow-[0_8px_24px_-6px_rgb(var(--cherry-glow)/0.25)] transition-shadow"
       >
         {soda.imageUrl ? (
-          <motion.img
-            layoutId={`soda-${soda.id}-thumb`}
+          <img
             src={soda.imageUrl}
             alt=""
             loading="lazy"
@@ -88,12 +86,11 @@ export function SodaCard({
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
-          <motion.div
-            layoutId={`soda-${soda.id}-thumb`}
+          <div
             className={`absolute inset-0 bg-gradient-to-br ${tileGradient(soda.id)} flex items-center justify-center`}
           >
             <CupSoda className="w-1/2 h-1/2 text-white/25" strokeWidth={1.5} />
-          </motion.div>
+          </div>
         )}
 
         {/* Top-left stack, so the two chips never collide on a 138px card. Cherry for
@@ -117,10 +114,9 @@ export function SodaCard({
             <ScoreBadge
               score={score}
               size="sm"
-              // Only the group average morphs into the detail page's badge, because
-              // that is the one the detail page draws under this id. Handing it
-              // "mine" would land your score in the average's place.
-              layoutId={scoreView === 'group' ? `soda-${soda.id}-score` : undefined}
+              // Still in the group view, where a whole shelf of badges popping in at
+              // once is noise; it pops in "mine", where it marks the lens changing.
+              pop={scoreView !== 'group'}
             />
           ) : scoreView === 'group' && blindCount > 0 ? (
             <span
@@ -143,12 +139,9 @@ export function SodaCard({
             underneath so a busy label does not fight the name, and the band only covers
             the caption, so the bottle still owns the card. */}
         <div className="absolute inset-x-0 bottom-0 p-2.5 bg-black/65 backdrop-blur-sm">
-          <motion.p
-            layoutId={`soda-${soda.id}-name`}
-            className="font-display font-bold text-[13px] leading-tight text-white line-clamp-2"
-          >
+          <p className="font-display font-bold text-[13px] leading-tight text-white line-clamp-2">
             {soda.name}
-          </motion.p>
+          </p>
           <div className="mt-1 flex items-center gap-1 font-sans text-xs text-white/75">
             {soda.brand && (
               <>

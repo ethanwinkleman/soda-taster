@@ -16,6 +16,7 @@ import { SodaCard } from '../components/SodaCard';
 import { RateWaiting } from '../components/RateWaiting';
 import { RatingDistribution } from '../components/RatingDistribution';
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll';
+import { useIsReturn, useReturnState } from '../hooks/useReturnState';
 import { revealedSodas, hasVisibleRatingAt, isRevealed, visibleScores, ratingDistribution, ratingComparison } from '../lib/ratingVisibility';
 import { isUntasted, untastedCount } from '../lib/untasted';
 import { stockState } from '../lib/shoppingList';
@@ -73,17 +74,21 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const [topOpen, setTopOpen] = useState(false);
   const [shoppingListOpen, setShoppingListOpen] = useState(false);
   const [discoverOpen, setDiscoverOpen] = useState(false);
-  const [restockFilter, setRestockFilter] = useState(false);
-  const [untastedFilter, setUntastedFilter] = useState(false);
+  // What the shelf was showing travels with you when you open a soda and come back:
+  // the search, the sort, the lens and the filters are remembered for a *return* and
+  // start clean on a fresh visit. See lib/returnMemory.
+  const returning = useIsReturn();
+  const [restockFilter, setRestockFilter] = useReturnState(`stash:${stashId}:restock`, false);
+  const [untastedFilter, setUntastedFilter] = useReturnState(`stash:${stashId}:untasted`, false);
   const [members, setMembers] = useState<StashMember[]>([]);
   // Layered over the stash name rather than copied into state when it loads.
   const [renameEdit, setRenameEdit] = useState<string | null>(null);
   const [renaming, setRenaming] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortOption>('newest');
-  const [scoreView, setScoreView] = useState<'group' | 'mine'>('group');
-  const [scoreFilter, setScoreFilter] = useState<number | null>(null);
+  const [search, setSearch] = useReturnState(`stash:${stashId}:search`, '');
+  const [sort, setSort] = useReturnState<SortOption>(`stash:${stashId}:sort`, 'newest');
+  const [scoreView, setScoreView] = useReturnState<'group' | 'mine'>(`stash:${stashId}:view`, 'group');
+  const [scoreFilter, setScoreFilter] = useReturnState<number | null>(`stash:${stashId}:score`, null);
   const [settingsError, setSettingsError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -357,6 +362,8 @@ export function StashPage({ stashes, onRename, onUpdateIcon, onUpdateAccentColor
   const { visibleCount, hasMore, sentinelRef, loadMore } = useInfiniteScroll({
     total: sorted.length,
     resetKey: `${search}|${sort}|${scoreView}|${restockFilter}|${untastedFilter}|${scoreFilter}`,
+    persistKey: `stash:${stashId}:shown`,
+    returning,
   });
   const visibleSodas = sorted.slice(0, visibleCount);
 
