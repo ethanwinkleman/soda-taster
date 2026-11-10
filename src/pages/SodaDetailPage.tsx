@@ -320,12 +320,9 @@ export function SodaDetailPage() {
             </div>
           ) : (
             <>
-              <motion.h1
-                layoutId={`soda-${soda.id}-name`}
-                className="font-display text-2xl font-bold text-gray-900 dark:text-white leading-tight break-words"
-              >
+              <h1 className="font-display text-2xl font-bold text-gray-900 dark:text-white leading-tight break-words">
                 {soda.name}
-              </motion.h1>
+              </h1>
               {soda.brand && (
                 <p className="font-sans text-sm text-gray-500 dark:text-gray-400 mt-0.5 break-words">
                   {soda.brand}
@@ -377,8 +374,7 @@ export function SodaDetailPage() {
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:gap-8 xl:items-start">
       <div className="xl:min-w-0">
       {/* Hero — image (left ⅓) + avg score (right ⅔) */}
-      <motion.div
-        layoutId={`soda-${soda.id}-card`}
+      <div
         className="mb-5 flex rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800 shadow-[0_4px_20px_-6px_rgb(var(--cherry-glow)/0.12)]"
       >
         {/* Image column */}
@@ -392,8 +388,7 @@ export function SodaDetailPage() {
           />
           {soda.imageUrl ? (
             <>
-              <motion.img
-                layoutId={`soda-${soda.id}-thumb`}
+              <img
                 src={soda.imageUrl}
                 alt={soda.name}
                 className="absolute inset-0 w-full h-full object-cover"
@@ -411,7 +406,7 @@ export function SodaDetailPage() {
               </button>
             </>
           ) : (
-            <motion.div layoutId={`soda-${soda.id}-thumb`} className="absolute inset-0">
+            <div className="absolute inset-0">
               <button
                 type="button"
                 onClick={() => imgInputRef.current?.click()}
@@ -423,7 +418,7 @@ export function SodaDetailPage() {
                   Add photo
                 </span>
               </button>
-            </motion.div>
+            </div>
           )}
         </div>
 
@@ -442,7 +437,7 @@ export function SodaDetailPage() {
                 <span className="font-sans text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
                   Average
                 </span>
-                <ScoreBadge score={soda.avgScore} size="lg" layoutId={`soda-${soda.id}-score`} burst />
+                <ScoreBadge score={soda.avgScore} size="lg" burst />
                 <span className="font-sans text-xs text-gray-400 dark:text-gray-500">
                   {soda.ratingCount} rating{soda.ratingCount !== 1 ? 's' : ''}
                 </span>
@@ -517,7 +512,7 @@ export function SodaDetailPage() {
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
 
       {imageError && (
         <p className="mb-4 -mt-3 text-xs font-sans text-red-600 dark:text-red-400">{imageError}</p>

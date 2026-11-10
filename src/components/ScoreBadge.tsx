@@ -4,12 +4,16 @@ import { AnimatedNumber } from './AnimatedNumber';
 interface Props {
   score: number;
   size?: 'sm' | 'md' | 'lg';
-  layoutId?: string;
+  /**
+   * Scale in on mount. On by default; the collection's cards turn it off in the group
+   * view, where a shelf of badges all popping at once is noise.
+   */
+  pop?: boolean;
   /** Retro pop-art halftone burst behind the badge — use sparingly, once per page. */
   burst?: boolean;
 }
 
-export function ScoreBadge({ score, size = 'md', layoutId, burst = false }: Props) {
+export function ScoreBadge({ score, size = 'md', pop = true, burst = false }: Props) {
   const sizeClass =
     size === 'sm' ? 'w-10 h-10 text-xs border-2' :
     size === 'lg' ? 'w-20 h-20 text-2xl border-4' :
@@ -17,9 +21,8 @@ export function ScoreBadge({ score, size = 'md', layoutId, burst = false }: Prop
 
   const badge = (
     <motion.div
-      layoutId={layoutId}
-      initial={layoutId ? false : { scale: 0.6, opacity: 0 }}
-      animate={layoutId ? undefined : { scale: 1, opacity: 1 }}
+      initial={pop ? { scale: 0.6, opacity: 0 } : false}
+      animate={pop ? { scale: 1, opacity: 1 } : undefined}
       transition={{ type: 'spring', stiffness: 380, damping: 18 }}
       className={`${sizeClass} relative bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 border-sky-500 dark:border-sky-400 rounded-full flex items-center justify-center font-display font-bold shrink-0 shadow-[0_6px_18px_-6px_rgb(var(--cherry-glow)/0.4)] tabular-nums`}
       title={`Overall score: ${score.toFixed(1)}`}

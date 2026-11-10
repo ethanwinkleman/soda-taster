@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useLayoutEffect } from 'react';
 import { lazyWithRetry } from './lib/chunkRecovery';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from 'react-router-dom';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
@@ -11,6 +11,7 @@ import { OfflineBanner } from './components/OfflineBanner';
 import { RouteFallback } from './components/RouteFallback';
 import { FizzTrail } from './components/FizzTrail';
 import { navDirection } from './lib/pageTransition';
+import { isReturnNavigation, markLeft, remember, scrollTargetFor } from './lib/returnMemory';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,14 +54,73 @@ import { Sidebar } from './components/Sidebar';
 import { MobileHeader } from './components/MobileHeader';
 import { PendingJoinHandler } from './components/PendingJoinHandler';
 
-function ScrollToTop() {
-  const { pathname } = useLocation();
+/**
+ * Where the window is after a navigation: the top of a page you walked into, and the
+ * place you left on one you came back to.
+ *
+ * The browser's own restoration is switched off because it cannot do this. It restores
+ * the moment history pops, before the page has rendered its content, and a position
+ * past the end of a still-short document is clamped — measured coming back to a
+ * collection: restored to 1680, clamped to 440, and left there. So the position is
+ * remembered per history entry and re-applied here, after the page is in the DOM, and
+ * retried for a moment in case the page is still growing (a route chunk, a photo).
+ *
+ * `useLayoutEffect`, and in the parent of the routes: a parent's layout effect runs
+ * after its children have committed, and before the browser paints — so the first
+ * frame of the new page is already at the right place. As an effect it ran a frame
+ * late, which was one frame of the old scroll position on every navigation.
+ */
+function useScrollMemory() {
+  const location = useLocation();
   const navType = useNavigationType();
+  const key = location.key;
+
   useEffect(() => {
-    // Leave scroll alone on back/forward so the browser can restore position
-    if (navType !== 'POP') window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, [pathname, navType]);
-  return null;
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    return () => { window.history.scrollRestoration = previous; };
+  }, []);
+
+  // Remember continuously rather than at the moment of leaving: by the time anything
+  // here can run for the page being left, its DOM may already be gone and the scroll
+  // position clamped with it.
+  useEffect(() => {
+    const save = () => remember(`scroll:${key}`, window.scrollY);
+    window.addEventListener('scroll', save, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', save);
+      // Having been left is what makes a later POP onto this entry a return.
+      markLeft(key);
+    };
+  }, [key]);
+
+  useLayoutEffect(() => {
+    const target = scrollTargetFor(navType, key);
+    window.scrollTo({ top: target, behavior: 'instant' as ScrollBehavior });
+    if (target === 0) return;
+
+    let frame = 0;
+    let tries = 0;
+    const stop = () => { cancelAnimationFrame(frame); tries = Infinity; };
+    const retry = () => {
+      if (Math.abs(window.scrollY - target) <= 1 || tries++ > 90) return;
+      window.scrollTo({ top: target, behavior: 'instant' as ScrollBehavior });
+      frame = requestAnimationFrame(retry);
+    };
+    frame = requestAnimationFrame(retry);
+    // The moment the person scrolls, it is their position, not ours to correct.
+    window.addEventListener('wheel', stop, { passive: true, once: true });
+    window.addEventListener('touchstart', stop, { passive: true, once: true });
+    window.addEventListener('keydown', stop, { once: true });
+    return () => {
+      stop();
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchstart', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    // Keyed on the history entry alone: navType belongs to the same navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 }
 
 function AppRoutes() {
@@ -68,7 +128,10 @@ function AppRoutes() {
   const location = useLocation();
   const navType = useNavigationType();
 
-  const { goingBack, goingDeeper } = navDirection(navType, location.pathname);
+  const { goingDeeper } = navDirection(navType, location.pathname);
+  const returning = isReturnNavigation(navType, location.key);
+  const firstLoad = location.key === 'default';
+  useScrollMemory();
   const {
     stashes,
     loading: stashesLoading,
@@ -97,20 +160,33 @@ function AppRoutes() {
               make its `fixed` positioning resolve against that element instead of the
               viewport. Keyed by path so each navigation spawns a fresh rise. */}
           {goingDeeper && <FizzTrail key={`fizz-${location.pathname}`} />}
-          <AnimatePresence mode="popLayout" initial={false}>
+          {/* One page at a time, and no exit animation. The old page used to fade out
+              in place while the new one rose — but the scroll position resets at the
+              same moment, so a collection scrolled down to its shelf snapped to its
+              top, fully visible, for the length of the fade. Measured: the page's top
+              went from -1631 to 49 in one frame at opacity 1. Keying the presence
+              boundary unmounts the old page in the same commit the new one mounts.
+
+              `initial={!returning}` is the other half. A fresh presence boundary with
+              `initial={false}` renders everything under it in its finished state, so
+              coming *back* to a page does not replay its entrance: no page rise, no
+              list stagger, no chart bars growing from zero — it is simply there, where
+              you left it. Walking into a page still plays all of it.
+
+              One consequence worth knowing: on a page reached by going back, a motion
+              element that mounts *later* also skips its entrance unless it sits inside
+              its own AnimatePresence (modals, sheets and expanding rows all do). */}
+          <AnimatePresence key={location.pathname} initial={!returning}>
           <motion.div
-            key={location.pathname}
-            // Pages rise into place and sink on the way back, rather than sliding
-            // sideways — carbonation goes up, and it reads as a stack rather than a
-            // carousel. The spring is stiff enough to settle in about 200 ms: this
-            // fires on every navigation, so character has to stay cheap.
-            initial={{ opacity: 0, y: goingBack ? -10 : 14 }}
+            key="page"
+            // Pages rise into place rather than sliding sideways — carbonation goes
+            // up. The spring settles in about 200 ms: this fires on every navigation,
+            // so character has to stay cheap. Nothing on a cold start.
+            initial={firstLoad ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: goingBack ? 14 : -10 }}
             transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7, opacity: { duration: 0.14 } }}
             className="relative"
           >
-            <ScrollToTop />
             <Suspense fallback={<RouteFallback />}>
             <Routes location={location}>
               {/* Two screens, in the order the bottom nav shows them: the collections,

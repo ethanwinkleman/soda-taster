@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { recall, remember } from '../lib/returnMemory';
 
 interface Options {
   /** How many to show before any scrolling happens, and how many to add each time. */
@@ -11,7 +12,16 @@ interface Options {
    * would leave you scrolled into the middle of a list you have not seen the top of.
    */
   resetKey: unknown;
+  /**
+   * Remember the window under this key, and start from it when `returning`. Without
+   * it, coming back to a list mounts it at its first page again — shorter than the
+   * scroll position being restored, which then gets clamped to somewhere you never were.
+   */
+  persistKey?: string;
+  returning?: boolean;
 }
+
+interface Remembered { resetKey: unknown; count: number }
 
 /**
  * Reveals a long list a page at a time, as a sentinel scrolls into view or is pressed.
@@ -24,8 +34,18 @@ interface Options {
  * the rest of the list at all, and there is no keyboard or screen-reader path into a
  * scroll position either.
  */
-export function useInfiniteScroll({ pageSize = 10, total, resetKey }: Options) {
-  const [visibleCount, setVisibleCount] = useState(pageSize);
+export function useInfiniteScroll({ pageSize = 10, total, resetKey, persistKey, returning = false }: Options) {
+  const [visibleCount, setVisibleCount] = useState(() => {
+    if (!persistKey) return pageSize;
+    const held = recall<Remembered | null>(persistKey, returning, null);
+    // Only for the list it was remembered for: a different search or filter is a
+    // different list, and its top has not been seen.
+    return held && held.resetKey === resetKey ? Math.max(pageSize, held.count) : pageSize;
+  });
+
+  useEffect(() => {
+    if (persistKey) remember(persistKey, { resetKey, count: visibleCount } satisfies Remembered);
+  }, [persistKey, resetKey, visibleCount]);
 
   // State, not a ref: writing to a ref does not re-run the effect below, so a sentinel
   // that mounts *after* the effect last ran was never observed — which is the whole
